@@ -12,7 +12,7 @@ theme_set(
   theme_void()
 )
 # install.packages("sf")
-library(sf)
+
 
 #### USER DEFINED VARIABLES ####
 
@@ -110,17 +110,22 @@ data_all %>%
 #### MAP DATA ####
 #https://www.datanovia.com/en/blog/how-to-create-a-map-using-ggplot2/
 
-metadata %>%
-  ggplot(aes(y=lat_n,
-             x=long_e,
-             color = habitat)) +
-  geom_point(size = 5) +
-  theme_classic()
+plot1 <- 
+  metadata %>%
+    ggplot(aes(y=lat_n,
+               x=long_e,
+               color = habitat)) +
+    geom_point(size = 5) +
+    theme_classic()
 
 world_map <- map_data("world")
 
-ggplot(world_map, aes(x = long, y = lat, group = group)) +
-  geom_polygon(fill="lightgray", colour = "white")
+world_map %>%
+ggplot(aes(x = long, 
+           y = lat, 
+           group = group)) +
+  geom_polygon(fill="lightgray", 
+               color = "red")
 
 map_data("world",
          region = "Philippines") %>%
@@ -136,7 +141,9 @@ subregion_label_data <-
   dplyr::group_by(subregion,
                   group) %>%
   dplyr::summarize(long = mean(long), 
-                   lat = mean(lat))
+                   lat = mean(lat)) %>%
+  filter(subregion == "Negros" |
+           subregion == "Cebu")
 
 region_label_data <- 
   map_data("world",
@@ -153,8 +160,8 @@ map_data("world",
   geom_polygon(fill="lightgray",
                color = "black") +
   # geom_text(data = subregion_label_data,
-  #           aes(label = subregion), 
-  #           size = 6, 
+  #           aes(label = subregion),
+  #           size = 6,
   #           hjust = 0.5) +
   geom_text(data = region_label_data,
             aes(x = long,
@@ -165,7 +172,7 @@ map_data("world",
             inherit.aes = FALSE) +
   geom_point(data = metadata,
              aes(x = long_e,
-                 y = lat_n),
-             inherit.aes = FALSE,
-             color = "red")
+                 y = lat_n,
+                 color = habitat),
+             inherit.aes = FALSE)
 
