@@ -4,6 +4,13 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 library(tidyverse)
 library(janitor)
 library(readxl)
+# install.packages("maps")
+# install.packages("viridis")
+require(maps)
+require(viridis)
+theme_set(
+  theme_void()
+)
 
 #### USER DEFINED VARIABLES ####
 
@@ -27,7 +34,7 @@ metadata <-
   read_excel(inFilePath2,
              na="NA") %>%
   clean_names() %>%
-  rename(bait_weight_grams = weight_grams)
+  dplyr::rename(bait_weight_grams = weight_grams)
 
 #### COMBINE DATA ####
 
@@ -98,57 +105,16 @@ data_all %>%
   facet_grid(. ~ trophic_groups,
              scales = "free_x")
 
-# 
-# data %>%
-#   group_by(pipettor,
-#            channel,
-#            trial) %>%
-#   summarize(mean_mass_g = mean(mass_g),
-#             sd_mass_g = sd(mass_g)) %>%
-#   ggplot(aes(x=channel,
-#              y=mean_mass_g,
-#              color = pipettor)) +
-#   geom_point() +
-#   geom_errorbar(aes(ymin=mean_mass_g - sd_mass_g,
-#                     ymax = mean_mass_g + sd_mass_g)) +
-#   geom_hline(yintercept = 0.013,
-#              color = "grey",
-#              linetype = "dashed") +
-#   theme_classic() +
-#   facet_grid(trial ~ pipettor,
-#              scales = "free_x")
-# ggsave("mean-mass_vs_channel_x_pipettor.png")
-# 
-# data %>%
-#   ggplot(aes(x=order,
-#              y=mass_g,
-#              color = pipettor)) +
-#   geom_point() +
-#   geom_smooth() +
-#   geom_hline(yintercept = 0.013,
-#              color = "grey",
-#              linetype = "dashed") +
-#   theme_classic() +
-#   facet_grid(. ~ trial,
-#              scales = "free_x")
-# ggsave("mass_vs_order_x_pipettor.png")
-# 
-# data %>%
-#   group_by(pipettor,
-#            channel,
-#            trial) %>%
-#   summarize(mean_mass_g = mean(mass_g),
-#             sd_mass_g = sd(mass_g),
-#             order = min(order)) %>%
-#   ggplot(aes(x=order,
-#              y=sd_mass_g,
-#              color = pipettor)) +
-#   geom_point() +
-#   geom_smooth() +
-#   geom_hline(yintercept = 0,
-#              color = "grey",
-#              linetype = "dashed") +
-#   theme_classic() +
-#   facet_grid(. ~ trial,
-#              scales = "free_x")
-# ggsave("sd-mass_vs_order_x_pipettor.png")
+#### MAP DATA ####
+
+
+metadata %>%
+  ggplot(aes(x=lat_n,
+             y=long_e,
+             color = habitat)) +
+  geom_point(size = 5) +
+  theme_classic()
+
+world_map <- map_data("world")
+ggplot(world_map, aes(x = long, y = lat, group = group)) +
+  geom_polygon(fill="lightgray", colour = "white")
