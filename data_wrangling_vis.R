@@ -155,9 +155,28 @@ region_label_data <-
 
 studylocationcolors <- c("#C97CD5","#79CE7A")
 study_locations(studylocationcolors) <- ("CAGAYANCILLO", "TRNP")
-
+minLat = 5
+minLong = 118
+maxLat = 10
+maxLong = 122
+subregions_keep <- 
+  map_data("world",
+         region = "Philippines") %>%
+  filter(long > minLong,
+         long < maxLong,
+         lat > minLat,
+         lat< maxLat) %>%
+  distinct(subregion) %>%
+  pull()
+  
 map_data("world",
          region = "Philippines") %>%
+  filter(subregion == subregions_keep) %>%
+mutate(lat = case_when(lat < minLat ~ minLat,
+                       lat > maxLat ~ maxLat, TRUE ~ lat),
+       long = case_when(long < minLong ~ minLong,
+                       long > maxLong ~ maxLong,
+                       TRUE ~ long)) %>%
   ggplot(aes(long,
              lat,
              group=group)) +
@@ -170,7 +189,7 @@ map_data("world",
   geom_text(data = region_label_data,
             aes(x = long,
                 y= lat,
-                label = region),
+                label = ""),
             size = 10,
             hjust = 0.5,
             inherit.aes = FALSE) +
