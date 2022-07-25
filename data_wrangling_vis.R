@@ -260,4 +260,3 @@ data_compiled_faceted <- data_all %>%
   theme(strip.text.y.right = element_text(angle = 0))
 data_compiled_faceted  
 save_plot("FacetedMeanMaxNatTRNPvs.Cagayancillo.png")
-
