@@ -156,9 +156,9 @@ region_label_data <-
 studylocationcolors <- c("#C97CD5","#79CE7A")
 study_locations(studylocationcolors) <- ("CAGAYANCILLO", "TRNP")
 minLat = 5
-minLong = 118
-maxLat = 10
-maxLong = 122
+minLong = 116
+maxLat = 20
+maxLong = 130
 subregions_keep <- 
   map_data("world",
          region = "Philippines") %>%
@@ -169,9 +169,13 @@ subregions_keep <-
   distinct(subregion) %>%
   pull()
   
-map_data("world",
-         region = "Philippines") %>%
-  filter(subregion == subregions_keep) %>%
+install.packages("purrr")
+library(purrr)
+
+subregions_keep %>%
+  purrr::map(~ map_data("world",
+                        region = "Philippines") %>%
+               filter(subregion == .x))%>%
 mutate(lat = case_when(lat < minLat ~ minLat,
                        lat > maxLat ~ maxLat, TRUE ~ lat),
        long = case_when(long < minLong ~ minLong,
@@ -205,6 +209,64 @@ mutate(lat = case_when(lat < minLat ~ minLat,
        color = "Study Locations") +
   scale_color_manual(values = studylocationcolors)
   save_plot("MapofBRUVDeployments.png")
+  
+#### Map Data ####
+  minLat = 7
+  minLong = 119
+  maxLat = 10
+  maxLong = 122.5
+  
+  subregions_keep <-
+    map_data("world",
+             region = "Philippines") %>%
+    filter(long > minLong,
+           long < maxLong,
+           lat > minLat,
+           lat < maxLat) %>%
+    distinct(subregion) %>%
+    pull()
+  
+  subregions_keep %>%
+    purrr::map_df(~ map_data("world",
+                             region = "Philippines") %>%
+            filter(subregion == .x)) %>%
+ mutate(lat = case_when(lat < minLat ~ minLat,
+                        lat > maxLat ~ maxLat,
+                        TRUE ~ lat),
+        long = case_when(long < minLong ~ minLong,
+                            long > maxLong ~ maxLong,
+                            TRUE ~ long)) %>%
+    ggplot(aes(long,
+               lat,
+               group=group)) +
+    geom_polygon(fill="lightgray") +
+                 #color = "black") +
+    # geom_text(data = subregion_label_data,
+    #           aes(label = subregion),
+    #           size = 6,
+    #           hjust = 0.5) +
+    geom_text(data = region_label_data,
+              aes(x = long,
+                  y= lat,
+                  label = region),
+              size = 10,
+              hjust = 0.5,
+              inherit.aes = FALSE) +
+    geom_point(data = metadata,
+               aes(x = long_e,
+                   y = lat_n,
+                   color = habitat),
+               inherit.aes = FALSE) +
+    theme_classic()
+  
+  metadata %>%
+    ggplot(aes(y=lat_n,
+               x=long_e,
+               color = habitat)) +
+    geom_point(size = 5) +
+    theme_classic()
+  
+  
 
 #### Mikaela's Data CleanUp and Modifications ####
 View(data_all)
