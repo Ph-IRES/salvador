@@ -8,6 +8,7 @@ library(readxl)
 # install.packages("viridis")
 require(maps)
 require(viridis)
+library(sjPlot)
 theme_set(
   theme_void()
 )
@@ -152,6 +153,9 @@ region_label_data <-
   dplyr::summarize(long = mean(long), 
                    lat = mean(lat))
 
+studylocationcolors <- c("#C97CD5","#79CE7A")
+study_locations(studylocationcolors) <- ("CAGAYANCILLO", "TRNP")
+
 map_data("world",
          region = "Philippines") %>%
   ggplot(aes(long,
@@ -170,11 +174,90 @@ map_data("world",
             size = 10,
             hjust = 0.5,
             inherit.aes = FALSE) +
-  geom_point(data = metadata,
+  geom_point(data = data_all,
              aes(x = long_e,
                  y = lat_n,
-                 color = habitat),
-             inherit.aes = FALSE)
+                 color = study_locations),
+             inherit.aes = FALSE) +
+  theme_classic() + 
+  xlab("Longitude East (in degrees)") +
+  ylab("Latitude North (in degrees)") +
+  labs(title = "Map of BRUV Deployments", 
+       color = "Study Locations") +
+  scale_color_manual(values = studylocationcolors)
+  save_plot("MapofBRUVDeployments.png")
 
---
-  
+#### Mikaela's Data CleanUp and Modifications ####
+View(data_all)
+data_all <- data_all %>%
+  mutate(study_locations = case_when(
+    site == "Cawili" ~ "CAGAYANCILLO",
+    site == "Calusa" ~ "CAGAYANCILLO",
+    site == "Cagayancillo" ~ "CAGAYANCILLO",
+    site == "TUBBATAHA" ~ "TRNP")) %>%
+  mutate(family_clean = case_when(
+    family == "Epinephelidae" ~ "Serranidae",
+    TRUE ~ family))
+
+View(data_all)
+
+#### Mikaela's Data Visualization ####
+habitatcolors <- c("#6FAFC6","#F08080")
+habitat(habitatcolors) <- ("Shallow Reef", "Deep Reef")
+
+#Barplot of MaxN per BRUV Station at TRNP and Cagayancillo
+data_compiled <- data_all %>%
+  group_by(study_locations, 
+           habitat, 
+           family_clean) %>%
+  summarise(maxn_per_opcode = mean(max_n),
+            sd = sd(max_n),
+            n = n(),
+            se_per_opcode = sd/sqrt(n)) %>%
+  ggplot(aes(x = study_locations,
+             y = maxn_per_opcode,
+             fill = habitat))+
+  geom_bar(position = "dodge", 
+           stat = "identity") +
+  xlab("Study Locations") +
+  ylab("Mean MaxN per BRUV Deployment") +
+  labs(title = "Mean MaxN at TRNP vs. Cagayancillo",
+       fill = "Habitat") +
+  theme_classic() +
+  scale_fill_manual(values = habitatcolors) +
+  geom_errorbar(aes(ymax = maxn_per_opcode + se_per_opcode,
+                    ymin = maxn_per_opcode -
+                      se_per_opcode), 
+                position = "dodge")
+data_compiled  
+save_plot("MeanMaxNatTRNPvs.Cagayancillo.png")
+
+#Faceted Barplot of MaxN at TRNP and Cagayancillo faceted by family 
+data_compiled_faceted <- data_all %>%
+  group_by(study_locations, 
+           habitat, 
+           family_clean) %>%
+  summarise(maxn_per_opcode = mean(max_n),
+            sd = sd(max_n),
+            n = n(),
+            se_per_opcode = sd/sqrt(n)) %>%
+  ggplot(aes(x = study_locations,
+             y = maxn_per_opcode,
+             fill = habitat))+
+  geom_bar(position = "dodge", 
+           stat = "identity") +
+  xlab("Study Locations") +
+  ylab("Mean MaxN per BRUV Deployment") +
+  labs(title = "Mean MaxN at TRNP vs. Cagayancillo",
+       fill = "Habitat") +
+  theme_classic() +
+  scale_fill_manual(values = habitatcolors) +
+  geom_errorbar(aes(ymax = maxn_per_opcode + se_per_opcode,
+                    ymin = maxn_per_opcode -
+                      se_per_opcode), 
+                position = "dodge") +
+  facet_grid(family_clean ~ .) +
+  theme(strip.text.y.right = element_text(angle = 0))
+data_compiled_faceted  
+save_plot("FacetedMeanMaxNatTRNPvs.Cagayancillo.png")
+
