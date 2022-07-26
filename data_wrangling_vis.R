@@ -181,7 +181,10 @@ mutate(lat = case_when(lat < minLat ~ minLat,
                        lat > maxLat ~ maxLat, TRUE ~ lat),
        long = case_when(long < minLong ~ minLong,
                        long > maxLong ~ maxLong,
-                       TRUE ~ long)) %>%
+                       TRUE ~ long))
+
+map_data("world",
+         region = "Philippines") %>%
   ggplot(aes(long,
              lat,
              group=group)) +
@@ -212,7 +215,40 @@ mutate(lat = case_when(lat < minLat ~ minLat,
   save_plot("MapofBRUVDeployments.png")
   
 #### Map Data ####
-  library(purrr)
+ #Zoomed Out Map
+  map_data("world",
+           region = "Philippines") %>%
+    ggplot(aes(long,
+               lat,
+               group=group)) +
+    geom_polygon(fill="lightgray",
+                 color = "black") +
+    # geom_text(data = subregion_label_data,
+    #           aes(label = subregion),
+    #           size = 6,
+    #           hjust = 0.5) +
+    geom_text(data = region_label_data,
+              aes(x = long,
+                  y= lat,
+                  label = ""),
+              size = 10,
+              hjust = 0.5,
+              inherit.aes = FALSE) +
+    geom_point(data = data_all,
+               aes(x = long_e,
+                   y = lat_n,
+                   color = study_locations),
+               inherit.aes = FALSE) +
+    theme_classic() + 
+    xlab("Longitude East (in degrees)") +
+    ylab("Latitude North (in degrees)") +
+    labs(title = "Map of BRUV Deployments", 
+         color = "Study Locations") +
+    scale_color_manual(values = studylocationcolors)
+  save_plot("MapofBRUVDeployments.png")
+ #Zoomed in Maps
+  
+   library(purrr)
   
   minLat = 7
   minLong = 119
@@ -222,6 +258,12 @@ mutate(lat = case_when(lat < minLat ~ minLat,
   studylocationcolors <- c("#C97CD5","#79CE7A")
   study_locations(studylocationcolors) <- ("CAGAYANCILLO", "TRNP")
 
+  region_label_data <- 
+    map_data("world",
+             region = "Philippines") %>%
+    dplyr::group_by(region) %>%
+    dplyr::summarize(long = mean(long), 
+                     lat = mean(lat))
   
   subregions_keep <-
     map_data("world",
@@ -255,16 +297,22 @@ mutate(lat = case_when(lat < minLat ~ minLat,
     geom_text(data = region_label_data,
               aes(x = long,
                   y= lat,
-                  label = region),
-              size = 10,
-              hjust = 0.5,
+                  label = "Sulu Sea"),
+              size = 5,
+              hjust = 1,
+              vjust = 10,
               inherit.aes = FALSE) +
-    geom_point(data = metadata,
+    geom_point(data = data_all,
                aes(x = long_e,
                    y = lat_n,
-                   color = habitat),
+                   color = study_locations),
                inherit.aes = FALSE) +
-    theme_classic()
+    scale_color_manual(values = studylocationcolors) +
+    theme_classic() +
+    xlab("Longitude East (in degrees)") + 
+    ylab("Latitude North (in degrees)") +
+    labs(color = "Study Locations", title = "Map of Study Locations")
+  save_plot("MapofStudyLocationsZoomedin.png")
   
   data_all %>%
     ggplot(aes(y=lat_n,
@@ -296,8 +344,14 @@ View(data_all)
 #### Mikaela's Data Visualization ####
 habitatcolors <- c("#6FAFC6","#F08080")
 habitat(habitatcolors) <- ("Shallow Reef", "Deep Reef")
+#histogram
+data_all %>%
+  ggplot(aes(x = max_n)) +
+  geom_histogram()+
+  facet_grid(study_locations ~ habitat)
 
 #Barplot of MaxN per BRUV Station at TRNP and Cagayancillo
+View(data_all)
 data_compiled <- data_all %>%
   group_by(study_locations, 
            habitat) %>%
@@ -467,7 +521,43 @@ adonis2(data_vegan ~ depth_m*site,
 #         data = data_vegan.env,
 #         strata = site)
 
-####Rarefaction Curve Species Richness ####
+####Rarefaction Curve Species Richness
+#### vegan::estimateR - Extrapolated Species Richness in a Species Pool Based on Incidence (Abundance) ####
+
+pool <- 
+  estimateR(x = data_vegan) %>%
+  t() %>%
+  as_tibble()
+
+pool %>%
+  clean_names() %>%
+  bind_cols(data_vegan.env) %>%
+  pivot_longer(cols = s_chao1:se_ace) %>%
+  mutate(se_value = case_when(str_detect(name,
+                                         "se_") ~ "se",
+                              TRUE ~ "value"),
+         name = str_remove(name,
+                           "se*_")) %>%
+  pivot_wider(names_from = se_value) %>% 
+  rename(sp_richness_est = value,
+         estimator = name) %>% 
+  filter(estimator != "ace") %>% 
+  group_by(site_code, habitat) %>%
+  summarise(mean_chao_s = mean(sp_richness_est),
+            se_chao_s = sd(sp_richness_est)/sqrt(n()),
+            mean_s = mean(s_obs)) %>%
+  ggplot(aes(x= site_code,
+             y= mean_chao_s,
+             fill = habitat)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(aes(ymin = mean_chao_s - se_chao_s,
+                    ymax = mean_chao_s + se_chao_s), position ="dodge")+
+  geom_point(aes(y = mean_s),
+             color = "red3",
+             position = position_dodge(width = .9)) +
+  theme_classic() +
+  labs(title = "Extrapolated Species Richness - Abundance") 
+####
 # vegan manual - https://cloud.r-project.org/web/packages/vegan/vegan.pdf
 
 data(BCI)
