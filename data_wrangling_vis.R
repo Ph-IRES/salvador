@@ -528,6 +528,15 @@ adonis2(data_vegan ~ depth_m*site,
         data = data_vegan.env,
         na.action = na.exclude)
 
+dis<-vegdist(data_vegan, method="bray")
+#creates distance matrix
+beta<-betadisper(dis, group = site)
+anova(beta)
+permutest(beta, pairwise=TRUE, permutations=999)
+TukeyHSD(beta)
+boxplot(beta)
+
+
 # constrain permutations within sites, if site is a "block" factor, then this is correct and including site as a factor is incorrect
 # adonis2(data_vegan ~ bait_type*habitat,
 #         data = data_vegan.env,
