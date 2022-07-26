@@ -537,16 +537,20 @@ pool %>%
                                          "se_") ~ "se",
                               TRUE ~ "value"),
          name = str_remove(name,
-                           "se*_")) %>%
+                           "se*_"),
+         study_locations = case_when(
+           site_code == "CAG" ~ "CAGAYANCILLO",
+           site_code == "TUB" ~ "TUBBATAHA"
+         )) %>% 
   pivot_wider(names_from = se_value) %>% 
   rename(sp_richness_est = value,
          estimator = name) %>% 
   filter(estimator != "ace") %>% 
-  group_by(site_code, habitat) %>%
+  group_by(study_locations, habitat) %>%
   summarise(mean_chao_s = mean(sp_richness_est),
             se_chao_s = sd(sp_richness_est)/sqrt(n()),
             mean_s = mean(s_obs)) %>%
-  ggplot(aes(x= site_code,
+  ggplot(aes(x= study_locations,
              y= mean_chao_s,
              fill = habitat)) +
   geom_col(position = "dodge") +
@@ -556,7 +560,9 @@ pool %>%
              color = "red3",
              position = position_dodge(width = .9)) +
   theme_classic() +
-  labs(title = "Extrapolated Species Richness - Abundance") 
+  labs(title = "Species Richness at Cagayancillo vs. Tubbataha", fill = "Habitat") +
+  xlab("Study Locations") +
+  ylab("Mean Chao Estimate of Species Richness")
 ####
 # vegan manual - https://cloud.r-project.org/web/packages/vegan/vegan.pdf
 
