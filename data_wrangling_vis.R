@@ -31,8 +31,16 @@ data <-
   clean_names() %>%
   # there is a different depth for CAG_024 in data vs metadata
   # solution: go with metadata depth, confirm with Gene & Rene
+  mutate(family = str_to_title(family),
+         genus = str_to_title(genus),
+         species = str_to_title(species)) %>%
   mutate(depth_m = case_when(op_code == "CAG_024" ~ 8,
-                             TRUE ~ depth_m))
+                             TRUE ~ depth_m),
+         family_clean = case_when(
+           family == "Epinephelidae" ~ "Serranidae",
+           TRUE ~ family
+         ))
+
 
 metadata <-
   read_excel(inFilePath2,
@@ -349,6 +357,7 @@ data_all %>%
   ggplot(aes(x = max_n)) +
   geom_histogram()+
   facet_grid(study_locations ~ habitat)
+save_plot("DistributionofMaxNatdepth.png")
 
 #Barplot of MaxN per BRUV Station at TRNP and Cagayancillo
 View(data_all)
@@ -401,10 +410,11 @@ data_compiled_faceted <- data_all %>%
                     ymin = maxn_per_opcode -
                       se_per_opcode), 
                 position = "dodge") +
-  facet_grid(family_clean ~ .) +
-  theme(strip.text.y.right = element_text(angle = 0))
+  facet_wrap(family_clean ~ .,
+             scales = "free_y") +
+  theme(strip.text.y.right = element_text(angle = 0)) 
 data_compiled_faceted  
-save_plot("FacetedMeanMaxNatTRNPvs.Cagayancillo.png")
+ggsave("FacetedMaxN.pdf", data_compiled_faceted, height = 11, width = 8.5, units = "in")
 
 #### PREP DATA FOR VEGAN ####
 
@@ -416,7 +426,7 @@ save_plot("FacetedMeanMaxNatTRNPvs.Cagayancillo.png")
 data_vegan <-
   data %>%
   # make unique taxa
-  mutate(taxon = str_c(family,
+  mutate(taxon = str_c(family_clean,
                        genus,
                        species,
                        sep = "_")) %>%
@@ -472,6 +482,8 @@ data_vegan.env <-
          bait_type = factor(bait_type),
          site = factor(site),
          survey_area = factor(survey_area))
+
+View(data_vegan.env)
 
 # and now we "attach" the metadata to the data
 
@@ -560,19 +572,52 @@ pool %>%
              color = "red3",
              position = position_dodge(width = .9)) +
   theme_classic() +
+  scale_fill_manual(values = habitatcolors) +
   labs(title = "Species Richness at Cagayancillo vs. Tubbataha", fill = "Habitat") +
   xlab("Study Locations") +
   ylab("Mean Chao Estimate of Species Richness")
-####
-# vegan manual - https://cloud.r-project.org/web/packages/vegan/vegan.pdf
 
-data(BCI)
-S <- specnumber(BCI) # observed number of species
-(raremax <- min(rowSums(BCI)))
-Srare <- rarefy(BCI, raremax)
-par("mar")
-par(mar = c(1,1,1,1))
-plot(S, Srare, xlab = "Observed No. of Species", ylab = "Rarefied No. of Species")
-abline(0, 1)
-rarecurve(BCI, step = 20, sample = raremax, col = "blue", cex = 0.6)
+save_plot("ChaoEstimateSpeciesRichnessBarplot.png")
+
+#Faceted Barplot of Species Richness
+pool <- 
+  estimateR(x = data_vegan) %>%
+  t() %>%
+  as_tibble()
+
+pool %>%
+  clean_names() %>%
+  bind_cols(data_vegan.env) %>%
+  pivot_longer(cols = s_chao1:se_ace) %>%
+  mutate(se_value = case_when(str_detect(name,
+                                         "se_") ~ "se",
+                              TRUE ~ "value"),
+         name = str_remove(name,
+                           "se*_"),
+         study_locations = case_when(
+           site_code == "CAG" ~ "CAGAYANCILLO",
+           site_code == "TUB" ~ "TUBBATAHA"
+         )) %>% 
+  pivot_wider(names_from = se_value) %>% 
+  rename(sp_richness_est = value,
+         estimator = name) %>% 
+  filter(estimator != "ace") %>% 
+  group_by(study_locations, habitat) %>%
+  summarise(mean_chao_s = mean(sp_richness_est),
+            se_chao_s = sd(sp_richness_est)/sqrt(n()),
+            mean_s = mean(s_obs)) %>%
+  ggplot(aes(x= study_locations,
+             y= mean_chao_s,
+             fill = habitat)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(aes(ymin = mean_chao_s - se_chao_s,
+                    ymax = mean_chao_s + se_chao_s), position ="dodge")+
+  geom_point(aes(y = mean_s),
+             color = "red3",
+             position = position_dodge(width = .9)) +
+  theme_classic() +
+  scale_fill_manual(values = habitatcolors) +
+  labs(title = "Species Richness at Cagayancillo vs. Tubbataha", fill = "Habitat") +
+  xlab("Study Locations") +
+  ylab("Mean Chao Estimate of Species Richness") 
 
