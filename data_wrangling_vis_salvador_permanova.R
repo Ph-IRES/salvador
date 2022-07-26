@@ -119,6 +119,10 @@ data_vegan.env <-
   dplyr::select(op_code:bait_type) %>%
   mutate(site_code = str_remove(op_code,
                                 "_.*$"),
+         site_code = case_when(site_code == "CAG" ~ "Cagayancillo",
+                               site_code == "TUB" ~
+                                 "TRNP", 
+                               TRUE ~ NA_character_),
          site_code = factor(site_code),
          habitat = factor(habitat),
          bait_type = factor(bait_type),
@@ -129,7 +133,8 @@ data_vegan.env <-
 
 attach(data_vegan.env)
 
-
+View(data_vegan)
+View(data_vegan.env)
 #### PERMANOVA W ADONIS2 ####
 
 # vegan manual - https://cloud.r-project.org/web/packages/vegan/vegan.pdf

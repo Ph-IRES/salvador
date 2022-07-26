@@ -9,6 +9,7 @@ library(readxl)
 require(maps)
 require(viridis)
 library(sjPlot)
+library(vegan)
 theme_set(
   theme_void()
 )
@@ -211,10 +212,16 @@ mutate(lat = case_when(lat < minLat ~ minLat,
   save_plot("MapofBRUVDeployments.png")
   
 #### Map Data ####
+  library(purrr)
+  
   minLat = 7
   minLong = 119
   maxLat = 10
   maxLong = 122.5
+  
+  studylocationcolors <- c("#C97CD5","#79CE7A")
+  study_locations(studylocationcolors) <- ("CAGAYANCILLO", "TRNP")
+
   
   subregions_keep <-
     map_data("world",
@@ -259,13 +266,17 @@ mutate(lat = case_when(lat < minLat ~ minLat,
                inherit.aes = FALSE) +
     theme_classic()
   
-  metadata %>%
+  data_all %>%
     ggplot(aes(y=lat_n,
                x=long_e,
-               color = habitat)) +
+               color = study_locations)) +
     geom_point(size = 5) +
-    theme_classic()
-  
+    theme_classic() +
+    scale_color_manual(values = studylocationcolors)+
+    xlab("Latitude North (in degrees)") +
+    ylab("Longitude East (in degrees)") +
+    labs(title = "Map of Study Locations", color = "Study Locations") 
+  save_plot("closemapstudylocations.png")
   
 
 #### Mikaela's Data CleanUp and Modifications ####
@@ -289,8 +300,7 @@ habitat(habitatcolors) <- ("Shallow Reef", "Deep Reef")
 #Barplot of MaxN per BRUV Station at TRNP and Cagayancillo
 data_compiled <- data_all %>%
   group_by(study_locations, 
-           habitat, 
-           family_clean) %>%
+           habitat) %>%
   summarise(maxn_per_opcode = mean(max_n),
             sd = sd(max_n),
             n = n(),
@@ -341,3 +351,132 @@ data_compiled_faceted <- data_all %>%
   theme(strip.text.y.right = element_text(angle = 0))
 data_compiled_faceted  
 save_plot("FacetedMeanMaxNatTRNPvs.Cagayancillo.png")
+
+#### PREP DATA FOR VEGAN ####
+
+# convert species count data into tibble for vegan ingestion
+# each row is a site
+# each column is a taxon
+# data are counts
+
+data_vegan <-
+  data %>%
+  # make unique taxa
+  mutate(taxon = str_c(family,
+                       genus,
+                       species,
+                       sep = "_")) %>%
+  # sum all max_n counts for a taxon and op_code
+  group_by(taxon,
+           op_code) %>%
+  summarize(sum_max_n = sum(max_n)) %>%
+  ungroup() %>%
+  # convert tibble from long to wide format
+  pivot_wider(names_from = taxon,
+              values_from = sum_max_n,
+              values_fill = 0) %>%
+  # sort by op_code
+  arrange(op_code) %>%
+  # remove the op_code column for vegan
+  dplyr::select(-op_code)
+
+# convert metadata into tibble for vegan ingestion
+# each row is a site
+# each column is a dimension of site, such as depth, lat, long, region, etc
+
+data_vegan.env <-
+  data_all %>%
+  # make unique taxa
+  mutate(taxon = str_c(family,
+                       genus,
+                       species,
+                       sep = "_")) %>%
+  # sum all max_n counts for a taxon and op_code
+  group_by(taxon,
+           op_code,
+           site,
+           survey_area,
+           habitat,
+           lat_n,
+           long_e,
+           depth_m,
+           bait_type) %>%
+  summarize(sum_max_n = sum(max_n)) %>%
+  ungroup() %>%
+  # convert tibble from long to wide format
+  pivot_wider(names_from = taxon,
+              values_from = sum_max_n,
+              values_fill = 0) %>%
+  # sort by op_code
+  arrange(op_code) %>%
+  # remove the op_code column for vegan
+  dplyr::select(op_code:bait_type) %>%
+  mutate(site_code = str_remove(op_code,
+                                "_.*$"),
+         site_code = factor(site_code),
+         habitat = factor(habitat),
+         bait_type = factor(bait_type),
+         site = factor(site),
+         survey_area = factor(survey_area))
+
+# and now we "attach" the metadata to the data
+
+attach(data_vegan.env)
+
+#### PERMANOVA W ADONIS2 ####
+
+# vegan manual - https://cloud.r-project.org/web/packages/vegan/vegan.pdf
+
+# global test of model, differences in species composition with depth and site
+adonis2(data_vegan ~ depth_m*site,
+        data = data_vegan.env,
+        by = NULL)
+
+# test for differences in species composition with depth and site by each predictor, this is the default behavior, so `by` is not necessary
+adonis2(data_vegan ~ depth_m*site,
+        data = data_vegan.env,
+        by = "terms")
+
+# test for differences in species composition with depth and site by each predictor, marginal effects
+adonis2(data_vegan ~ depth_m*site,
+        data = data_vegan.env,
+        by = "margin")
+
+# dissimilarity indices can be selected, see `vegdist` in the vegan manual for options
+adonis2(data_vegan ~ depth_m*site,
+        data = data_vegan.env,
+        method = "bray")
+
+adonis2(data_vegan ~ depth_m*site,
+        data = data_vegan.env,
+        method = "euclidean")
+
+# by default, missing data will cause adonis2 to fail, but there are other alternatives
+# only non-missing site scores, remove all rows with missing data
+adonis2(data_vegan ~ depth_m*site,
+        data = data_vegan.env,
+        na.action = na.omit)
+
+# do not remove rows with missing data, but give NA for scores of missing observations or results that cannot be calculated
+adonis2(data_vegan ~ depth_m*site,
+        data = data_vegan.env,
+        na.action = na.exclude)
+
+# constrain permutations within sites, if site is a "block" factor, then this is correct and including site as a factor is incorrect
+# adonis2(data_vegan ~ bait_type*habitat,
+#         data = data_vegan.env,
+#         strata = site)
+
+####Rarefaction Curve Species Richness ####
+# vegan manual - https://cloud.r-project.org/web/packages/vegan/vegan.pdf
+
+data(BCI)
+S <- specnumber(BCI) # observed number of species
+(raremax <- min(rowSums(BCI)))
+Srare <- rarefy(BCI, raremax)
+par("mar")
+par(mar = c(1,1,1,1))
+plot(S, Srare, xlab = "Observed No. of Species", ylab = "Rarefied No. of Species")
+abline(0, 1)
+rarecurve(BCI, step = 20, sample = raremax, col = "blue", cex = 0.6)
+
