@@ -24,6 +24,8 @@ inFilePath2 = "./PHIRES_MetaData.xlsx"
 
 #### READ IN DATA & CURATE ####
 
+View(data)
+
 data <-
   read_excel(inFilePath1,
              na="NA") %>%
@@ -35,7 +37,31 @@ data <-
          species = str_to_lower(species),
          family_clean = case_when(
            family == "Epinephelidae" ~ "Serranidae",
-           TRUE ~ family), 
+           TRUE ~ family),
+         taxon = str_c(family_clean,
+                       genus,
+                       species,
+                       sep = "_")) %>%
+  mutate(depth_m = case_when(op_code == "CAG_024" ~ 8,
+                             TRUE ~ depth_m)) %>%
+  # keep only max_n
+  group_by(op_code,
+           taxon) %>%
+  filter(max_n == max(max_n)) %>%
+  ungroup() %>%
+  # remove duplicated rows
+  distinct(op_code,
+           taxon,
+           .keep_all = TRUE)
+
+data_removed_sp <- data %>%
+  filter(species != "sp") %>% 
+  mutate(family = str_to_title(family),
+         genus = str_to_title(genus),
+         species = str_to_lower(species),
+         family_clean = case_when(
+           family == "Epinephelidae" ~ "Serranidae",
+           TRUE ~ family),
          taxon = str_c(family_clean,
                        genus,
                        species,
@@ -76,7 +102,24 @@ data_all <-
     site == "Cawili" ~ "CAGAYANCILLO",
     site == "Calusa" ~ "CAGAYANCILLO",
     site == "Cagayancillo" ~ "CAGAYANCILLO",
-    site == "TUBBATAHA" ~ "TRNP")) 
+    site == "TUBBATAHA" ~ "TRNP"))
+
+data_all_removed_sp <- 
+  data_removed_sp %>%
+  left_join(metadata,
+            by = c("op_code" = "opcode",
+                   "depth_m" = "depth_m")) %>%
+  # rearrange order of columns, metadata then data
+  select(op_code,
+         site:long_e,
+         depth_m,
+         time_in:bait_weight_grams,
+         everything()) %>%
+  mutate(study_locations = case_when(
+    site == "Cawili" ~ "CAGAYANCILLO",
+    site == "Calusa" ~ "CAGAYANCILLO",
+    site == "Cagayancillo" ~ "CAGAYANCILLO",
+    site == "TUBBATAHA" ~ "TRNP"))
 
 #### CHECK DATA INTEGRITY ####
 # isolate duplicated rows, if no dups, then tibbles should be empty
@@ -255,7 +298,22 @@ map_data("world",
   save_plot("MapofBRUVDeployments.png")
   
 #### Map Data ####
- #Zoomed Out Map
+ 
+  minLat = 7
+  minLong = 119
+  maxLat = 10
+  maxLong = 122.5
+  
+  studylocationcolors <- c("#C97CD5","#79CE7A")
+  study_locations(studylocationcolors) <- c("CAGAYANCILLO", "TRNP")
+
+  region_label_data <- 
+    map_data("world",
+             region = "Philippines") %>%
+    dplyr::group_by(region) %>%
+    dplyr::summarize(long = mean(long), 
+                     lat = mean(lat))
+  #Zoomed Out Map
   map_data("world",
            region = "Philippines") %>%
     ggplot(aes(long,
@@ -286,23 +344,8 @@ map_data("world",
          color = "Study Locations") +
     scale_color_manual(values = studylocationcolors)
   save_plot("MapofBRUVDeployments.png")
- #Zoomed in Maps
   
-
-  minLat = 7
-  minLong = 119
-  maxLat = 10
-  maxLong = 122.5
-  
-  studylocationcolors <- c("#C97CD5","#79CE7A")
-  study_locations(studylocationcolors) <- c("CAGAYANCILLO", "TRNP")
-
-  region_label_data <- 
-    map_data("world",
-             region = "Philippines") %>%
-    dplyr::group_by(region) %>%
-    dplyr::summarize(long = mean(long), 
-                     lat = mean(lat))
+  #Zoomed in Maps
   
   subregions_keep <-
     map_data("world",
@@ -429,6 +472,32 @@ data_compiled <-
 data_compiled  
 save_plot("MeanMaxNatTRNPvs.Cagayancillo.png")
 
+#Barplot of MaxN at TRNP and Cagayancillo, filled by bait_type instead of shallow vs. deep reef
+View(data_all)
+data_compiled_bait <- 
+  data_all %>%
+  group_by(study_locations, 
+           op_code,
+           bait_type) %>%
+  summarize(sum_max_n = sum(max_n)) %>%
+  summarize(mean_sum_max_n = mean(sum_max_n),
+            se_sum_max_n = sd(sum_max_n)/sqrt(n())) %>%
+  ggplot(aes(x = study_locations,
+             y = mean_sum_max_n,
+             fill = bait_type)) +
+  geom_bar(position = "dodge", 
+           stat = "identity") +
+  xlab("Study Locations") +
+  ylab("Mean MaxN per BRUV Deployment") +
+  labs(title = "Mean MaxN at TRNP vs. Cagayancillo",
+       fill = "Bait Type") +
+  theme_classic() +
+  geom_errorbar(aes(ymax = mean_sum_max_n + se_sum_max_n,
+                    ymin = mean_sum_max_n - se_sum_max_n), 
+                position = "dodge")
+data_compiled_bait  
+save_plot("MeanMaxNatTRNPvs.Cagayancilloincludingbait.png")
+
 #Faceted Barplot of MaxN at TRNP and Cagayancillo faceted by family 
 data_compiled_faceted <- 
   data_all %>%
@@ -522,6 +591,61 @@ ggsave("FacetedMaxNwZeros.pdf",
        width = 8.5, 
        units = "in")
 
+#Faceted Barplot of MaxN at TRNP and Cagayancillo faceted by bait_type, INCLUDING ZEROS
+data_compiled_faceted_zeros_bait <- 
+  data_all %>%
+  group_by(study_locations, 
+           bait_type,
+           op_code,
+           family_clean) %>%
+  summarize(sum_max_n = sum(max_n)) %>%
+  ungroup() %>%
+  arrange(op_code) %>%
+  
+  #add observations of zero individuals in a family
+  mutate(opcode_bait_type = str_c(op_code,
+                                bait_type,
+                                sep = ",")) %>%
+  select(-op_code,
+         -bait_type) %>%
+  complete(study_locations,
+           opcode_bait_type,
+           family_clean,
+           fill = list(sum_max_n =0)) %>%
+  separate(opcode_bait_type,
+           into = c("op_code",
+                    "bait_type"),
+           sep = ",") %>%
+  
+  group_by(study_locations, 
+           bait_type,
+           family_clean) %>%
+  summarize(mean_sum_max_n = mean(sum_max_n),
+            se_sum_max_n = sd(sum_max_n)/sqrt(n())) %>%
+  ggplot(aes(x = study_locations,
+             y = mean_sum_max_n,
+             fill = bait_type))+
+  geom_bar(position = "dodge", 
+           stat = "identity") +
+  xlab("Study Locations") +
+  ylab("Mean MaxN per BRUV Deployment") +
+  labs(title = "Mean MaxN at TRNP vs. Cagayancillo w/ Zeros",
+       fill = "Bait Type") +
+  theme_classic() +
+  geom_errorbar(aes(ymax = mean_sum_max_n + se_sum_max_n,
+                    ymin = mean_sum_max_n - se_sum_max_n), 
+                position = "dodge") +
+  facet_wrap(family_clean ~ .,
+             scales = "free_y") +
+  theme(strip.text.y.right = element_text(angle = 0)) 
+data_compiled_faceted_zeros_bait  
+dev.off()
+ggsave("FacetedMaxNwZeroswBait.pdf", 
+       data_compiled_faceted_zeros_bait, 
+       height = 11, 
+       width = 8.5, 
+       units = "in")
+
 #### PREP DATA FOR VEGAN ####
 
 # convert species count data into tibble for vegan ingestion
@@ -529,8 +653,10 @@ ggsave("FacetedMaxNwZeros.pdf",
 # each column is a taxon
 # data are counts
 
+
+
 data_vegan <-
-  data %>%
+  data_removed_sp %>%
   dplyr::select(op_code,
                 taxon,
                 max_n) %>%
@@ -541,14 +667,15 @@ data_vegan <-
   # sort by op_code
   arrange(op_code) %>%
   # remove the op_code column for vegan
-  dplyr::select(-op_code)
+  dplyr::select(-op_code) %>% view()
+ 
 
 # convert metadata into tibble for vegan ingestion
 # each row is a site
 # each column is a dimension of site, such as depth, lat, long, region, etc
 
 data_vegan.env <-
-  data_all %>%
+  data_all_removed_sp %>%
   # sum all max_n counts for a taxon and op_code
   dplyr::select(taxon,
                  op_code,
@@ -621,6 +748,14 @@ adonis2(data_vegan ~ depth_m*study_locations,
         data = data_vegan.env,
         na.action = na.omit)
 
+adonis2(data_vegan ~ depth_m *bait_type,
+        data = data_vegan.env,
+        na.action = na.omit)
+
+adonis2(data_vegan ~ study_locations*bait_type,
+        data = data_vegan.env,
+        na.action = na.omit)
+
 # do not remove rows with missing data, but give NA for scores of missing observations or results that cannot be calculated
 adonis2(data_vegan ~ depth_m*study_locations,
         data = data_vegan.env,
@@ -636,9 +771,9 @@ boxplot(beta)
 
 
 # constrain permutations within sites, if site is a "block" factor, then this is correct and including site as a factor is incorrect
-# adonis2(data_vegan ~ bait_type*habitat,
-#         data = data_vegan.env,
-#         strata = site)
+ adonis2(data_vegan ~ bait_type*habitat,
+         data = data_vegan.env,
+         strata = site)
 
 ####Rarefaction Curve Species Richness
 #### vegan::estimateR - Extrapolated Species Richness in a Species Pool Based on Incidence (Abundance) ####
