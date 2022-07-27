@@ -13,8 +13,7 @@ library(vegan)
 theme_set(
   theme_void()
 )
-# install.packages("sf")
-
+library(purrr)
 
 #### USER DEFINED VARIABLES ####
 
@@ -33,13 +32,25 @@ data <-
   # solution: go with metadata depth, confirm with Gene & Rene
   mutate(family = str_to_title(family),
          genus = str_to_title(genus),
-         species = str_to_title(species)) %>%
-  mutate(depth_m = case_when(op_code == "CAG_024" ~ 8,
-                             TRUE ~ depth_m),
+         species = str_to_lower(species),
          family_clean = case_when(
            family == "Epinephelidae" ~ "Serranidae",
-           TRUE ~ family
-         ))
+           TRUE ~ family), 
+         taxon = str_c(family_clean,
+                       genus,
+                       species,
+                       sep = "_")) %>%
+  mutate(depth_m = case_when(op_code == "CAG_024" ~ 8,
+                             TRUE ~ depth_m)) %>%
+  # keep only max_n
+  group_by(op_code,
+           taxon) %>%
+  filter(max_n == max(max_n)) %>%
+  ungroup() %>%
+  # remove duplicated rows
+  distinct(op_code,
+           taxon,
+           .keep_all = TRUE)
 
 
 metadata <-
@@ -60,12 +71,29 @@ data_all <-
          site:long_e,
          depth_m,
          time_in:bait_weight_grams,
-         everything())
+         everything()) %>%
+  mutate(study_locations = case_when(
+    site == "Cawili" ~ "CAGAYANCILLO",
+    site == "Calusa" ~ "CAGAYANCILLO",
+    site == "Cagayancillo" ~ "CAGAYANCILLO",
+    site == "TUBBATAHA" ~ "TRNP")) 
 
-#### WRITE LONG FORMAT FILE ####
+#### CHECK DATA INTEGRITY ####
+# isolate duplicated rows, if no dups, then tibbles should be empty
+data_all %>%
+  group_by(op_code,
+           taxon) %>%
+  filter(n()>1) 
 
-# data_all %>%
-#   write_tsv(outFilePath)
+
+data %>%
+  group_by(op_code,
+           taxon) %>%
+  filter(n()>1) 
+
+# check unique taxon names
+data$taxon %>% unique() %>% sort()
+
 
 #### VISuALIZE METADATA ####
 
@@ -163,7 +191,13 @@ region_label_data <-
                    lat = mean(lat))
 
 studylocationcolors <- c("#C97CD5","#79CE7A")
-study_locations(studylocationcolors) <- ("CAGAYANCILLO", "TRNP")
+#labels(studylocationcolors) <- ("CAGAYANCILLO", "TRNP")
+
+# insert in your ggplot commands to control colors of MPAs
+# scale_fill_manual(values = c('CAGAYANCILLO' = "lightblue",
+#                              'TRNP' = "palegreen")) +
+# scale_color_manual(values = c('CAGAYANCILLO' = "lightblue",
+#                               'TRNP' = "#00BA38"))
 minLat = 5
 minLong = 116
 maxLat = 20
@@ -178,13 +212,11 @@ subregions_keep <-
   distinct(subregion) %>%
   pull()
   
-install.packages("purrr")
-library(purrr)
 
 subregions_keep %>%
   purrr::map(~ map_data("world",
                         region = "Philippines") %>%
-               filter(subregion == .x))%>%
+               filter(subregion == .x)) %>%
 mutate(lat = case_when(lat < minLat ~ minLat,
                        lat > maxLat ~ maxLat, TRUE ~ lat),
        long = case_when(long < minLong ~ minLong,
@@ -256,15 +288,14 @@ map_data("world",
   save_plot("MapofBRUVDeployments.png")
  #Zoomed in Maps
   
-   library(purrr)
-  
+
   minLat = 7
   minLong = 119
   maxLat = 10
   maxLong = 122.5
   
   studylocationcolors <- c("#C97CD5","#79CE7A")
-  study_locations(studylocationcolors) <- ("CAGAYANCILLO", "TRNP")
+  study_locations(studylocationcolors) <- c("CAGAYANCILLO", "TRNP")
 
   region_label_data <- 
     map_data("world",
@@ -335,23 +366,23 @@ map_data("world",
   save_plot("closemapstudylocations.png")
   
 
-#### Mikaela's Data CleanUp and Modifications ####
-View(data_all)
-data_all <- data_all %>%
-  mutate(study_locations = case_when(
-    site == "Cawili" ~ "CAGAYANCILLO",
-    site == "Calusa" ~ "CAGAYANCILLO",
-    site == "Cagayancillo" ~ "CAGAYANCILLO",
-    site == "TUBBATAHA" ~ "TRNP")) %>%
-  mutate(family_clean = case_when(
-    family == "Epinephelidae" ~ "Serranidae",
-    TRUE ~ family))
-
-View(data_all)
+# #### Mikaela's Data CleanUp and Modifications ####
+# #View(data_all)
+# data_all <- data_all %>%
+#   mutate(study_locations = case_when(
+#     site == "Cawili" ~ "CAGAYANCILLO",
+#     site == "Calusa" ~ "CAGAYANCILLO",
+#     site == "Cagayancillo" ~ "CAGAYANCILLO",
+#     site == "TUBBATAHA" ~ "TRNP")) %>%
+#   mutate(family_clean = case_when(
+#     family == "Epinephelidae" ~ "Serranidae",
+#     TRUE ~ family))
+# 
+# View(data_all)
 
 #### Mikaela's Data Visualization ####
 habitatcolors <- c("#6FAFC6","#F08080")
-habitat(habitatcolors) <- ("Shallow Reef", "Deep Reef")
+habitat(habitatcolors) <- c("Shallow Reef", "Deep Reef") # habitat() is not a function
 #histogram
 data_all %>%
   ggplot(aes(x = max_n)) +
@@ -359,17 +390,30 @@ data_all %>%
   facet_grid(study_locations ~ habitat)
 save_plot("DistributionofMaxNatdepth.png")
 
+#histogram for the sum of max_n by op_code
+data_all %>%
+  group_by(op_code,
+           study_locations,
+           habitat) %>%
+  summarize(sum_max_n = sum(max_n)) %>%
+  ggplot(aes(x = sum_max_n)) +
+  geom_histogram()+
+  theme_classic() +
+  facet_grid(study_locations ~ habitat)
+ggsave("DistributionofMaxNatdepth_summaxn.png")
+
 #Barplot of MaxN per BRUV Station at TRNP and Cagayancillo
 View(data_all)
-data_compiled <- data_all %>%
+data_compiled <- 
+  data_all %>%
   group_by(study_locations, 
-           habitat) %>%
-  summarise(maxn_per_opcode = mean(max_n),
-            sd = sd(max_n),
-            n = n(),
-            se_per_opcode = sd/sqrt(n)) %>%
+           habitat,
+           op_code) %>%
+  summarize(sum_max_n = sum(max_n)) %>%
+  summarize(mean_sum_max_n = mean(sum_max_n),
+            se_sum_max_n = sd(sum_max_n)/sqrt(n())) %>%
   ggplot(aes(x = study_locations,
-             y = maxn_per_opcode,
+             y = mean_sum_max_n,
              fill = habitat))+
   geom_bar(position = "dodge", 
            stat = "identity") +
@@ -379,24 +423,28 @@ data_compiled <- data_all %>%
        fill = "Habitat") +
   theme_classic() +
   scale_fill_manual(values = habitatcolors) +
-  geom_errorbar(aes(ymax = maxn_per_opcode + se_per_opcode,
-                    ymin = maxn_per_opcode -
-                      se_per_opcode), 
+  geom_errorbar(aes(ymax = mean_sum_max_n + se_sum_max_n,
+                    ymin = mean_sum_max_n - se_sum_max_n), 
                 position = "dodge")
 data_compiled  
 save_plot("MeanMaxNatTRNPvs.Cagayancillo.png")
 
 #Faceted Barplot of MaxN at TRNP and Cagayancillo faceted by family 
-data_compiled_faceted <- data_all %>%
+data_compiled_faceted <- 
+  data_all %>%
   group_by(study_locations, 
-           habitat, 
+           habitat,
+           op_code,
            family_clean) %>%
-  summarise(maxn_per_opcode = mean(max_n),
-            sd = sd(max_n),
-            n = n(),
-            se_per_opcode = sd/sqrt(n)) %>%
+  summarize(sum_max_n = sum(max_n)) %>% 
+  group_by(study_locations, 
+           habitat,
+           family_clean) %>%
+  summarize(mean_sum_max_n = mean(sum_max_n),
+            se_sum_max_n = sd(sum_max_n)/sqrt(n())) %>% 
+  
   ggplot(aes(x = study_locations,
-             y = maxn_per_opcode,
+             y = mean_sum_max_n,
              fill = habitat))+
   geom_bar(position = "dodge", 
            stat = "identity") +
@@ -406,15 +454,73 @@ data_compiled_faceted <- data_all %>%
        fill = "Habitat") +
   theme_classic() +
   scale_fill_manual(values = habitatcolors) +
-  geom_errorbar(aes(ymax = maxn_per_opcode + se_per_opcode,
-                    ymin = maxn_per_opcode -
-                      se_per_opcode), 
+  geom_errorbar(aes(ymax = mean_sum_max_n + se_sum_max_n,
+                    ymin = mean_sum_max_n - se_sum_max_n), 
                 position = "dodge") +
   facet_wrap(family_clean ~ .,
              scales = "free_y") +
   theme(strip.text.y.right = element_text(angle = 0)) 
 data_compiled_faceted  
-ggsave("FacetedMaxN.pdf", data_compiled_faceted, height = 11, width = 8.5, units = "in")
+ggsave("FacetedMaxN.pdf", 
+       data_compiled_faceted, 
+       height = 11, 
+       width = 8.5, 
+       units = "in")
+
+#Faceted Barplot of MaxN at TRNP and Cagayancillo faceted by family, INCLUDING ZEROS
+data_compiled_faceted_zeros <- 
+  data_all %>%
+  group_by(study_locations, 
+           habitat,
+           op_code,
+           family_clean) %>%
+  summarize(sum_max_n = sum(max_n)) %>%
+  ungroup() %>%
+  arrange(op_code) %>%
+
+  #add observations of zero individuals in a family
+  mutate(opcode_habitat = str_c(op_code,
+                                habitat,
+                                sep = ",")) %>%
+  select(-op_code,
+         -habitat) %>%
+  complete(study_locations,
+           opcode_habitat,
+           family_clean,
+           fill = list(sum_max_n =0)) %>%
+  separate(opcode_habitat,
+           into = c("op_code",
+                    "habitat"),
+           sep = ",") %>%
+  
+  group_by(study_locations, 
+           habitat,
+           family_clean) %>%
+  summarize(mean_sum_max_n = mean(sum_max_n),
+            se_sum_max_n = sd(sum_max_n)/sqrt(n())) %>%
+  ggplot(aes(x = study_locations,
+             y = mean_sum_max_n,
+             fill = habitat))+
+  geom_bar(position = "dodge", 
+           stat = "identity") +
+  xlab("Study Locations") +
+  ylab("Mean MaxN per BRUV Deployment") +
+  labs(title = "Mean MaxN at TRNP vs. Cagayancillo w/ Zeros",
+       fill = "Habitat") +
+  theme_classic() +
+  scale_fill_manual(values = habitatcolors) +
+  geom_errorbar(aes(ymax = mean_sum_max_n + se_sum_max_n,
+                    ymin = mean_sum_max_n - se_sum_max_n), 
+                position = "dodge") +
+  facet_wrap(family_clean ~ .,
+             scales = "free_y") +
+  theme(strip.text.y.right = element_text(angle = 0)) 
+data_compiled_faceted_zeros  
+ggsave("FacetedMaxNwZeros.pdf", 
+       data_compiled_faceted_zeros, 
+       height = 11, 
+       width = 8.5, 
+       units = "in")
 
 #### PREP DATA FOR VEGAN ####
 
@@ -425,19 +531,12 @@ ggsave("FacetedMaxN.pdf", data_compiled_faceted, height = 11, width = 8.5, units
 
 data_vegan <-
   data %>%
-  # make unique taxa
-  mutate(taxon = str_c(family_clean,
-                       genus,
-                       species,
-                       sep = "_")) %>%
-  # sum all max_n counts for a taxon and op_code
-  group_by(taxon,
-           op_code) %>%
-  summarize(sum_max_n = sum(max_n)) %>%
-  ungroup() %>%
+  dplyr::select(op_code,
+                taxon,
+                max_n) %>%
   # convert tibble from long to wide format
   pivot_wider(names_from = taxon,
-              values_from = sum_max_n,
+              values_from = max_n,
               values_fill = 0) %>%
   # sort by op_code
   arrange(op_code) %>%
@@ -450,38 +549,37 @@ data_vegan <-
 
 data_vegan.env <-
   data_all %>%
-  # make unique taxa
-  mutate(taxon = str_c(family,
-                       genus,
-                       species,
-                       sep = "_")) %>%
   # sum all max_n counts for a taxon and op_code
-  group_by(taxon,
-           op_code,
-           site,
-           survey_area,
-           habitat,
-           lat_n,
-           long_e,
-           depth_m,
-           bait_type) %>%
-  summarize(sum_max_n = sum(max_n)) %>%
-  ungroup() %>%
+  dplyr::select(taxon,
+                 op_code,
+                 site,
+                study_locations,
+                 survey_area,
+                 habitat,
+                 lat_n,
+                 long_e,
+                 depth_m,
+                 survey_length_hrs,
+                 bait_type,
+                 max_n) %>%
   # convert tibble from long to wide format
   pivot_wider(names_from = taxon,
-              values_from = sum_max_n,
+              values_from = max_n,
               values_fill = 0) %>%
   # sort by op_code
   arrange(op_code) %>%
-  # remove the op_code column for vegan
   dplyr::select(op_code:bait_type) %>%
   mutate(site_code = str_remove(op_code,
                                 "_.*$"),
          site_code = factor(site_code),
+         study_locations = factor(study_locations),
          habitat = factor(habitat),
          bait_type = factor(bait_type),
          site = factor(site),
-         survey_area = factor(survey_area))
+         survey_area = factor(survey_area),
+         habitat_mpa = str_c(habitat,
+                             study_locations,
+                             sep = " "))
 
 View(data_vegan.env)
 
@@ -494,43 +592,43 @@ attach(data_vegan.env)
 # vegan manual - https://cloud.r-project.org/web/packages/vegan/vegan.pdf
 
 # global test of model, differences in species composition with depth and site
-adonis2(data_vegan ~ depth_m * site,
+adonis2(data_vegan ~ habitat * study_locations,
         data = data_vegan.env,
         by = NULL)
 
 # test for differences in species composition with depth and site by each predictor, this is the default behavior, so `by` is not necessary
-adonis2(data_vegan ~ depth_m*site,
+adonis2(data_vegan ~ habitat*study_locations,
         data = data_vegan.env,
         by = "terms")
 
 # test for differences in species composition with depth and site by each predictor, marginal effects
-adonis2(data_vegan ~ depth_m*site,
+adonis2(data_vegan ~ depth_m*study_locations,
         data = data_vegan.env,
         by = "margin")
 
 # dissimilarity indices can be selected, see `vegdist` in the vegan manual for options
-adonis2(data_vegan ~ depth_m*site,
+adonis2(data_vegan ~ depth_m*study_locations,
         data = data_vegan.env,
         method = "bray")
 
-adonis2(data_vegan ~ depth_m*site,
+adonis2(data_vegan ~ depth_m*study_locations,
         data = data_vegan.env,
         method = "euclidean")
 
 # by default, missing data will cause adonis2 to fail, but there are other alternatives
 # only non-missing site scores, remove all rows with missing data
-adonis2(data_vegan ~ depth_m*site,
+adonis2(data_vegan ~ depth_m*study_locations,
         data = data_vegan.env,
         na.action = na.omit)
 
 # do not remove rows with missing data, but give NA for scores of missing observations or results that cannot be calculated
-adonis2(data_vegan ~ depth_m*site,
+adonis2(data_vegan ~ depth_m*study_locations,
         data = data_vegan.env,
         na.action = na.exclude)
 
 dis<-vegdist(data_vegan, method="bray")
 #creates distance matrix
-beta<-betadisper(dis, group = site)
+beta<-betadisper(dis, group = habitat_mpa)
 anova(beta)
 permutest(beta, pairwise=TRUE, permutations=999)
 TukeyHSD(beta)
