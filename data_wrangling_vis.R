@@ -653,8 +653,6 @@ ggsave("FacetedMaxNwZeroswBait.pdf",
 # each column is a taxon
 # data are counts
 
-
-
 data_vegan <-
   data_removed_sp %>%
   dplyr::select(op_code,
@@ -667,7 +665,7 @@ data_vegan <-
   # sort by op_code
   arrange(op_code) %>%
   # remove the op_code column for vegan
-  dplyr::select(-op_code) %>% view()
+  dplyr::select(-op_code) 
  
 
 # convert metadata into tibble for vegan ingestion
@@ -821,12 +819,7 @@ pool %>%
 
 save_plot("ChaoEstimateSpeciesRichnessBarplot.png")
 
-#Faceted Barplot of Species Richness
-pool <- 
-  estimateR(x = data_vegan) %>%
-  t() %>%
-  as_tibble()
-
+#Species Richness Plot with Bait Type
 pool %>%
   clean_names() %>%
   bind_cols(data_vegan.env) %>%
@@ -844,13 +837,13 @@ pool %>%
   rename(sp_richness_est = value,
          estimator = name) %>% 
   filter(estimator != "ace") %>% 
-  group_by(study_locations, habitat) %>%
+  group_by(study_locations, bait_type) %>%
   summarise(mean_chao_s = mean(sp_richness_est),
             se_chao_s = sd(sp_richness_est)/sqrt(n()),
             mean_s = mean(s_obs)) %>%
   ggplot(aes(x= study_locations,
              y= mean_chao_s,
-             fill = habitat)) +
+             fill = bait_type)) +
   geom_col(position = "dodge") +
   geom_errorbar(aes(ymin = mean_chao_s - se_chao_s,
                     ymax = mean_chao_s + se_chao_s), position ="dodge")+
@@ -858,8 +851,84 @@ pool %>%
              color = "red3",
              position = position_dodge(width = .9)) +
   theme_classic() +
-  scale_fill_manual(values = habitatcolors) +
-  labs(title = "Species Richness at Cagayancillo vs. Tubbataha", fill = "Habitat") +
+  labs(title = "Species Richness at Cagayancillo vs. Tubbataha", fill = "Bait Type") +
   xlab("Study Locations") +
-  ylab("Mean Chao Estimate of Species Richness") 
+  ylab("Mean Chao Estimate of Species Richness")
+
+save_plot("ChaoEstimateSpeciesRichnessBarplotwBaitType.png")
+
+#Faceted Species Richness
+
+library(purrr)
+library(gridExtra)
+
+
+family_chao_s <- function(
+    family = "Serranidae", 
+    data = data_vegan,
+    data.env = data_vegan.env){
+  pool <- 
+    estimateR(x = data %>%
+                select(contains(family))) %>% 
+    t() %>%
+    as_tibble()
+  
+  
+  pool %>%
+    clean_names() %>%
+    bind_cols(data.env) %>%
+    pivot_longer(cols = s_chao1:se_ace) %>%
+    mutate(se_value = case_when(str_detect(name,
+                                           "se_") ~ "se",
+                                TRUE ~ "value"),
+           name = str_remove(name,
+                             "se*_"),
+           study_locations = case_when(
+             site_code == "CAG" ~ "CAGAYANCILLO",
+             site_code == "TUB" ~ "TUBBATAHA"
+           )) %>% 
+    pivot_wider(names_from = se_value) %>% 
+    rename(sp_richness_est = value,
+           estimator = name) %>% 
+    filter(estimator != "ace") %>% 
+    group_by(study_locations, habitat) %>%
+    summarise(mean_chao_s = mean(sp_richness_est),
+              se_chao_s = sd(sp_richness_est)/sqrt(n()),
+              mean_s = mean(s_obs)) %>%
+    ggplot(aes(x= study_locations,
+               y= mean_chao_s,
+               fill = habitat)) +
+    geom_col(position = "dodge") +
+    geom_errorbar(aes(ymin = mean_chao_s - se_chao_s,
+                      ymax = mean_chao_s + se_chao_s), position ="dodge")+
+    geom_point(aes(y = mean_s),
+               color = "red3",
+               position = position_dodge(width = .9)) +
+    theme_classic() +
+    theme(legend.position = "none") +
+    scale_fill_manual(values = habitatcolors) +
+    labs(title = family) +
+    xlab("Study Locations") +
+    ylab("Mean Chao Estimate of Species Richness")
+  
+
+}
+
+families <-
+  data %>%
+  distinct(family_clean) %>%
+  pull()
+
+
+families %>%
+  purrr::map(~family_chao_s(family = .x))
+
+plots <- families %>%
+  purrr::map(~family_chao_s(family = .x))
+
+ppl <- list(p1 = arrangeGrob(grobs=plots[1:8]))
+
+class(ppl) <- c("arrangelist", class(plots))
+
+ggsave("FacetedSpeciesRichness.pdf", ppl, height = 11, width = 8.5, units = "in")
 

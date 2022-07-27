@@ -2,14 +2,15 @@
 library(purrr)
 library(gridExtra)
 
-
+#Faceted Species Richness by Shallow vs. Deep Reef
 family_chao_s <- function(
     family = "Serranidae", 
     data = data_vegan,
     data.env = data_vegan.env){
+  attach(data.env)
   pool <- 
     estimateR(x = data %>%
-                select(contains(family))) %>% 
+                dplyr::select(contains(family))) %>% 
     t() %>%
     as_tibble()
   
@@ -46,7 +47,7 @@ family_chao_s <- function(
                position = position_dodge(width = .9)) +
     theme_classic() +
     theme(legend.position = "none") +
-    scale_fill_manual(values = habitatcolors) +
+    #scale_fill_manual(values = habitatcolors) +
     labs(title = family) +
     xlab("Study Locations") +
     ylab("Mean Chao Estimate of Species Richness")
@@ -58,8 +59,10 @@ families <-
   pull()
 
 
-families %>%
-  purrr::map(~family_chao_s(family = .x))
+list(families) %>%
+  purrr::pmap(~family_chao_s(family = ..1, 
+                            data = data_vegan,
+                            data.env = data_vegan.env))
 
 plots <- families %>%
   purrr::map(~family_chao_s(family = .x))

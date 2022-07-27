@@ -30,107 +30,151 @@ data <-
   clean_names() %>%
   # there is a different depth for CAG_024 in data vs metadata
   # solution: go with metadata depth, confirm with Gene & Rene
-  mutate(depth_m = case_when(op_code == "CAG_024" ~ 8,
-                             TRUE ~ depth_m),
-         family = str_to_title(family),
+  mutate(family = str_to_title(family),
          genus = str_to_title(genus),
          species = str_to_lower(species),
-         trophic_groups = str_to_title(trophic_groups))
+         family_clean = case_when(
+           family == "Epinephelidae" ~ "Serranidae",
+           TRUE ~ family),
+         taxon = str_c(family_clean,
+                       genus,
+                       species,
+                       sep = "_")) %>%
+  mutate(depth_m = case_when(op_code == "CAG_024" ~ 8,
+                             TRUE ~ depth_m)) %>%
+  # keep only max_n
+  group_by(op_code,
+           taxon) %>%
+  filter(max_n == max(max_n)) %>%
+  ungroup() %>%
+  # remove duplicated rows
+  distinct(op_code,
+           taxon,
+           .keep_all = TRUE)
+
+data_removed_sp <- data %>%
+  filter(species != "sp") %>% 
+  mutate(family = str_to_title(family),
+         genus = str_to_title(genus),
+         species = str_to_lower(species),
+         family_clean = case_when(
+           family == "Epinephelidae" ~ "Serranidae",
+           TRUE ~ family),
+         taxon = str_c(family_clean,
+                       genus,
+                       species,
+                       sep = "_")) %>%
+  mutate(depth_m = case_when(op_code == "CAG_024" ~ 8,
+                             TRUE ~ depth_m)) %>%
+  # keep only max_n
+  group_by(op_code,
+           taxon) %>%
+  filter(max_n == max(max_n)) %>%
+  ungroup() %>%
+  # remove duplicated rows
+  distinct(op_code,
+           taxon,
+           .keep_all = TRUE)
+
 
 metadata <-
   read_excel(inFilePath2,
              na="NA") %>%
   clean_names() %>%
-  dplyr::rename(bait_weight_grams = weight_grams) %>%
-  mutate(site = str_to_title(site),
-         survey_area = str_to_title(survey_area),
-         habitat = str_to_title(habitat),
-         bait_type = str_to_title(bait_type))
+  dplyr::rename(bait_weight_grams = weight_grams)
 
 #### COMBINE DATA ####
 
 data_all <-
   data %>%
-    left_join(metadata,
-               by = c("op_code" = "opcode",
-                      "depth_m" = "depth_m")) %>%
+  left_join(metadata,
+            by = c("op_code" = "opcode",
+                   "depth_m" = "depth_m")) %>%
   # rearrange order of columns, metadata then data
   select(op_code,
          site:long_e,
          depth_m,
          time_in:bait_weight_grams,
-         everything())
+         everything()) %>%
+  mutate(study_locations = case_when(
+    site == "Cawili" ~ "CAGAYANCILLO",
+    site == "Calusa" ~ "CAGAYANCILLO",
+    site == "Cagayancillo" ~ "CAGAYANCILLO",
+    site == "TUBBATAHA" ~ "TRNP"))
+
+data_all_removed_sp <- 
+  data_removed_sp %>%
+  left_join(metadata,
+            by = c("op_code" = "opcode",
+                   "depth_m" = "depth_m")) %>%
+  # rearrange order of columns, metadata then data
+  select(op_code,
+         site:long_e,
+         depth_m,
+         time_in:bait_weight_grams,
+         everything()) %>%
+  mutate(study_locations = case_when(
+    site == "Cawili" ~ "CAGAYANCILLO",
+    site == "Calusa" ~ "CAGAYANCILLO",
+    site == "Cagayancillo" ~ "CAGAYANCILLO",
+    site == "TUBBATAHA" ~ "TRNP"))
 
 #### PREP DATA FOR VEGAN ####
 
-# convert species count data into tibble for vegan ingestion
-  # each row is a site
-  # each column is a taxon
-  # data are counts
-
 data_vegan <-
-  data %>%
-  # make unique taxa
-  mutate(taxon = str_c(family,
-                       genus,
-                       species,
-                       sep = "_")) %>%
-  # sum all max_n counts for a taxon and op_code
-  group_by(taxon,
-           op_code) %>%
-  summarize(sum_max_n = sum(max_n)) %>%
-  ungroup() %>%
+  data_removed_sp %>%
+  dplyr::select(op_code,
+                taxon,
+                max_n) %>%
   # convert tibble from long to wide format
   pivot_wider(names_from = taxon,
-              values_from = sum_max_n,
+              values_from = max_n,
               values_fill = 0) %>%
   # sort by op_code
   arrange(op_code) %>%
   # remove the op_code column for vegan
-  dplyr::select(-op_code)
+  dplyr::select(-op_code) 
+
 
 # convert metadata into tibble for vegan ingestion
 # each row is a site
 # each column is a dimension of site, such as depth, lat, long, region, etc
 
 data_vegan.env <-
-  data_all %>%
-  # make unique taxa
-  mutate(taxon = str_c(family,
-                       genus,
-                       species,
-                       sep = "_")) %>%
+  data_all_removed_sp %>%
   # sum all max_n counts for a taxon and op_code
-  group_by(taxon,
-           op_code,
-           site,
-           survey_area,
-           habitat,
-           lat_n,
-           long_e,
-           depth_m,
-           bait_type) %>%
-  summarize(sum_max_n = sum(max_n)) %>%
-  ungroup() %>%
+  dplyr::select(taxon,
+                op_code,
+                site,
+                study_locations,
+                survey_area,
+                habitat,
+                lat_n,
+                long_e,
+                depth_m,
+                survey_length_hrs,
+                bait_type,
+                max_n) %>%
   # convert tibble from long to wide format
   pivot_wider(names_from = taxon,
-              values_from = sum_max_n,
+              values_from = max_n,
               values_fill = 0) %>%
   # sort by op_code
   arrange(op_code) %>%
-  # remove the op_code column for vegan
   dplyr::select(op_code:bait_type) %>%
   mutate(site_code = str_remove(op_code,
                                 "_.*$"),
-         site_code = case_when(site_code == "CAG" ~ "Cagayancillo",
-                               site_code == "TUB" ~
-                                 "TRNP", 
-                               TRUE ~ NA_character_),
          site_code = factor(site_code),
+         study_locations = factor(study_locations),
          habitat = factor(habitat),
          bait_type = factor(bait_type),
          site = factor(site),
-         survey_area = factor(survey_area))
+         survey_area = factor(survey_area),
+         habitat_mpa = str_c(habitat,
+                             study_locations,
+                             sep = " "))
+
+View(data_vegan.env)
 
 # and now we "attach" the metadata to the data
 
