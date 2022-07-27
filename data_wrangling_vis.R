@@ -24,7 +24,6 @@ inFilePath2 = "./PHIRES_MetaData.xlsx"
 
 #### READ IN DATA & CURATE ####
 
-View(data)
 
 data <-
   read_excel(inFilePath1,
@@ -477,8 +476,8 @@ View(data_all)
 data_compiled_bait <- 
   data_all %>%
   group_by(study_locations, 
-           op_code,
-           bait_type) %>%
+           bait_type,
+           op_code) %>%
   summarize(sum_max_n = sum(max_n)) %>%
   summarize(mean_sum_max_n = mean(sum_max_n),
             se_sum_max_n = sd(sum_max_n)/sqrt(n())) %>%
@@ -856,6 +855,43 @@ pool %>%
   ylab("Mean Chao Estimate of Species Richness")
 
 save_plot("ChaoEstimateSpeciesRichnessBarplotwBaitType.png")
+
+#species Richness barplot of MaxN between Shallow and Deep Reef w/bait type
+pool %>%
+  clean_names() %>%
+  bind_cols(data_vegan.env) %>%
+  pivot_longer(cols = s_chao1:se_ace) %>%
+  mutate(se_value = case_when(str_detect(name,
+                                         "se_") ~ "se",
+                              TRUE ~ "value"),
+         name = str_remove(name,
+                           "se*_"),
+         study_locations = case_when(
+           site_code == "CAG" ~ "CAGAYANCILLO",
+           site_code == "TUB" ~ "TUBBATAHA"
+         )) %>% 
+  pivot_wider(names_from = se_value) %>% 
+  rename(sp_richness_est = value,
+         estimator = name) %>% 
+  filter(estimator != "ace") %>% 
+  group_by(habitat, bait_type) %>%
+  summarise(mean_chao_s = mean(sp_richness_est),
+            se_chao_s = sd(sp_richness_est)/sqrt(n()),
+            mean_s = mean(s_obs)) %>%
+  ggplot(aes(x= habitat,
+             y= mean_chao_s,
+             fill = bait_type)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(aes(ymin = mean_chao_s - se_chao_s,
+                    ymax = mean_chao_s + se_chao_s), position ="dodge")+
+  geom_point(aes(y = mean_s),
+             color = "red3",
+             position = position_dodge(width = .9)) +
+  theme_classic() +
+  labs(title = "Species Richness at Cagayancillo vs. Tubbataha", fill = "Bait Type") +
+  xlab("Study Locations") +
+  ylab("Mean Chao Estimate of Species Richness")
+save_plot("SpeciesRichnessBaitTypehabitat.png")
 
 #Faceted Species Richness
 
