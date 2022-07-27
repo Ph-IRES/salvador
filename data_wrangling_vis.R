@@ -494,7 +494,7 @@ attach(data_vegan.env)
 # vegan manual - https://cloud.r-project.org/web/packages/vegan/vegan.pdf
 
 # global test of model, differences in species composition with depth and site
-adonis2(data_vegan ~ depth_m*site,
+adonis2(data_vegan ~ depth_m * site,
         data = data_vegan.env,
         by = NULL)
 
