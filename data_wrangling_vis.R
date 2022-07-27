@@ -134,7 +134,11 @@ data %>%
   filter(n()>1) 
 
 # check unique taxon names
-data$taxon %>% unique() %>% sort()
+data_unique_taxa <- data$taxon %>% 
+                  unique() %>% 
+                    sort()
+
+write.csv(data_unique_taxa, "C:/Users/17193/Downloads/salvador/data_unique_taxa.csv", row.names = FALSE)
 
 
 #### VISuALIZE METADATA ####
