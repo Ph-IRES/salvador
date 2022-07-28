@@ -15,9 +15,9 @@ theme_set(
 )
 library(purrr)
 library(devtools)
-library(dplyr)
+
 # install_github("vqv/ggbiplot")
-# library(ggbiplot)
+library(ggbiplot)
 
 
 #### USER DEFINED VARIABLES ####
@@ -97,11 +97,11 @@ data_all <-
                by = c("op_code" = "opcode",
                       "depth_m" = "depth_m")) %>%
   # rearrange order of columns, metadata then data
-  select(op_code,
-         site:long_e,
-         depth_m,
-         time_in:bait_weight_grams,
-         everything()) %>%
+  # select(op_code,
+  #        site:long_e,
+  #        depth_m,
+  #        time_in:bait_weight_grams,
+  #        everything()) %>%
   mutate(study_locations = case_when(
     site == "Cawili" ~ "CAGAYANCILLO",
     site == "Calusa" ~ "CAGAYANCILLO",
@@ -117,11 +117,11 @@ data_all_removed_sp <-
             by = c("op_code" = "opcode",
                    "depth_m" = "depth_m")) %>%
   # rearrange order of columns, metadata then data
-  select(op_code,
-         site:long_e,
-         depth_m,
-         time_in:bait_weight_grams,
-         everything()) %>%
+  # select(op_code,
+  #        site:long_e,
+  #        depth_m,
+  #        time_in:bait_weight_grams,
+  #        everything()) %>%
   mutate(study_locations = case_when(
     site == "Cawili" ~ "CAGAYANCILLO",
     site == "Calusa" ~ "CAGAYANCILLO",

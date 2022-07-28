@@ -7,7 +7,9 @@ family_chao_s <- function(
     family = "Serranidae", 
     data = data_vegan,
     data.env = data_vegan.env){
-  attach(data.env)
+  
+  # attach(data.env)
+  
   pool <- 
     estimateR(x = data %>%
                 dplyr::select(contains(family))) %>% 
@@ -53,13 +55,18 @@ family_chao_s <- function(
     ylab("Mean Chao Estimate of Species Richness")
 }
 
+
 families <-
-  data %>%
-  distinct(family_clean) %>%
-  pull()
+  colnames(data_vegan) %>%
+  str_remove("_.*$") %>%
+  unique()
 
+families %>%
+  purrr::map(~family_chao_s(family = .x, 
+                             data = data_vegan,
+                             data.env = data_vegan.env))
 
-list(families) %>%
+as.list(families) %>%
   purrr::pmap(~family_chao_s(family = ..1, 
                             data = data_vegan,
                             data.env = data_vegan.env))
