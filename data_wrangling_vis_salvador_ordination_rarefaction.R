@@ -254,16 +254,20 @@ ggord %>%
   # filter(label != 17) %>%
   ggplot(aes(x = nmds1,
              y= nmds2,
-             color = studylocation_habitat,
-             shape = site_code)) +
+             color = habitat,
+             shape = study_locations)) +
   scale_x_continuous(limits = c(-3,3)) +
   geom_point(size = 5) +
-  stat_ellipse(aes(group = studylocation_habitat)) +
+  # stat_ellipse(aes(group = studylocation_habitat)) +
   theme_classic() +
   xlab("NMDS 1") +
   ylab("NMDS 2") +
-  labs(color = "Habitat", shape = "Study Locations", title = "NMDS Plots of Fish Assemblage") 
-  # scale_color_manual(values = habitatcolors) 
+  labs(color = "Habitat", shape = "Study Locations", title = "NMDS Plots of Fish Assemblage") + 
+   scale_color_manual(values = habitatcolors,
+                    labels =
+                       c("Mesophotic Reef",
+                         "Shallow Reef"))
+save_plot("NMDSfishassemblageversion2.png")
 save_plot("NMDSfishassemblageversion2groupings.png")
 
 # ggord %>%
