@@ -14,6 +14,11 @@ theme_set(
   theme_void()
 )
 library(purrr)
+library(devtools)
+library(dplyr)
+# install_github("vqv/ggbiplot")
+# library(ggbiplot)
+
 
 #### USER DEFINED VARIABLES ####
 
@@ -75,7 +80,7 @@ data_removed_sp <- data %>%
   # remove duplicated rows
   distinct(op_code,
            taxon,
-           .keep_all = TRUE)
+           .keep_all = TRUE) 
 
 
 metadata <-
@@ -101,7 +106,10 @@ data_all <-
     site == "Cawili" ~ "CAGAYANCILLO",
     site == "Calusa" ~ "CAGAYANCILLO",
     site == "Cagayancillo" ~ "CAGAYANCILLO",
-    site == "TUBBATAHA" ~ "TRNP"))
+    site == "TUBBATAHA" ~ "TRNP")) %>%
+  mutate(study_locations = factor(study_locations,
+                                  levels = c("TRNP", 
+                                    "CAGAYANCILLO")))
 
 data_all_removed_sp <- 
   data_removed_sp %>%
@@ -118,7 +126,11 @@ data_all_removed_sp <-
     site == "Cawili" ~ "CAGAYANCILLO",
     site == "Calusa" ~ "CAGAYANCILLO",
     site == "Cagayancillo" ~ "CAGAYANCILLO",
-    site == "TUBBATAHA" ~ "TRNP"))
+    site == "TUBBATAHA" ~ "TRNP"),
+    ) %>%
+  mutate(study_locations = factor(study_locations,
+                                  levels = c("TRNP", 
+                                    "CAGAYANCILLO")))
 
 #### CHECK DATA INTEGRITY ####
 # isolate duplicated rows, if no dups, then tibbles should be empty
@@ -455,8 +467,8 @@ data_compiled <-
   group_by(study_locations, 
            habitat,
            op_code) %>%
-  summarize(sum_max_n = sum(max_n)) %>%
-  summarize(mean_sum_max_n = mean(sum_max_n),
+  dplyr::summarize(sum_max_n = sum(max_n)) %>%
+  dplyr::summarize(mean_sum_max_n = mean(sum_max_n),
             se_sum_max_n = sd(sum_max_n)/sqrt(n())) %>%
   ggplot(aes(x = study_locations,
              y = mean_sum_max_n,
@@ -468,11 +480,13 @@ data_compiled <-
   labs(title = "Mean MaxN at TRNP vs. Cagayancillo",
        fill = "Habitat") +
   theme_classic() +
-  scale_fill_manual(values = habitatcolors) +
+  scale_fill_manual(values = habitatcolors, labels = 
+                                            c("Mesophotic Reef",
+                                              "Shallow Reef")) +
   geom_errorbar(aes(ymax = mean_sum_max_n + se_sum_max_n,
                     ymin = mean_sum_max_n - se_sum_max_n), 
-                position = "dodge")
-data_compiled  
+                position = "dodge") 
+data_compiled 
 save_plot("MeanMaxNatTRNPvs.Cagayancillo.png")
 
 #Barplot of MaxN at TRNP and Cagayancillo, filled by bait_type instead of shallow vs. deep reef
@@ -482,8 +496,8 @@ data_compiled_bait <-
   group_by(study_locations, 
            bait_type,
            op_code) %>%
-  summarize(sum_max_n = sum(max_n)) %>%
-  summarize(mean_sum_max_n = mean(sum_max_n),
+  dplyr::summarize(sum_max_n = sum(max_n)) %>%
+  dplyr::summarize(mean_sum_max_n = mean(sum_max_n),
             se_sum_max_n = sd(sum_max_n)/sqrt(n())) %>%
   ggplot(aes(x = study_locations,
              y = mean_sum_max_n,
@@ -505,16 +519,12 @@ save_plot("MeanMaxNatTRNPvs.Cagayancilloincludingbait.png")
 data_compiled_faceted <- 
   data_all %>%
   group_by(study_locations, 
+           family_clean,
            habitat,
-           op_code,
-           family_clean) %>%
-  summarize(sum_max_n = sum(max_n)) %>% 
-  group_by(study_locations, 
-           habitat,
-           family_clean) %>%
-  summarize(mean_sum_max_n = mean(sum_max_n),
-            se_sum_max_n = sd(sum_max_n)/sqrt(n())) %>% 
-  
+           op_code) %>%
+  dplyr::summarize(sum_max_n = sum(max_n)) %>%
+  dplyr::summarize(mean_sum_max_n = mean(sum_max_n),
+                   se_sum_max_n = sd(sum_max_n)/sqrt(n())) %>%
   ggplot(aes(x = study_locations,
              y = mean_sum_max_n,
              fill = habitat))+
@@ -525,14 +535,17 @@ data_compiled_faceted <-
   labs(title = "Mean MaxN at TRNP vs. Cagayancillo",
        fill = "Habitat") +
   theme_classic() +
-  scale_fill_manual(values = habitatcolors) +
+  scale_fill_manual(values = habitatcolors, labels = 
+                      c("Mesophotic Reef",
+                        "Shallow Reef")) +
   geom_errorbar(aes(ymax = mean_sum_max_n + se_sum_max_n,
                     ymin = mean_sum_max_n - se_sum_max_n), 
                 position = "dodge") +
   facet_wrap(family_clean ~ .,
              scales = "free_y") +
   theme(strip.text.y.right = element_text(angle = 0)) 
-data_compiled_faceted  
+
+data_compiled_faceted
 ggsave("FacetedMaxN.pdf", 
        data_compiled_faceted, 
        height = 11, 
@@ -546,7 +559,7 @@ data_compiled_faceted_zeros <-
            habitat,
            op_code,
            family_clean) %>%
-  summarize(sum_max_n = sum(max_n)) %>%
+  dplyr::summarize(sum_max_n = sum(max_n)) %>%
   ungroup() %>%
   arrange(op_code) %>%
 
@@ -564,11 +577,10 @@ data_compiled_faceted_zeros <-
            into = c("op_code",
                     "habitat"),
            sep = ",") %>%
-  
   group_by(study_locations, 
            habitat,
            family_clean) %>%
-  summarize(mean_sum_max_n = mean(sum_max_n),
+  dplyr::summarize(mean_sum_max_n = mean(sum_max_n),
             se_sum_max_n = sd(sum_max_n)/sqrt(n())) %>%
   ggplot(aes(x = study_locations,
              y = mean_sum_max_n,
@@ -580,7 +592,10 @@ data_compiled_faceted_zeros <-
   labs(title = "Mean MaxN at TRNP vs. Cagayancillo w/ Zeros",
        fill = "Habitat") +
   theme_classic() +
-  scale_fill_manual(values = habitatcolors) +
+  scale_fill_manual(values = habitatcolors,
+                    labels = 
+                      c("Mesophotic Reef",
+                        "Shallow Reef")) +
   geom_errorbar(aes(ymax = mean_sum_max_n + se_sum_max_n,
                     ymin = mean_sum_max_n - se_sum_max_n), 
                 position = "dodge") +
@@ -601,7 +616,7 @@ data_compiled_faceted_zeros_bait <-
            bait_type,
            op_code,
            family_clean) %>%
-  summarize(sum_max_n = sum(max_n)) %>%
+  dplyr::summarize(sum_max_n = sum(max_n)) %>%
   ungroup() %>%
   arrange(op_code) %>%
   
@@ -623,7 +638,7 @@ data_compiled_faceted_zeros_bait <-
   group_by(study_locations, 
            bait_type,
            family_clean) %>%
-  summarize(mean_sum_max_n = mean(sum_max_n),
+  dplyr::summarize(mean_sum_max_n = mean(sum_max_n),
             se_sum_max_n = sd(sum_max_n)/sqrt(n())) %>%
   ggplot(aes(x = study_locations,
              y = mean_sum_max_n,
@@ -700,7 +715,9 @@ data_vegan.env <-
   mutate(site_code = str_remove(op_code,
                                 "_.*$"),
          site_code = factor(site_code),
-         study_locations = factor(study_locations),
+         study_locations = factor(study_locations,
+                                  levels = c("TRNP",
+                                             "Cagayancillo")),
          habitat = factor(habitat),
          bait_type = factor(bait_type),
          site = factor(site),
@@ -795,14 +812,17 @@ pool %>%
                            "se*_"),
          study_locations = case_when(
            site_code == "CAG" ~ "CAGAYANCILLO",
-           site_code == "TUB" ~ "TUBBATAHA"
+           site_code == "TUB" ~ "TRNP"
          )) %>% 
+  mutate(study_locations = factor(study_locations,
+                                  levels = c("TRNP", 
+                                             "CAGAYANCILLO")))%>%
   pivot_wider(names_from = se_value) %>% 
-  rename(sp_richness_est = value,
+  dplyr::rename(sp_richness_est = value,
          estimator = name) %>% 
   filter(estimator != "ace") %>% 
   group_by(study_locations, habitat) %>%
-  summarise(mean_chao_s = mean(sp_richness_est),
+  dplyr::summarise(mean_chao_s = mean(sp_richness_est),
             se_chao_s = sd(sp_richness_est)/sqrt(n()),
             mean_s = mean(s_obs)) %>%
   ggplot(aes(x= study_locations,
@@ -815,7 +835,9 @@ pool %>%
              color = "red3",
              position = position_dodge(width = .9)) +
   theme_classic() +
-  scale_fill_manual(values = habitatcolors) +
+  scale_fill_manual(values = habitatcolors, 
+                    labels = c("Mesophotic Reef",
+                               "Shallow Reef")) +
   labs(title = "Species Richness at Cagayancillo vs. Tubbataha", fill = "Habitat") +
   xlab("Study Locations") +
   ylab("Mean Chao Estimate of Species Richness")
@@ -834,14 +856,17 @@ pool %>%
                            "se*_"),
          study_locations = case_when(
            site_code == "CAG" ~ "CAGAYANCILLO",
-           site_code == "TUB" ~ "TUBBATAHA"
+           site_code == "TUB" ~ "TRNP"
          )) %>% 
+  mutate(study_locations = factor(study_locations,
+                                  levels = c("TRNP", 
+                                             "CAGAYANCILLO")))%>%
   pivot_wider(names_from = se_value) %>% 
-  rename(sp_richness_est = value,
+  dplyr::rename(sp_richness_est = value,
          estimator = name) %>% 
   filter(estimator != "ace") %>% 
   group_by(study_locations, bait_type) %>%
-  summarise(mean_chao_s = mean(sp_richness_est),
+  dplyr::summarise(mean_chao_s = mean(sp_richness_est),
             se_chao_s = sd(sp_richness_est)/sqrt(n()),
             mean_s = mean(s_obs)) %>%
   ggplot(aes(x= study_locations,
@@ -875,11 +900,11 @@ pool %>%
            site_code == "TUB" ~ "TUBBATAHA"
          )) %>% 
   pivot_wider(names_from = se_value) %>% 
-  rename(sp_richness_est = value,
+  dplyr::rename(sp_richness_est = value,
          estimator = name) %>% 
   filter(estimator != "ace") %>% 
   group_by(habitat, bait_type) %>%
-  summarise(mean_chao_s = mean(sp_richness_est),
+  dplyr::summarise(mean_chao_s = mean(sp_richness_est),
             se_chao_s = sd(sp_richness_est)/sqrt(n()),
             mean_s = mean(s_obs)) %>%
   ggplot(aes(x= habitat,

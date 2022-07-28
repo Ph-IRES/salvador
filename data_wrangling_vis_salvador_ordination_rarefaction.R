@@ -17,8 +17,9 @@ theme_set(
 # install.packages("vegan")
 library(vegan)
 library(devtools)
-devtools::install_github("jfq3/ggordiplots", dependencies = TRUE)
+#devtools::install_github("jfq3/ggordiplots", dependencies = TRUE)
 library(ggordiplots)
+library(ggbiplot)
 
 #### USER DEFINED VARIABLES ####
 
@@ -103,7 +104,10 @@ data_all <-
     site == "Cawili" ~ "CAGAYANCILLO",
     site == "Calusa" ~ "CAGAYANCILLO",
     site == "Cagayancillo" ~ "CAGAYANCILLO",
-    site == "TUBBATAHA" ~ "TRNP"))
+    site == "TUBBATAHA" ~ "TRNP")) %>%
+mutate(study_locations = factor(study_locations,
+                                levels = c("TRNP", 
+                                      "CAGAYANCILLO")))
 
 data_all_removed_sp <- 
   data_removed_sp %>%
@@ -120,7 +124,10 @@ data_all_removed_sp <-
     site == "Cawili" ~ "CAGAYANCILLO",
     site == "Calusa" ~ "CAGAYANCILLO",
     site == "Cagayancillo" ~ "CAGAYANCILLO",
-    site == "TUBBATAHA" ~ "TRNP"))
+    site == "TUBBATAHA" ~ "TRNP")) %>%
+  mutate(study_locations = factor(study_locations, 
+                                  levels = c("TRNP", 
+                                             "CAGAYANCILLO")))
 
 #### PREP DATA FOR VEGAN ####
 
@@ -175,7 +182,10 @@ data_vegan.env <-
          survey_area = factor(survey_area),
          habitat_mpa = str_c(habitat,
                              study_locations,
-                             sep = " "))
+                             sep = " ")) %>%
+  mutate(studylocation_habitat = str_c(site_code,
+                                habitat,
+                                sep = "_"))
 
 View(data_vegan.env)
 
@@ -185,7 +195,7 @@ attach(data_vegan.env)
 
 #### ORDINATION: Detrended correspondence analysis ####
 
-ord <- decorana(data_vegan)
+#ord <- decorana(data_vegan)
 # ord
 # summary(ord)
 # #boring plot
@@ -214,12 +224,13 @@ ord <- decorana(data_vegan)
 #ordiellipse(ord, habitat, col=1:2, draw="polygon")
 #points(ord, disp="sites", pch=21, col=1:2, bg="yellow", cex=1.3)
 # ordispider(ord, habitat, col=1:2, label = TRUE)
-ord <- metaMDS(data_vegan,
+ord <- metaMDS(data_vegan %>%
+                 filter(op_code != "CAG_017"),
                distance = "bray",
                k = 3,
                maxit = 999, 
                trymax = 500,
-               wascores = TRUE)
+               wascores = TRUE) 
 View(ord)
 
 ggord <- 
@@ -227,33 +238,45 @@ ggord <-
   tibble() %>% 
   clean_names() %>%
   filter(score == "sites") %>% 
-  bind_cols(tibble(data_vegan.env)) %>% 
+  bind_cols(tibble(data_vegan.env)%>%
+              filter(op_code != "CAG_017")) %>% 
   clean_names()
 
 habitatcolors <- c("#6FAFC6", "#F08080")
 habitat(habitatcolors) <- c("Shallow Reef", "Deep Reef")
 
 #### nMDS of Fish Assemblage at Different Shallow and Deep Reefs at Cagayancillo and Tubbataha ####
+studylocationcolors <- c("#C97CD5","#79CE7A")
+study_locations(studylocationcolors) <- c("CAGAYANCILLO", "TRNP")
+View(ord)
+View(ggord)
 ggord %>%
   # filter(label != 17) %>%
   ggplot(aes(x = nmds1,
              y= nmds2,
-             color = habitat,
+             color = studylocation_habitat,
              shape = site_code)) +
   scale_x_continuous(limits = c(-3,3)) +
   geom_point(size = 5) +
-  # stat_ellipse(aes(color = habitat, group = habitat)) +
+  stat_ellipse(aes(group = studylocation_habitat)) +
   theme_classic() +
   xlab("NMDS 1") +
   ylab("NMDS 2") +
-  labs(color = "Habitat", shape = "Study Locations", title = "NMDS Plots of Fish Assemblage") +
-  scale_color_manual(values = habitatcolors)
+  labs(color = "Habitat", shape = "Study Locations", title = "NMDS Plots of Fish Assemblage") 
+  # scale_color_manual(values = habitatcolors) 
+save_plot("NMDSfishassemblageversion2groupings.png")
 
-gg_ordiplot(ord, groups = data_vegan.env$habitat_mpa, pt.size = 3)
-save_plot("NMDSfishassemblageversion2.png")
+# ggord %>%
+#   ggbiplot(ellipse = TRUE)
+
+# ggord %>%
+#   ggbiplot()
+# 
+# gg_ordiplot(ord, groups = data_vegan.env$habitat_mpa, pt.size = 3)
 
 #### nMDS of Fish Assemblage at Cagayancillo and Tubbataha w/ Bait Type ####
 ggord %>%
+  filter (label != 17) %>%
   ggplot(aes(x = nmds1,
              y= nmds2,
              color = bait_type,

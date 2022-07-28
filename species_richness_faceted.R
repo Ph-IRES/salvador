@@ -29,11 +29,11 @@ family_chao_s <- function(
              site_code == "TUB" ~ "TUBBATAHA"
            )) %>% 
     pivot_wider(names_from = se_value) %>% 
-    rename(sp_richness_est = value,
+    dplyr::rename(sp_richness_est = value,
            estimator = name) %>% 
     filter(estimator != "ace") %>% 
     group_by(study_locations, habitat) %>%
-    summarise(mean_chao_s = mean(sp_richness_est),
+    dplyr::summarise(mean_chao_s = mean(sp_richness_est),
               se_chao_s = sd(sp_richness_est)/sqrt(n()),
               mean_s = mean(s_obs)) %>%
     ggplot(aes(x= study_locations,
