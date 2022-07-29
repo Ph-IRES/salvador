@@ -205,6 +205,9 @@ grouping_chao_s <- function(
     mutate(study_locations = factor(study_locations,
                                     levels = c("TRNP",
                                                "CAGAYANCILLO"))) %>%
+    mutate(habitat = factor(habitat,
+                            levels = c("Shallow Reef",
+                                       "Deep Reef"))) %>%
     pivot_wider(names_from = se_value) %>% 
     dplyr::rename(sp_richness_est = value,
                   estimator = name) %>% 
