@@ -601,6 +601,9 @@ data_compiled_faceted_zeros <-
            groupings) %>%
   dplyr::summarize(mean_sum_max_n = mean(sum_max_n),
             se_sum_max_n = sd(sum_max_n)/sqrt(n())) %>%
+  mutate(habitat = factor(habitat,
+                          levels = c("Shallow Reef",
+                                     "Deep Reef"))) %>%
   ggplot(aes(x = study_locations,
              y = mean_sum_max_n,
              fill = habitat))+
@@ -611,9 +614,9 @@ data_compiled_faceted_zeros <-
   labs(title = "Mean MaxN at TRNP vs. Cagayancillo w/ Zeros",
        fill = "Habitat") +
   theme_classic() +
-  scale_fill_manual(values = habitatcolors, labels = 
-                      c("Shallow Reef",
-                        "Mesophotic Reef")) +
+  scale_fill_manual(values = habitatcolors,
+                    labels = c("Shallow Reef",
+                               "Mesophotic Reef")) +
   geom_errorbar(aes(ymax = mean_sum_max_n + se_sum_max_n,
                     ymin = mean_sum_max_n - se_sum_max_n), 
                 position = "dodge") +

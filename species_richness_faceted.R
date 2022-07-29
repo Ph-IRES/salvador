@@ -53,9 +53,9 @@ family_chao_s <- function(
                color = "red3",
                position = position_dodge(width = .9)) +
     theme_classic() +
-    theme(legend.position = "none") +
+    # theme(legend.position = "none") +
     scale_fill_manual(values = habitatcolors,
-                      labels = 
+                      labels =
                         c("Mesophotic Reef",
                           "Shallow Reef")) +
     labs(title = family) +
@@ -231,7 +231,7 @@ grouping_chao_s <- function(
                       labels =
                         c("Shallow Reef",
                           "Mesophotic Reef")) +
-    labs(fill = "Habitat") +
+    labs(title = groupings, fill = "Habitat") +
     xlab("Study Locations") +
     ylab("Mean Chao Estimate of Species Richness")
 }
@@ -245,13 +245,15 @@ groupings1 %>%
                             data = data_vegan_grouping,
                             data.env = data_vegan.env))
 
-as.list(families) %>%
-  purrr::pmap(~grouping_chao_s(groupings = ..1, 
-                             data = data_vegan_grouping,
-                             data.env = data_vegan.env))
+# as.list(families) %>%
+#   purrr::pmap(~grouping_chao_s(groupings = ..1, 
+#                              data = data_vegan_grouping,
+#                              data.env = data_vegan.env))
 
 plots_grouping <- groupings1 %>%
-  purrr::map(~grouping_chao_s(groupings = .x))
+  purrr::map(~grouping_chao_s(groupings = .x, 
+                              data = data_vegan_grouping,
+                              data.env = data_vegan.env))
 
 ppl_grouping <- list(p1 = arrangeGrob(grobs=plots_grouping[1:6]))
 
