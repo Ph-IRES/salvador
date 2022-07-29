@@ -95,7 +95,7 @@ data_all <-
   data %>%
     left_join(metadata,
                by = c("op_code" = "opcode",
-                      "depth_m" = "depth_m")) %>%
+                      "depth_m" = "depth_m")) %>% 
   # rearrange order of columns, metadata then data
   # select(op_code,
   #        site:long_e,
@@ -106,10 +106,20 @@ data_all <-
     site == "Cawili" ~ "CAGAYANCILLO",
     site == "Calusa" ~ "CAGAYANCILLO",
     site == "Cagayancillo" ~ "CAGAYANCILLO",
-    site == "TUBBATAHA" ~ "TRNP")) %>%
+    site == "TUBBATAHA" ~ "TRNP")) %>% 
   mutate(study_locations = factor(study_locations,
                                   levels = c("TRNP", 
-                                    "CAGAYANCILLO")))
+                                    "CAGAYANCILLO"))) %>%
+  mutate(habitat = factor(habitat,
+                          levels = c("Shallow Reef",
+                                  "Deep Reef"))) %>%
+  mutate(groupings = case_when(
+        family == "Labridae" ~ "Cheilinus undulatus",
+        family == "Sphyrnidae" ~ "Galeoidea",
+        family == "Carcharhinidae" ~ "Galeoidea",
+        family == "Alopiidae" ~ "Galeoidea",
+        family == "Epinephelidae" ~ "Serranidae",
+        TRUE ~ family))
 
 data_all_removed_sp <- 
   data_removed_sp %>%
@@ -126,11 +136,20 @@ data_all_removed_sp <-
     site == "Cawili" ~ "CAGAYANCILLO",
     site == "Calusa" ~ "CAGAYANCILLO",
     site == "Cagayancillo" ~ "CAGAYANCILLO",
-    site == "TUBBATAHA" ~ "TRNP"),
-    ) %>%
+    site == "TUBBATAHA" ~ "TRNP")) %>%
   mutate(study_locations = factor(study_locations,
                                   levels = c("TRNP", 
-                                    "CAGAYANCILLO")))
+                                    "CAGAYANCILLO"))) %>%
+  mutate(habitat = factor(habitat,
+                          levels = c("Shallow Reef",
+                                     "Deep Reef"))) %>%
+  mutate(groupings = case_when(
+    family == "Labridae" ~ "Cheilinus undulatus",
+    family == "Sphyrnidae" ~ "Galeoidea",
+    family == "Carcharhinidae" ~ "Galeoidea",
+    family == "Alopiidae" ~ "Galeoidea",
+    family == "Epinephelidae" ~ "Serranidae",
+    TRUE ~ family))
 
 #### CHECK DATA INTEGRITY ####
 # isolate duplicated rows, if no dups, then tibbles should be empty
@@ -439,7 +458,7 @@ map_data("world",
 # View(data_all)
 
 #### Mikaela's Data Visualization ####
-habitatcolors <- c("#6FAFC6","#F08080")
+habitatcolors <- c("#F08080","#6FAFC6")
 habitat(habitatcolors) <- c("Shallow Reef", "Deep Reef") # habitat() is not a function
 #histogram
 data_all %>%
@@ -480,9 +499,9 @@ data_compiled <-
   labs(title = "Mean MaxN at TRNP vs. Cagayancillo",
        fill = "Habitat") +
   theme_classic() +
-  scale_fill_manual(values = habitatcolors, labels = 
-                                            c("Mesophotic Reef",
-                                              "Shallow Reef")) +
+  scale_fill_manual(values = habitatcolors, 
+                    labels = c("Shallow Reef",
+                               "Mesophotic Reef")) +
   geom_errorbar(aes(ymax = mean_sum_max_n + se_sum_max_n,
                     ymin = mean_sum_max_n - se_sum_max_n), 
                 position = "dodge") 
@@ -519,7 +538,7 @@ save_plot("MeanMaxNatTRNPvs.Cagayancilloincludingbait.png")
 data_compiled_faceted <- 
   data_all %>%
   group_by(study_locations, 
-           family_clean,
+           groupings,
            habitat,
            op_code) %>%
   dplyr::summarize(sum_max_n = sum(max_n)) %>%
@@ -536,12 +555,12 @@ data_compiled_faceted <-
        fill = "Habitat") +
   theme_classic() +
   scale_fill_manual(values = habitatcolors, labels = 
-                      c("Mesophotic Reef",
-                        "Shallow Reef")) +
+                      c("Shallow Reef",
+                        "Mesophotic Reef")) +
   geom_errorbar(aes(ymax = mean_sum_max_n + se_sum_max_n,
                     ymin = mean_sum_max_n - se_sum_max_n), 
                 position = "dodge") +
-  facet_wrap(family_clean ~ .,
+  facet_wrap(groupings ~ .,
              scales = "free_y") +
   theme(strip.text.y.right = element_text(angle = 0)) 
 
@@ -558,7 +577,7 @@ data_compiled_faceted_zeros <-
   group_by(study_locations, 
            habitat,
            op_code,
-           family_clean) %>%
+           groupings) %>%
   dplyr::summarize(sum_max_n = sum(max_n)) %>%
   ungroup() %>%
   arrange(op_code) %>%
@@ -571,7 +590,7 @@ data_compiled_faceted_zeros <-
          -habitat) %>%
   complete(study_locations,
            opcode_habitat,
-           family_clean,
+           groupings,
            fill = list(sum_max_n =0)) %>%
   separate(opcode_habitat,
            into = c("op_code",
@@ -579,7 +598,7 @@ data_compiled_faceted_zeros <-
            sep = ",") %>%
   group_by(study_locations, 
            habitat,
-           family_clean) %>%
+           groupings) %>%
   dplyr::summarize(mean_sum_max_n = mean(sum_max_n),
             se_sum_max_n = sd(sum_max_n)/sqrt(n())) %>%
   ggplot(aes(x = study_locations,
@@ -592,14 +611,13 @@ data_compiled_faceted_zeros <-
   labs(title = "Mean MaxN at TRNP vs. Cagayancillo w/ Zeros",
        fill = "Habitat") +
   theme_classic() +
-  scale_fill_manual(values = habitatcolors,
-                    labels = 
-                      c("Mesophotic Reef",
-                        "Shallow Reef")) +
+  scale_fill_manual(values = habitatcolors, labels = 
+                      c("Shallow Reef",
+                        "Mesophotic Reef")) +
   geom_errorbar(aes(ymax = mean_sum_max_n + se_sum_max_n,
                     ymin = mean_sum_max_n - se_sum_max_n), 
                 position = "dodge") +
-  facet_wrap(family_clean ~ .,
+  facet_wrap(groupings ~ .,
              scales = "free_y") +
   theme(strip.text.y.right = element_text(angle = 0)) 
 data_compiled_faceted_zeros  
@@ -673,6 +691,23 @@ ggsave("FacetedMaxNwZeroswBait.pdf",
 
 data_vegan <-
   data_removed_sp %>%
+  dplyr::select(op_code,
+                taxon,
+                max_n) %>%
+  # convert tibble from long to wide format
+  pivot_wider(names_from = taxon,
+              values_from = max_n,
+              values_fill = 0) %>%
+  # sort by op_code
+  arrange(op_code) %>%
+  # remove the op_code column for vegan
+  dplyr::select(-op_code) 
+
+data_vegan_grouping <-
+  data_all_removed_sp %>%
+  mutate(taxon = str_c(groupings,
+                       taxon,
+                       sep = "_")) %>%
   dplyr::select(op_code,
                 taxon,
                 max_n) %>%
@@ -835,9 +870,9 @@ pool %>%
              color = "red3",
              position = position_dodge(width = .9)) +
   theme_classic() +
-  scale_fill_manual(values = habitatcolors, 
-                    labels = c("Mesophotic Reef",
-                               "Shallow Reef")) +
+  scale_fill_manual(values = habitatcolors,
+                    labels = c("Shallow Reef",
+                               "Mesophotic Reef")) +
   labs(title = "Species Richness at Cagayancillo vs. Tubbataha", fill = "Habitat") +
   xlab("Study Locations") +
   ylab("Mean Chao Estimate of Species Richness")
