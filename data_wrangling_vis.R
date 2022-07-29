@@ -169,7 +169,7 @@ data_unique_taxa <- data$taxon %>%
                   unique() %>% 
                     sort()
 
-write.csv(data_unique_taxa, "C:/Users/17193/Downloads/salvador/data_unique_taxa.csv", row.names = FALSE)
+write.csv(data_unique_taxa, "C:/Users/17193/Downloads/salvador/data_unique_taxa1.csv", row.names = FALSE)
 
 
 #### VISuALIZE METADATA ####
