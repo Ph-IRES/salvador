@@ -338,11 +338,16 @@ pool %>%
 # abundance based richness rarefaction curve
 # creates 1 curve per data frame, so if you want multiple curves, have to make them separately then combine into 1 tibble to plot
 # increase permutations to 999 if you use this for your project
-p<-estaccumR(data_vegan, permutations = 50) %>%
-  filter(estimator != "ace")
+data_vegan
+p<- vegan::estaccumR(data_vegan, permutations = 999)
+# filter(estimator != "ace")
 View(p)
-p.plot<-plot(p, display = c("chao","ace"))
+p.plot<-plot(p, 
+             display = c("chao"))
 p.plot
+dev.off()
+save_plot("SpeciesRichnessRarefactionCurveAbundance.png", 
+          p.plot)
 # to make plot w ggplot, see https://stackoverflow.com/questions/52652195/convert-rarefaction-plots-from-vegan-to-ggplot2-in-r
 
 #### vegan::poolaccum Extrapolated Species Richness Curve in a Species Pool Based on Presence Absence ####
@@ -350,10 +355,11 @@ p.plot
 # incidence based (presence / absence) richness rarefaction curve
 # creates 1 curve per data frame, so if you want multiple curves, have to make them separately then combine into 1 tibble to plot
 # increase permutations to 999 if you use this for your project
-p<-poolaccum(data_vegan, permutations = 50)
+p<-poolaccum(data_vegan, permutations = 999)
 p.plot<-plot(p, display = c("jack1","jack2", "chao", "boot"))
 p.plot
-
+save_plot("SpeciesRichnessRarefactionCurvePresenceAbsence.png", 
+          p.plot)
 #### ORDINATION: Fitting Environmental Variables ####
 
 # # Let us test for an effect of site and depth on the NMDS
