@@ -1108,7 +1108,7 @@ data_vegan.env <-
          site_code = factor(site_code),
          study_locations = factor(study_locations,
                                   levels = c("TRNP",
-                                             "Cagayancillo")),
+                                             "CAGAYANCILLO")),
          habitat = factor(habitat),
          bait_type = factor(bait_type),
          site = factor(site),
@@ -1123,6 +1123,10 @@ pool <-
   estimateR(x = data_vegan) %>%
   t() %>%
   as_tibble()
+
+vis_dists(pool,
+          "S.chao1")
+par(mar = c(1,1,1,1))
 
 pool %>%
   clean_names() %>%
@@ -1166,39 +1170,18 @@ pool %>%
   ylab("Mean Chao Estimate of Species Richness")
 
 #### mean_chao_s: Mixed Effects Hypothesis Test ####
-data_all_chao_s <- 
+data_chao_s <- 
   pool %>%
   clean_names() %>%
-  bind_cols(data_vegan.env) %>%
-  pivot_longer(cols = s_chao1:se_ace) %>%
-  mutate(se_value = case_when(str_detect(name,
-                                         "se_") ~ "se",
-                              TRUE ~ "value"),
-         name = str_remove(name,
-                           "se*_"),
-         study_locations = case_when(
-           site_code == "CAG" ~ "CAGAYANCILLO",
-           site_code == "TUB" ~ "TRNP"
-         )) %>% 
-  mutate(study_locations = factor(study_locations,
-                                  levels = c("TRNP", 
-                                             "CAGAYANCILLO")))%>%
-  pivot_wider(names_from = se_value) %>% 
-  dplyr::rename(sp_richness_est = value,
-                estimator = name) %>% 
-  filter(estimator != "ace") %>% 
-  group_by(study_locations, habitat) %>%
-  dplyr::summarise(mean_chao_s = mean(sp_richness_est),
-                   se_chao_s = sd(sp_richness_est)/sqrt(n()),
-                   mean_s = mean(s_obs))
+  bind_cols(data_vegan.env)
 
 ## Enter Information About Your Data for A Hypothesis Test ##
 
 # define your response variable, here it is binomial
-response_var = quo(mean_chao_s) # quo() allows column names to be put into variables 
+response_var = quo(s_chao1) # quo() allows column names to be put into variables 
 
 # enter the distribution family for your response variable
-distribution_family = "gamma"
+distribution_family = "Gamma"
 
 
 alpha_sig = 0.05
@@ -1206,7 +1189,8 @@ alpha_sig = 0.05
 # we start with the loci subjected to 11 primer concentrations (we removed loci with no sum_max_n to simplify)
 
 
-sampling_design = "mean_chao_s ~  habitat * study_locations + (1|study_locations:bait_type)"
+sampling_design = "s_chao1 ~  habitat * study_locations + (1|study_locations:bait_type)"
+
 
 # # fit mixed model
 model <<-
@@ -1215,7 +1199,7 @@ model <<-
               method = "LRT",
               sig_symbols = rep("", 4),
               # all_fit = TRUE,
-              data = data_all_chao_s)
+              data = data_chao_s)
 
 model
 anova(model)
@@ -1253,7 +1237,7 @@ contrast(regrid(emmeans_model_sr), # emmeans back transformed to the original un
          combine = FALSE, 
          adjust = "bh")
 #### mean_chao_s: Group Sites Based on Model Results ####
-groupings_model_Sr <<-
+groupings_model_sr <<-
   multcomp::cld(emmeans_model_sr, 
                 alpha = alpha_sig,
                 Letters = letters,
@@ -1275,7 +1259,7 @@ groupings_model_fixed_sr <<-
           type="response") %>%
   tibble() %>%
   left_join(groupings_model_sr %>%
-              dplyr::select(-rate:-asymp.UCL),
+              dplyr::select(-response:-asymp.UCL),
             # by = c(str_replace(fixed_vars,
             #                    "[\\+\\*]",
             #                    '" , "'))) %>%
@@ -1297,15 +1281,14 @@ p_sr <-
   #                              "white"),
   #                   labels = c('Pre-Screen', 
   #                              'Post-Screen')) +
-  # geom_point(data = data,
-  #            aes(x = location,
-  #                y = !!response_var,
-  #                color = location
-  #            ),
-  #            position = position_dodge(width = 0.9),
-  #            # color = "grey70",
-#            # shape = 1,
-#            size = 1)
+geom_point(data = data_chao_s,
+           aes(x = study_locations,
+               y = !!response_var
+           ),
+           position = position_jitterdodge(),
+           # color = "grey70",
+           # shape = 1,
+           size = 1) +
 geom_errorbar(aes(ymin=asymp.LCL,
                   ymax=asymp.UCL),
               width = 0.2,
@@ -1323,7 +1306,7 @@ geom_errorbar(aes(ymin=asymp.LCL,
   # ylim(ymin, 
   #      ymax) +
   labs(x = "Depth",
-       y = "Mean Sum_Max_N") +
+       y = "EMMeans Chao Estimate of Species Richness") +
   theme(legend.position=c(0.33,0.8),  
         legend.title=element_blank()) 
 
