@@ -428,6 +428,7 @@ save_plot("EstimatedMarginalMeansMaxN.png")
 #### sum_max_n: Serranidae ####
 data_all_summaxn_Serranidae <- 
   data_all %>%
+  filter(groupings == "Serranidae") %>%
   mutate(study_locations = factor(study_locations,
                                   levels = c("TRNP", 
                                              "CAGAYANCILLO"))) %>%
@@ -436,31 +437,30 @@ data_all_summaxn_Serranidae <-
                                      "Deep Reef"))) %>%
   mutate(habitat = case_when(
     habitat == "Shallow Reef" ~ "Shallow Reef",
-    habitat == "Deep Reef" ~ "Mesophotic Reef"
-  )) %>%
-  mutate(habitat = factor(habitat,
-                          levels = c("Shallow Reef",
-                                     "Mesophotic Reef"))) %>%
+    habitat == "Deep Reef" ~ "Mesophotic Reef")) %>%
+  
+  group_by(op_code,
+           habitat,
+           study_locations) %>%
+  summarize(sum_max_n = sum(max_n)) %>%
+
   mutate(opcode_habitat = str_c(op_code,
                                 habitat,
-                                sep = ",")) %>%
+                                sep = ",")) %>% 
+  ungroup() %>%
   dplyr::select(-op_code,
-         -habitat) %>%
+                -habitat) %>% 
   complete(study_locations,
            opcode_habitat,
-           groupings,
-           fill = list(sum_max_n =0)) %>% view()
+           fill = list(sum_max_n = 0)) %>%
   separate(opcode_habitat,
            into = c("op_code",
                     "habitat"),
-           sep = ",") %>%
-  group_by(groupings,
-            op_code,
-           study_locations,
-           habitat,
-           bait_type) %>%
-  dplyr::summarize(sum_max_n = sum(max_n)) %>%
-  filter(groupings == "Serranidae")
+           sep = ",") %>% 
+  left_join(data_all %>%
+              dplyr::select(op_code,
+                            bait_type) %>%
+              distinct()) 
 
 View(data_all_summaxn_Serranidae)
 
