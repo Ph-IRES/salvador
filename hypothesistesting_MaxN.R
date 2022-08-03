@@ -133,8 +133,8 @@ data_all_removed_sp <-
   mutate(groupings = case_when(
     family == "Labridae" ~ "Cheilinus undulatus",
     family == "Sphyrnidae" ~ "Galeoidea",
-    family == "Carcharhinidae" ~ "Galeoidea",
-    family == "Alopiidae" ~ "Galeoidea",
+    family == "Carcharhinidae" ~ "Galeomorphii",
+    family == "Alopiidae" ~ "Galeomorphii",
     family == "Epinephelidae" ~ "Serranidae",
     TRUE ~ family))
 
@@ -622,6 +622,7 @@ p_Serranidae
 #### sum_max_n: Lutjanidae ####
 data_all_summaxn_Lutjanidae <- 
   data_all %>%
+  filter(groupings == "Lutjanidae") %>%
   mutate(study_locations = factor(study_locations,
                                   levels = c("TRNP", 
                                              "CAGAYANCILLO"))) %>%
@@ -630,31 +631,31 @@ data_all_summaxn_Lutjanidae <-
                                      "Deep Reef"))) %>%
   mutate(habitat = case_when(
     habitat == "Shallow Reef" ~ "Shallow Reef",
-    habitat == "Deep Reef" ~ "Mesophotic Reef"
-  )) %>%
-  mutate(habitat = factor(habitat,
-                          levels = c("Shallow Reef",
-                                     "Mesophotic Reef"))) %>%
+    habitat == "Deep Reef" ~ "Mesophotic Reef")) %>%
+  
+  group_by(op_code,
+           habitat,
+           study_locations) %>%
+  summarize(sum_max_n = sum(max_n)) %>%
+  
   mutate(opcode_habitat = str_c(op_code,
                                 habitat,
-                                sep = ",")) %>%
-  select(-op_code,
-         -habitat) %>%
+                                sep = ",")) %>% 
+  ungroup() %>%
+  dplyr::select(-op_code,
+                -habitat) %>% 
   complete(study_locations,
            opcode_habitat,
-           groupings,
-           fill = list(sum_max_n =0)) %>%
+           fill = list(sum_max_n = 0)) %>%
   separate(opcode_habitat,
            into = c("op_code",
                     "habitat"),
-           sep = ",") %>%
-  group_by(groupings,
-           op_code,
-           study_locations,
-           habitat,
-           bait_type) %>%
-  dplyr::summarize(sum_max_n = sum(max_n)) %>%
-  filter(groupings == "Lutjanidae")
+           sep = ",") %>% 
+  left_join(data_all %>%
+              dplyr::select(op_code,
+                            bait_type) %>%
+              distinct()) 
+
 
 ## Enter Information About Your Data for A Hypothesis Test ##
 
@@ -811,39 +812,39 @@ p_Lutjanidae
 #### sum_max_n: Lethrinidae ####
 data_all_summaxn_Lethrinidae <- 
   data_all %>%
+  filter(groupings == "Lethrinidae") %>%
   mutate(study_locations = factor(study_locations,
                                   levels = c("TRNP", 
                                              "CAGAYANCILLO"))) %>%
-  mutate(habitat = factor(habitat,
-                          levels = c("Shallow Reef",
-                                     "Deep Reef"))) %>%
   mutate(habitat = case_when(
     habitat == "Shallow Reef" ~ "Shallow Reef",
-    habitat == "Deep Reef" ~ "Mesophotic Reef"
-  )) %>%
+    habitat == "Deep Reef" ~ "Mesophotic Reef")) %>%
   mutate(habitat = factor(habitat,
                           levels = c("Shallow Reef",
                                      "Mesophotic Reef"))) %>%
+  group_by(op_code,
+           habitat,
+           study_locations) %>%
+  summarize(sum_max_n = sum(max_n)) %>%
+  
   mutate(opcode_habitat = str_c(op_code,
                                 habitat,
-                                sep = ",")) %>%
-  select(-op_code,
-         -habitat) %>%
+                                sep = ",")) %>% 
+  ungroup() %>%
+  dplyr::select(-op_code,
+                -habitat) %>% 
   complete(study_locations,
            opcode_habitat,
-           groupings,
-           fill = list(sum_max_n =0)) %>%
+           fill = list(sum_max_n = 0)) %>%
   separate(opcode_habitat,
            into = c("op_code",
                     "habitat"),
-           sep = ",") %>%
-  group_by(groupings,
-           op_code,
-           study_locations,
-           habitat,
-           bait_type) %>%
-  dplyr::summarize(sum_max_n = sum(max_n)) %>%
-  filter(groupings == "Lethrinidae")
+           sep = ",") %>% 
+  left_join(data_all %>%
+              dplyr::select(op_code,
+                            bait_type) %>%
+              distinct()) 
+
 
 ## Enter Information About Your Data for A Hypothesis Test ##
 
@@ -998,40 +999,41 @@ p_Lethrinidae
 
 #### sum_max_n: Carangidae ####
 data_all_summaxn_Carangidae <- 
+  data_all_summaxn_Lethrinidae <- 
   data_all %>%
+  filter(groupings == "Carangidae") %>%
   mutate(study_locations = factor(study_locations,
                                   levels = c("TRNP", 
                                              "CAGAYANCILLO"))) %>%
-  mutate(habitat = factor(habitat,
-                          levels = c("Shallow Reef",
-                                     "Deep Reef"))) %>%
   mutate(habitat = case_when(
     habitat == "Shallow Reef" ~ "Shallow Reef",
-    habitat == "Deep Reef" ~ "Mesophotic Reef"
-  )) %>%
+    habitat == "Deep Reef" ~ "Mesophotic Reef")) %>%
   mutate(habitat = factor(habitat,
                           levels = c("Shallow Reef",
                                      "Mesophotic Reef"))) %>%
+  group_by(op_code,
+           habitat,
+           study_locations) %>%
+  summarize(sum_max_n = sum(max_n)) %>%
+  
   mutate(opcode_habitat = str_c(op_code,
                                 habitat,
-                                sep = ",")) %>%
-  select(-op_code,
-         -habitat) %>%
+                                sep = ",")) %>% 
+  ungroup() %>%
+  dplyr::select(-op_code,
+                -habitat) %>% 
   complete(study_locations,
            opcode_habitat,
-           groupings,
-           fill = list(sum_max_n =0)) %>%
+           fill = list(sum_max_n = 0)) %>%
   separate(opcode_habitat,
            into = c("op_code",
                     "habitat"),
-           sep = ",") %>%
-  group_by(groupings,
-           op_code,
-           study_locations,
-           habitat,
-           bait_type) %>%
-  dplyr::summarize(sum_max_n = sum(max_n)) %>%
-  filter(groupings == "Carangidae")
+           sep = ",") %>% 
+  left_join(data_all %>%
+              dplyr::select(op_code,
+                            bait_type) %>%
+              distinct()) 
+
 
 ## Enter Information About Your Data for A Hypothesis Test ##
 
@@ -1189,39 +1191,43 @@ p_Carangidae
 #### sum_max_n: Galeomorphii ####
 data_all_summaxn_Galeomorphii <- 
   data_all %>%
+  mutate(groupings = case_when(
+    groupings == "Galeoidea" ~ "Galeomorphii",
+    TRUE ~ groupings
+  )) %>%
+  filter(groupings == "Galeomorphii") %>%
   mutate(study_locations = factor(study_locations,
                                   levels = c("TRNP", 
                                              "CAGAYANCILLO"))) %>%
-  mutate(habitat = factor(habitat,
-                          levels = c("Shallow Reef",
-                                     "Deep Reef"))) %>%
   mutate(habitat = case_when(
     habitat == "Shallow Reef" ~ "Shallow Reef",
-    habitat == "Deep Reef" ~ "Mesophotic Reef"
-  )) %>%
-  mutate(groupings = case_when(
-    groupings == "Galeoidea" ~ "Galeomorphii",
-    TRUE ~ groupings)) %>% 
+    habitat == "Deep Reef" ~ "Mesophotic Reef")) %>%
+  mutate(habitat = factor(habitat,
+                          levels = c("Shallow Reef",
+                                     "Mesophotic Reef"))) %>%
+  group_by(op_code,
+           habitat,
+           study_locations) %>%
+  summarize(sum_max_n = sum(max_n)) %>%
+  
   mutate(opcode_habitat = str_c(op_code,
                                 habitat,
-                                sep = ",")) %>%
-  select(-op_code,
-         -habitat) %>%
+                                sep = ",")) %>% 
+  ungroup() %>%
+  dplyr::select(-op_code,
+                -habitat) %>% 
   complete(study_locations,
            opcode_habitat,
-           groupings,
-           fill = list(sum_max_n =0)) %>%
+           fill = list(sum_max_n = 0)) %>%
   separate(opcode_habitat,
            into = c("op_code",
                     "habitat"),
-           sep = ",") %>%
-  group_by(groupings,
-           op_code,
-           study_locations,
-           habitat,
-           bait_type) %>%
-  dplyr::summarize(sum_max_n = sum(max_n)) %>%
-  filter(groupings == "Galeomorphii")
+           sep = ",") %>% 
+  left_join(data_all %>%
+              dplyr::select(op_code,
+                            bait_type) %>%
+              distinct()) 
+
 
 ## Enter Information About Your Data for A Hypothesis Test ##
 
@@ -1376,39 +1382,38 @@ p_Galeomorphii
 #### sum_max_n: Cheilinus undulatus ####
 data_all_summaxn_Cheilinus_undulatus <- 
   data_all %>%
+  filter(groupings == "Cheilinus undulatus") %>%
   mutate(study_locations = factor(study_locations,
                                   levels = c("TRNP", 
                                              "CAGAYANCILLO"))) %>%
-  mutate(habitat = factor(habitat,
-                          levels = c("Shallow Reef",
-                                     "Deep Reef"))) %>%
   mutate(habitat = case_when(
     habitat == "Shallow Reef" ~ "Shallow Reef",
-    habitat == "Deep Reef" ~ "Mesophotic Reef"
-  )) %>%
-  mutate(groupings = case_when(
-    groupings == "Galeoidea" ~ "Galeomorphii",
-    TRUE ~ groupings)) %>% 
+    habitat == "Deep Reef" ~ "Mesophotic Reef")) %>%
+  mutate(habitat = factor(habitat,
+                          levels = c("Shallow Reef",
+                                     "Mesophotic Reef"))) %>%
+  group_by(op_code,
+           habitat,
+           study_locations) %>%
+  summarize(sum_max_n = sum(max_n)) %>%
+  
   mutate(opcode_habitat = str_c(op_code,
                                 habitat,
-                                sep = ",")) %>%
-  select(-op_code,
-         -habitat) %>%
+                                sep = ",")) %>% 
+  ungroup() %>%
+  dplyr::select(-op_code,
+                -habitat) %>% 
   complete(study_locations,
            opcode_habitat,
-           groupings,
-           fill = list(sum_max_n =0)) %>%
+           fill = list(sum_max_n = 0)) %>%
   separate(opcode_habitat,
            into = c("op_code",
                     "habitat"),
-           sep = ",") %>%
-  group_by(groupings,
-           op_code,
-           study_locations,
-           habitat,
-           bait_type) %>%
-  dplyr::summarize(sum_max_n = sum(max_n)) %>%
-  filter(groupings == "Cheilinus undulatus")
+           sep = ",") %>% 
+  left_join(data_all %>%
+              dplyr::select(op_code,
+                            bait_type) %>%
+              distinct()) 
 
 ## Enter Information About Your Data for A Hypothesis Test ##
 
