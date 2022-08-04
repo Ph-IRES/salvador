@@ -20,6 +20,7 @@ library(devtools)
 #devtools::install_github("jfq3/ggordiplots", dependencies = TRUE)
 library(ggordiplots)
 library(ggbiplot)
+library(ggvegan)
 
 #### USER DEFINED VARIABLES ####
 
@@ -63,8 +64,15 @@ data_removed_sp <- data %>%
          species = str_to_lower(species),
          family_clean = case_when(
            family == "Epinephelidae" ~ "Serranidae",
-           TRUE ~ family),
-         taxon = str_c(family_clean,
+           TRUE ~ family)) %>%
+  mutate(groupings = case_when(
+    family == "Labridae" ~ "Cheilinus undulatus",
+    family == "Sphyrnidae" ~ "Galeomorphii",
+    family == "Carcharhinidae" ~ "Galeomorphii",
+    family == "Alopiidae" ~ "Galeomorphii",
+    family == "Epinephelidae" ~ "Serranidae",
+    TRUE ~ family))%>%
+  mutate(taxon = str_c(groupings,
                        genus,
                        species,
                        sep = "_")) %>%
@@ -79,6 +87,8 @@ data_removed_sp <- data %>%
   distinct(op_code,
            taxon,
            .keep_all = TRUE)
+
+View(data_removed_sp)
 
 
 metadata <-
@@ -95,7 +105,7 @@ data_all <-
             by = c("op_code" = "opcode",
                    "depth_m" = "depth_m")) %>%
   # rearrange order of columns, metadata then data
-  select(op_code,
+  dplyr::select(op_code,
          site:long_e,
          depth_m,
          time_in:bait_weight_grams,
@@ -115,7 +125,7 @@ data_all_removed_sp <-
             by = c("op_code" = "opcode",
                    "depth_m" = "depth_m")) %>%
   # rearrange order of columns, metadata then data
-  select(op_code,
+  dplyr::select(op_code,
          site:long_e,
          depth_m,
          time_in:bait_weight_grams,
@@ -298,8 +308,9 @@ gg_ordiplot(ord, groups = data_vegan.env$bait_type, pt.size = 3)
 # scale_color_manual(values = habitatcolors)
 #### vegan::specpool - Extrapolated Species Richness in a Species Pool Based on Incidence (Presence Absence) ####
 
+view(data_vegan.env)
 pool <- with(data_vegan.env, specpool(x = data_vegan, 
-                                      pool = depth_cat,
+                                      pool = habitat_mpa,
                                       smallsample = TRUE))
 
 View(pool)
@@ -316,11 +327,11 @@ pool %>%
                                          "_se") ~ "se",
                               TRUE ~ "value"),
          name = str_remove(name,
-                           "_se")) %>%
+                           "_se")) %>% 
   pivot_wider(names_from = se_value) %>%
-  rename(sp_richness_est = value,
-         estimator = name) %>%
-  ggplot(aes(x= depth_cat,
+  dplyr::rename(sp_richness_est = value,
+         estimator = name) %>% 
+  ggplot(aes(x= habitat_mpa,
              y= sp_richness_est)) +
   geom_col() +
   geom_point(aes(y = species),
@@ -338,16 +349,254 @@ pool %>%
 # abundance based richness rarefaction curve
 # creates 1 curve per data frame, so if you want multiple curves, have to make them separately then combine into 1 tibble to plot
 # increase permutations to 999 if you use this for your project
-data_vegan
+
 p<- vegan::estaccumR(data_vegan, permutations = 999)
 # filter(estimator != "ace")
+
 View(p)
 p.plot<-plot(p, 
              display = c("chao"))
 p.plot
-dev.off()
 save_plot("SpeciesRichnessRarefactionCurveAbundance.png", 
           p.plot)
+
+## Species Rarefaction Curve for Shallow Reef at Cagayancillo ##
+data_vegan_CAG_shallow <- 
+  bind_cols(data_vegan, data_vegan.env) %>%
+  filter(habitat_mpa == "Shallow Reef CAGAYANCILLO") %>%
+  dplyr::select(colnames(data_vegan))
+
+# data_vegan_CAG_shallow.env <- 
+#   bind_cols(data_vegan, data_vegan.env) %>%
+#   filter(habitat_mpa == "Shallow Reef CAGAYANCILLO") %>%
+#   dplyr::select(-colnames(data_vegan))
+
+p_CAG_shallow <- estaccumR(data_vegan_CAG_shallow, permutations = 999)
+
+p_CAG_shallow_plot <- plot(p_CAG_shallow,
+                           display = c("chao"),
+                           main = "Shallow Reef at Cagayancillo")
+p_CAG_shallow_plot
+
+## Species Rarefaction Curve for Deep Reef at Cagayancillo ##
+data_vegan_CAG_deep <- 
+  bind_cols(data_vegan, data_vegan.env) %>%
+  filter(habitat_mpa == "Deep Reef CAGAYANCILLO") %>%
+  dplyr::select(colnames(data_vegan))
+
+p_CAG_deep <- estaccumR(data_vegan_CAG_deep, permutations = 999)
+
+p_CAG_deep_plot <- plot(p_CAG_deep,
+                           display = c("chao"),
+                        main = "Mesophotic Reef at Cagayancillo")
+
+p_CAG_deep_plot
+
+## Species Rarefaction Curve for Shallow Reef at TRNP ##
+data_vegan_TUB_shallow <- 
+  bind_cols(data_vegan, data_vegan.env) %>%
+  filter(habitat_mpa == "Shallow Reef TRNP") %>%
+  dplyr::select(colnames(data_vegan))
+
+p_TUB_shallow <- estaccumR(data_vegan_TUB_shallow, permutations = 999)
+
+p_TUB_shallow_plot <- plot(p_TUB_shallow,
+                        display = c("chao"),
+                        main = "Shallow Reef at TRNP")
+p_TUB_shallow_plot
+
+## Species Rarefaction Curve for Deep Reef at TRNP ##
+data_vegan_TUB_deep <- 
+  bind_cols(data_vegan, data_vegan.env) %>%
+  filter(habitat_mpa == "Deep Reef TRNP") %>%
+  dplyr::select(colnames(data_vegan))
+
+p_TUB_deep <- estaccumR(data_vegan_TUB_deep, permutations = 999)
+
+p_TUB_deep_plot <- plot(p_TUB_deep,
+                           display = c("chao"),
+                        main = "Mesophotic Reef at TRNP")
+
+p_TUB_deep_plot
+
+##All Habitat and Study Locations Chao Plot ##
+p_habitat_locations_plot <- ggarrange(p_CAG_shallow_plot,
+                                      p_CAG_deep_plot,
+                                      p_TUB_shallow_plot,
+                                      p_TUB_deep_plot,
+                                      ncol = 2,
+                                      nrow = 2)
+ggsave("SpeciesRichnessRarefactionCurveHabitatandStudyLocations.pdf", 
+       p_habitat_locations_plot, 
+       height = 11,
+       width = 8.5,
+       units = "in")
+
+## Species Rarefaction Curve for Serranidae ##
+data_vegan_Serranidae <- 
+  data_removed_sp %>%
+  dplyr::select(op_code,
+                taxon,
+                max_n) %>%
+  # convert tibble from long to wide format
+  pivot_wider(names_from = taxon,
+              values_from = max_n,
+              values_fill = 0) %>%
+  # sort by op_code
+  arrange(op_code) %>%
+  # remove the op_code column for vegan
+  dplyr::select(-op_code) %>%
+  dplyr::select(contains("Serranidae"))
+
+p_Serranidae <- estaccumR(data_vegan_Serranidae, permutations = 999)
+
+p_Serranidae_plot <- plot(p_Serranidae,
+                        display = c("chao"),
+                        main = "Serranidae")
+
+p_Serranidae_plot
+
+## Species Rarefaction Curve for Lutjanidae ##
+data_vegan_Lutjanidae <- 
+  data_removed_sp %>%
+  dplyr::select(op_code,
+                taxon,
+                max_n) %>%
+  # convert tibble from long to wide format
+  pivot_wider(names_from = taxon,
+              values_from = max_n,
+              values_fill = 0) %>%
+  # sort by op_code
+  arrange(op_code) %>%
+  # remove the op_code column for vegan
+  dplyr::select(-op_code) %>%
+  dplyr::select(contains("Lutjanidae"))
+
+p_Lutjanidae <- estaccumR(data_vegan_Lutjanidae, permutations = 999)
+
+p_Lutjanidae_plot <- plot(p_Lutjanidae,
+                          display = c("chao"),
+                          main = "Lutjanidae")
+
+p_Lutjanidae_plot
+
+## Species Rarefaction Curve for Lethrinidae ##
+data_vegan_Lethrinidae <- 
+  data_removed_sp %>%
+  dplyr::select(op_code,
+                taxon,
+                max_n) %>%
+  # convert tibble from long to wide format
+  pivot_wider(names_from = taxon,
+              values_from = max_n,
+              values_fill = 0) %>%
+  # sort by op_code
+  arrange(op_code) %>%
+  # remove the op_code column for vegan
+  dplyr::select(-op_code) %>%
+  dplyr::select(contains("Lethrinidae"))
+
+p_Lethrinidae <- estaccumR(data_vegan_Lethrinidae, permutations = 999)
+
+p_Lethrinidae_plot <- plot(p_Lethrinidae,
+                          display = c("chao"),
+                          main = "Lethrinidae")
+
+p_Lethrinidae_plot
+
+## Species Rarefaction Curve for Carangidae ##
+data_vegan_Carangidae <- 
+  data_removed_sp %>%
+  dplyr::select(op_code,
+                taxon,
+                max_n) %>%
+  # convert tibble from long to wide format
+  pivot_wider(names_from = taxon,
+              values_from = max_n,
+              values_fill = 0) %>%
+  # sort by op_code
+  arrange(op_code) %>%
+  # remove the op_code column for vegan
+  dplyr::select(-op_code) %>%
+  dplyr::select(contains("Carangidae"))
+
+p_Carangidae <- estaccumR(data_vegan_Carangidae, permutations = 999)
+
+p_Carangidae_plot <- plot(p_Carangidae,
+                           display = c("chao"),
+                          main = "Carangidae")
+
+p_Carangidae_plot
+
+
+## Species Rarefaction Curve for Galeomorphii ##
+data_vegan_Galeomorphii <- 
+  data_removed_sp %>%
+  dplyr::select(op_code,
+                taxon,
+                max_n) %>%
+  # convert tibble from long to wide format
+  pivot_wider(names_from = taxon,
+              values_from = max_n,
+              values_fill = 0) %>%
+  # sort by op_code
+  arrange(op_code) %>%
+  # remove the op_code column for vegan
+  dplyr::select(-op_code) %>%
+  dplyr::select(contains("Galeomorphii"))
+
+view(data_vegan_Galeomorphii)
+
+p_Galeomorphii <- estaccumR(data_vegan_Galeomorphii, permutations = 999)
+
+p_Galeomorphii_plot <- plot(p_Galeomorphii,
+                          display = c("chao"),
+                          main = "Galeomorphii")
+
+p_Galeomorphii_plot
+
+##Species Rarefaction Curve for Cheilinus undulatus ##
+data_vegan_Cheilinus_undulatus <- 
+  data_removed_sp %>%
+  dplyr::select(op_code,
+                taxon,
+                max_n) %>%
+  # convert tibble from long to wide format
+  pivot_wider(names_from = taxon,
+              values_from = max_n,
+              values_fill = 0) %>%
+  # sort by op_code
+  arrange(op_code) %>%
+  # remove the op_code column for vegan
+  dplyr::select(-op_code) %>%
+  dplyr::select(contains("Cheilinus undulatus"))
+
+View(data_vegan_Cheilinus_undulatus)
+
+p_Cheilinus_undulatus <- estaccumR(data_vegan_Cheilinus_undulatus, permutations = 999)
+
+p_Cheilinus_undulatus_plot <- plot(p_Cheilinus_undulatus,
+                            display = c("chao"),
+                            main = "Cheilinus undulatus")
+
+p_Cheilinus_undulatus_plot
+                            
+## Species Rarefaction Curves for All Groupings ##
+p_groupings_plot <- ggarrange(p_Serranidae_plot,
+                              p_Lutjanidae_plot,
+                              p_Lethrinidae_plot,
+                              p_Carangidae_plot,
+                              p_Galeomorphii_plot,
+                              p_Cheilinus_undulatus_plot,
+                                      ncol = 2,
+                                      nrow = 3)
+ggsave("SpeciesRichnessRarefactionCurveGroupings.pdf", 
+       p_groupings_plot, 
+       height = 11,
+       width = 8.5,
+       units = "in")
+
+## Species 
 # to make plot w ggplot, see https://stackoverflow.com/questions/52652195/convert-rarefaction-plots-from-vegan-to-ggplot2-in-r
 
 #### vegan::poolaccum Extrapolated Species Richness Curve in a Species Pool Based on Presence Absence ####
@@ -355,11 +604,263 @@ save_plot("SpeciesRichnessRarefactionCurveAbundance.png",
 # incidence based (presence / absence) richness rarefaction curve
 # creates 1 curve per data frame, so if you want multiple curves, have to make them separately then combine into 1 tibble to plot
 # increase permutations to 999 if you use this for your project
-p<-poolaccum(data_vegan, permutations = 999)
-p.plot<-plot(p, display = c("jack1","jack2", "chao", "boot"))
-p.plot
+p_presenceabsence<-poolaccum(data_vegan, permutations = 999)
+p.plot_presenceabsence <-plot(p, display = c("chao"))
+p.plot_presenceabsence
+# autoplot(p_presenceabsence)
 save_plot("SpeciesRichnessRarefactionCurvePresenceAbsence.png", 
           p.plot)
+
+## Species Rarefaction Curve for Shallow Reef at Cagayancillo ##
+data_vegan_CAG_shallow <- 
+  bind_cols(data_vegan, data_vegan.env) %>%
+  filter(habitat_mpa == "Shallow Reef CAGAYANCILLO") %>%
+  dplyr::select(colnames(data_vegan))
+
+# data_vegan_CAG_shallow.env <- 
+#   bind_cols(data_vegan, data_vegan.env) %>%
+#   filter(habitat_mpa == "Shallow Reef CAGAYANCILLO") %>%
+#   dplyr::select(-colnames(data_vegan))
+
+p_CAG_shallow_pa <- poolaccum(data_vegan_CAG_shallow, permutations = 999)
+
+p_CAG_shallow_plot_pa <- plot(p_CAG_shallow_pa,
+                           display = c("chao"),
+                           main = "Shallow Reef at Cagayancillo")
+p_CAG_shallow_plot_pa
+
+## Species Rarefaction Curve for Deep Reef at Cagayancillo ##
+data_vegan_CAG_deep <- 
+  bind_cols(data_vegan, data_vegan.env) %>%
+  filter(habitat_mpa == "Deep Reef CAGAYANCILLO") %>%
+  dplyr::select(colnames(data_vegan))
+
+p_CAG_deep_pa <- poolaccum(data_vegan_CAG_deep, permutations = 999)
+
+p_CAG_deep_plot_pa <- plot(p_CAG_deep_pa,
+                        display = c("chao"),
+                        main = "Mesophotic Reef at Cagayancillo")
+
+p_CAG_deep_plot_pa
+
+## Species Rarefaction Curve for Shallow Reef at TRNP ##
+data_vegan_TUB_shallow <- 
+  bind_cols(data_vegan, data_vegan.env) %>%
+  filter(habitat_mpa == "Shallow Reef TRNP") %>%
+  dplyr::select(colnames(data_vegan))
+
+p_TUB_shallow_pa <- poolaccum(data_vegan_TUB_shallow, permutations = 999)
+
+p_TUB_shallow_plot_pa <- plot(p_TUB_shallow_pa,
+                           display = c("chao"),
+                           main = "Shallow Reef at TRNP")
+p_TUB_shallow_plot_pa
+
+## Species Rarefaction Curve for Deep Reef at TRNP ##
+data_vegan_TUB_deep <- 
+  bind_cols(data_vegan, data_vegan.env) %>%
+  filter(habitat_mpa == "Deep Reef TRNP") %>%
+  dplyr::select(colnames(data_vegan))
+
+p_TUB_deep_pa <- poolaccum(data_vegan_TUB_deep, permutations = 999)
+
+p_TUB_deep_plot_pa <- plot(p_TUB_deep_pa,
+                        display = c("chao"),
+                        main = "Mesophotic Reef at TRNP")
+
+p_TUB_deep_plot_pa
+
+##All Habitat and Study Locations Chao Plot Presence Absence ##
+p_habitat_locations_plot_pa <- ggarrange(p_CAG_shallow_plot_pa,
+                                      p_CAG_deep_plot_pa,
+                                      p_TUB_shallow_plot_pa,
+                                      p_TUB_deep_plot_pa,
+                                      ncol = 2,
+                                      nrow = 2)
+ggsave("SpeciesRichnessRarefactionCurveHabitatandStudyLocationsPresenceAbsence.pdf", 
+       p_habitat_locations_plot_pa, 
+       height = 11,
+       width = 8.5,
+       units = "in")
+
+## Species Rarefaction Curve for Serranidae ##
+data_vegan_Serranidae <- 
+  data_removed_sp %>%
+  dplyr::select(op_code,
+                taxon,
+                max_n) %>%
+  # convert tibble from long to wide format
+  pivot_wider(names_from = taxon,
+              values_from = max_n,
+              values_fill = 0) %>%
+  # sort by op_code
+  arrange(op_code) %>%
+  # remove the op_code column for vegan
+  dplyr::select(-op_code) %>%
+  dplyr::select(contains("Serranidae"))
+
+p_Serranidae_pa <- poolaccum(data_vegan_Serranidae, permutations = 999)
+
+p_Serranidae_plot_pa <- plot(p_Serranidae_pa,
+                          display = c("chao"),
+                          main = "Serranidae")
+
+p_Serranidae_plot_pa
+
+## Species Rarefaction Curve for Lutjanidae ##
+data_vegan_Lutjanidae <- 
+  data_removed_sp %>%
+  dplyr::select(op_code,
+                taxon,
+                max_n) %>%
+  # convert tibble from long to wide format
+  pivot_wider(names_from = taxon,
+              values_from = max_n,
+              values_fill = 0) %>%
+  # sort by op_code
+  arrange(op_code) %>%
+  # remove the op_code column for vegan
+  dplyr::select(-op_code) %>%
+  dplyr::select(contains("Lutjanidae"))
+
+p_Lutjanidae_pa <- poolaccum(data_vegan_Lutjanidae, permutations = 999)
+
+p_Lutjanidae_plot_pa <- plot(p_Lutjanidae_pa,
+                          display = c("chao"),
+                          main = "Lutjanidae")
+
+p_Lutjanidae_plot_pa
+
+## Species Rarefaction Curve for Lethrinidae ##
+data_vegan_Lethrinidae <- 
+  data_removed_sp %>%
+  dplyr::select(op_code,
+                taxon,
+                max_n) %>%
+  # convert tibble from long to wide format
+  pivot_wider(names_from = taxon,
+              values_from = max_n,
+              values_fill = 0) %>%
+  # sort by op_code
+  arrange(op_code) %>%
+  # remove the op_code column for vegan
+  dplyr::select(-op_code) %>%
+  dplyr::select(contains("Lethrinidae"))
+
+p_Lethrinidae_pa <- poolaccum(data_vegan_Lethrinidae, permutations = 999)
+
+p_Lethrinidae_plot_pa <- plot(p_Lethrinidae_pa,
+                           display = c("chao"),
+                           main = "Lethrinidae")
+
+p_Lethrinidae_plot_pa
+
+## Species Rarefaction Curve for Carangidae ##
+data_vegan_Carangidae <- 
+  data_removed_sp %>%
+  dplyr::select(op_code,
+                taxon,
+                max_n) %>%
+  # convert tibble from long to wide format
+  pivot_wider(names_from = taxon,
+              values_from = max_n,
+              values_fill = 0) %>%
+  # sort by op_code
+  arrange(op_code) %>%
+  # remove the op_code column for vegan
+  dplyr::select(-op_code) %>%
+  dplyr::select(contains("Carangidae"))
+
+
+p_Carangidae_pa <- poolaccum(data_vegan_Carangidae, permutations = 999)
+
+p_Carangidae_plot_pa <- plot(p_Carangidae_pa,
+                          display = c("chao"),
+                          main = "Carangidae")
+
+p_Carangidae_plot_pa
+
+
+## Species Rarefaction Curve for Galeomorphii ##
+data_vegan_Galeomorphii <- 
+  data_removed_sp %>%
+  dplyr::select(op_code,
+                taxon,
+                max_n) %>%
+  # convert tibble from long to wide format
+  pivot_wider(names_from = taxon,
+              values_from = max_n,
+              values_fill = 0) %>%
+  # sort by op_code
+  arrange(op_code) %>%
+  # remove the op_code column for vegan
+  dplyr::select(-op_code) %>%
+  dplyr::select(contains("Galeomorphii"))
+
+view(data_vegan_Galeomorphii)
+
+p_Galeomorphii_pa <- poolaccum(data_vegan_Galeomorphii, permutations = 999)
+
+p_Galeomorphii_plot_pa <- plot(p_Galeomorphii_pa,
+                            display = c("chao"),
+                            main = "Galeomorphii")
+
+p_Galeomorphii_plot_pa
+
+##Species Rarefaction Curve for Cheilinus undulatus ##
+data_vegan_Cheilinus_undulatus <- 
+  data_removed_sp %>%
+  dplyr::select(op_code,
+                taxon,
+                max_n) %>%
+  # convert tibble from long to wide format
+  pivot_wider(names_from = taxon,
+              values_from = max_n,
+              values_fill = 0) %>%
+  # sort by op_code
+  arrange(op_code) %>%
+  # remove the op_code column for vegan
+  dplyr::select(-op_code) %>%
+  dplyr::select(contains("Cheilinus undulatus"))
+
+View(data_vegan_Cheilinus_undulatus)
+
+p_Cheilinus_undulatus_pa <- poolaccum(data_vegan_Cheilinus_undulatus, permutations = 999)
+
+p_Cheilinus_undulatus_plot_pa <- plot(p_Cheilinus_undulatus_pa,
+                                   display = c("chao"),
+                                   main = "Cheilinus undulatus")
+
+p_Cheilinus_undulatus_plot_pa
+
+## Species Rarefaction Curves for All Groupings ##
+p_groupings_plot_pa <- ggarrange(p_Serranidae_plot_pa,
+                              p_Lutjanidae_plot_pa,
+                              p_Lethrinidae_plot_pa,
+                              p_Carangidae_plot_pa,
+                              p_Galeomorphii_plot_pa,
+                              # p_Cheilinus_undulatus_plot,
+                              ncol = 2,
+                              nrow = 3)
+ggsave("SpeciesRichnessRarefactionCurveGroupingsPresenceAbsence.pdf", 
+       p_groupings_plot_pa, 
+       height = 11,
+       width = 8.5,
+       units = "in")
+
+# data_vegan_CAG_shallow <- 
+# bind_cols(data_vegan, data_vegan.env) %>%
+#   filter(habitat_mpa == "Shallow Reef CAGAYANCILLO") %>%
+#   dplyr::select(colnames(data_vegan))
+# 
+# data_vegan_CAG_shallow.env <- 
+#   bind_cols(data_vegan, data_vegan.env) %>%
+#   filter(habitat_mpa == "Shallow Reef CAGAYANCILLO") %>%
+#   dplyr::select(-colnames(data_vegan))
+# 
+# p_CAG_shallow <- poolaccum(data_vegan_CAG_shallow, permutations = 9999)
+# autoplot(p_CAG_shallow)
+
 #### ORDINATION: Fitting Environmental Variables ####
 
 # # Let us test for an effect of site and depth on the NMDS

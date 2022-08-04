@@ -489,19 +489,41 @@ data_chao_s_Serranidae <- pool_Serranidae %>%
 
 
 # define your response variable, here it is binomial
-response_var = quo(s_chao1) # quo() allows column names to be put into variables 
+response_var = quo(s_obs) # quo() allows column names to be put into variables 
 
 # enter the distribution family for your response variable
-distribution_family = "gaussian"
+distribution_family = "poisson"
 
-
+view(data_chao_s_Serranidae)
 alpha_sig = 0.05
 
 
 # we start with the loci subjected to 11 primer concentrations (we removed loci with no sum_max_n to simplify)
+data_chao_s_Serranidae %>%
+  ggplot(aes(x = s_obs)) + 
+  geom_histogram() +
+  facet_grid(habitat ~ study_locations)
+
+data_chao_s_Serranidae %>%
+  ggplot(aes(x = s_chao1)) + 
+  geom_histogram() +
+  facet_grid(habitat ~ study_locations)
+
+vis_dists(data_chao_s_Serranidae,
+          "s_chao1")
+
+vis_dists(data_chao_s_Serranidae,
+          "s_obs")
 
 
-sampling_design = "s_chao1 ~  habitat * study_locations + (1|study_locations:bait_type)"
+sampling_design = "s_obs ~  habitat * study_locations"
+model_Serranidae <<- 
+  glm(formula = sampling_design, 
+      family = distribution_family,
+      data = data_chao_s_Serranidae)
+
+
+sampling_design = "s_obs ~  habitat * study_locations + (1|study_locations:bait_type)"
 
 
 # # fit mixed model
@@ -573,20 +595,20 @@ groupings_model_fixed_sr_Serranidae <<-
   summary(emmeans_model_sr_Serranidae,      # emmeans back transformed to the original units of response var
           type="response") %>%
   tibble() %>%
-  left_join(groupings_model_sr_Serranidae,
-              # dplyr::select(-response:-asymp.UCL),
+  left_join(groupings_model_sr_Serranidae %>%
+            dplyr::select(-rate:-asymp.UCL),
             # by = c(str_replace(fixed_vars,
             #                    "[\\+\\*]",
             #                    '" , "'))) %>%
             by = c("habitat",
-                   "study_locations")) 
-  # dplyr::rename(response = 3)
+                   "study_locations")) %>%
+  dplyr::rename(response = 3)
 
-groupings_model_fixed_sr_Serranidae <- groupings_model_fixed_sr_Serranidae %>%
-  mutate(habitat = factor(habitat,
-                          levels = c(
-                            "Shallow Reef",
-                            "Mesophotic Reef")))
+# groupings_model_fixed_sr_Serranidae <- groupings_model_fixed_sr_Serranidae %>%
+#   mutate(habitat = factor(habitat,
+#                           levels = c(
+#                             "Shallow Reef",
+#                             "Mesophotic Reef")))
 
 habitatcolors <- c("#F08080","#6FAFC6")
 habitat(habitatcolors) <- c("Shallow Reef", "Mesophotic Reef")
@@ -597,7 +619,7 @@ View(groupings_model_fixed_sr_Serranidae)
 p_sr_Serranidae <- 
   groupings_model_fixed_sr_Serranidae %>%
   ggplot(aes(x=study_locations,
-             y= emmean.x,
+             y= response,
              fill = habitat)) +
   geom_col(position = "dodge",
            color = "black") +
@@ -613,8 +635,8 @@ p_sr_Serranidae <-
              # color = "grey70",
              # shape = 1,
              size = 1) +
-  geom_errorbar(aes(ymin=lower.CL.y,
-                    ymax=upper.CL.y),
+  geom_errorbar(aes(ymin=asymp.LCL,
+                    ymax=asymp.UCL),
                 width = 0.2,
                 color = "grey50",
                 # size = 1,
