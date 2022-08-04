@@ -21,6 +21,7 @@ library(devtools)
 library(ggordiplots)
 library(ggbiplot)
 library(ggvegan)
+library(ggpubr)
 
 #### USER DEFINED VARIABLES ####
 
