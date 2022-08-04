@@ -759,8 +759,9 @@ groupings_model_fixed_Lutjanidae    <- groupings_model_fixed_Lutjanidae %>%
                           levels = c("Shallow Reef",
                                      "Mesophotic Reef")))   # cld messes up back transformation, this takes values from emmeans and groupings from cld
 
-## sum_max_n Serranidae: Visualize Estimated Marginal Means Output With Group Categories 
-
+## sum_max_n Lutjanidae: Visualize Estimated Marginal Means Output With Group Categories 
+habitatcolors <- c("#F08080","#6FAFC6")
+habitat(habitatcolors) <- c("Shallow Reef", "Mesophotic Reef")
 p_Lutjanidae <- 
   groupings_model_fixed_Lutjanidae %>%
   ggplot(aes(x=study_locations,

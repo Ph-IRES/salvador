@@ -25,6 +25,7 @@ library(optimx)
 library(effects)
 library(prediction)
 library(ggforce)
+
 library(readr)
 library(ggpubr)
 library(sjPlot)
@@ -107,6 +108,7 @@ metadata <-
              na="NA") %>%
   clean_names() %>%
   dplyr::rename(bait_weight_grams = weight_grams)
+
 
 
 
@@ -406,8 +408,171 @@ p_sr <-
   scale_fill_manual(values = habitatcolors)
 
 p_sr
-save_plot("EMMeansofSpeciesRichness.png")
+save_plot("EMMeansofSpeciesRichnessGamma.png")
 
+#### Overall means_chao_s with Species Observations instead of Chao estimate ####
+pool <- 
+  estimateR(x = data_vegan) %>%
+  t() %>%
+  as_tibble()
+
+data_chao_s <- 
+  pool %>%
+  clean_names() %>%
+  bind_cols(data_vegan.env)
+
+
+## Enter Information About Your Data for A Hypothesis Test ##
+
+# define your response variable, here it is binomial
+response_var = quo(s_obs) # quo() allows column names to be put into variables 
+
+# enter the distribution family for your response variable
+distribution_family = "poisson"
+
+
+alpha_sig = 0.05
+
+
+# we start with the loci subjected to 11 primer concentrations (we removed loci with no sum_max_n to simplify)
+
+sampling_design = "s_obs ~  habitat * study_locations"
+#fit glm model
+model <<- 
+  glm(formula = sampling_design, 
+      family = distribution_family,
+      data = data_chao_s)
+# sampling_design = "s_chao1 ~  habitat * study_locations + (1|study_locations:bait_type)"
+
+
+# # fit mixed model
+# model <<-
+#   afex::mixed(formula = sampling_design,
+#               family = distribution_family,
+#               method = "LRT",
+#               sig_symbols = rep("", 4),
+#               # all_fit = TRUE,
+#               data = data_chao_s)
+
+model
+anova(model)
+
+# visualize summary(model)
+emmip(model, 
+      study_locations ~ habitat,    # type = "response" for back transformed values
+      cov.reduce = range) +
+  # geom_vline(xintercept=mean(data_all_summaxn_$primer_x),
+  #            color = "grey",
+  #            linetype = "dashed") +
+  # geom_text(aes(x = mean(data_all_summaxn_$primer_x),
+  #               y = -2,
+  #               label = "mean primer_x"),
+  #           color = "grey") +
+  theme_classic() +
+  labs(title = "Visualization of `summary(model)`",
+       subtitle = "",
+       y = "Linear Prediciton",
+       x = "MPA")
+## mean_chao_s: Conduct A priori contrast tests for differences among sites ##
+emmeans_model_sr <<-
+  emmeans(model,
+          ~ habitat * study_locations,
+          alpha = alpha_sig)
+
+# emmeans back transformed to the original units of response var
+summary(emmeans_model_sr,      
+        type="response")
+
+# contrasts between sites
+contrast(regrid(emmeans_model_sr), # emmeans back transformed to the original units of response var
+         method = 'pairwise', 
+         simple = 'each', 
+         combine = FALSE, 
+         adjust = "bh")
+## mean_chao_s: Group Sites Based on Model Results ##
+groupings_model_sr <<-
+  multcomp::cld(emmeans_model_sr, 
+                alpha = alpha_sig,
+                Letters = letters,
+                type="response",
+                adjust = "bh") %>%
+  as.data.frame %>%
+  mutate(group = str_remove_all(.group," "),
+         group = str_replace_all(group,
+                                 "(.)(.)",
+                                 "\\1,\\2")) 
+
+groupings_model_sr             # these values are back transformed, groupings based on transformed
+
+
+# i noticed that the emmeans from groupings don't match those from emmeans so this is the table to use for making the figure
+# the emmeans means and conf intervals match those produced by afex_plot, so I think those are what we want
+groupings_model_fixed_sr <<-
+  summary(emmeans_model_sr,      # emmeans back transformed to the original units of response var
+          type="response") %>%
+  tibble() %>%
+  left_join(groupings_model_sr %>%
+              dplyr::select(-response:-asymp.UCL),
+            # by = c(str_replace(fixed_vars,
+            #                    "[\\+\\*]",
+            #                    '" , "'))) %>%
+            by = c("habitat",
+                   "study_locations")) %>%
+  dplyr::rename(response = 3)
+
+groupings_model_fixed_sr <- groupings_model_fixed_sr %>%
+  mutate(habitat = factor(habitat,
+                          levels = c(
+                            "Shallow Reef",
+                            "Mesophotic Reef")))
+
+habitatcolors <- c("#F08080","#6FAFC6")
+habitat(habitatcolors) <- c("Shallow Reef", "Mesophotic Reef")
+
+## mean_chao_s: Visualize Estimated Marginal Means Output with Group Categories ##
+p_sr <- 
+  groupings_model_fixed_sr %>%
+  ggplot(aes(x=study_locations,
+             y=response,
+             fill = habitat)) +
+  geom_col(position = "dodge",
+           color = "black") +
+  # scale_fill_manual(values = c("lightgrey",
+  #                              "white"),
+  #                   labels = c('Pre-Screen', 
+  #                              'Post-Screen')) +
+  geom_point(data = data_chao_s,
+             aes(x = study_locations,
+                 y = !!response_var
+             ),
+             position = position_jitterdodge(),
+             # color = "grey70",
+             # shape = 1,
+             size = 1) +
+  geom_errorbar(aes(ymin=asymp.LCL,
+                    ymax=asymp.UCL),
+                width = 0.2,
+                color = "grey50",
+                # size = 1,
+                position = position_dodge(width=0.9)) +
+  guides(color = "none",
+         shape = "none") +   #remove color legend
+  geom_text(aes(label=group),
+            position = position_dodge(width=0.9),
+            vjust = -0.5,
+            hjust = -0.15,
+            size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
+  theme_classic() +
+  # ylim(ymin, 
+  #      ymax) +
+  labs(x = "Study Locations",
+       y = "Estimated Marginal Means of Species Richness") +
+  theme(legend.position=c(0.33,0.8),  
+        legend.title=element_blank()) +
+  scale_fill_manual(values = habitatcolors)
+
+p_sr
+save_plot("EMMeansofSpeciesRichnessPoisson.png")
 #### mean_chao_s: Serranidae ####
 ## Make New Data Vegan for Serranidae
 data_vegan_Serranidae <-
@@ -425,7 +590,6 @@ data_vegan_Serranidae <-
   dplyr::select(-op_code) %>%
   dplyr::select(contains("Serranidae"))
 
-view(data_vegan_Serranidae)
 
 data_vegan.env <-
   data_all_removed_sp %>%
@@ -471,11 +635,11 @@ pool_Serranidae <-
   as_tibble()
 
 #Visualize statistical distribution
-source(functionPath)
-vis_dists(pool_Serranidae,
-          "S.chao1")
-vis_dists(data_chao_s_Serranidae,
-          "s_chao1")
+# source(functionPath)
+# vis_dists(pool_Serranidae,
+#           "S.chao1")
+# vis_dists(data_chao_s_Serranidae,
+#           "s_chao1")
 
 data_chao_s_Serranidae <- pool_Serranidae %>%
   clean_names() %>%
@@ -494,46 +658,46 @@ response_var = quo(s_obs) # quo() allows column names to be put into variables
 # enter the distribution family for your response variable
 distribution_family = "poisson"
 
-view(data_chao_s_Serranidae)
 alpha_sig = 0.05
 
 
-# we start with the loci subjected to 11 primer concentrations (we removed loci with no sum_max_n to simplify)
-data_chao_s_Serranidae %>%
-  ggplot(aes(x = s_obs)) + 
-  geom_histogram() +
-  facet_grid(habitat ~ study_locations)
-
-data_chao_s_Serranidae %>%
-  ggplot(aes(x = s_chao1)) + 
-  geom_histogram() +
-  facet_grid(habitat ~ study_locations)
-
-vis_dists(data_chao_s_Serranidae,
-          "s_chao1")
-
-vis_dists(data_chao_s_Serranidae,
-          "s_obs")
+## Histogram and Visualizing Distance Matrix
+# data_chao_s_Serranidae %>%
+#   ggplot(aes(x = s_obs)) + 
+#   geom_histogram() +
+#   facet_grid(habitat ~ study_locations)
+# 
+# data_chao_s_Serranidae %>%
+#   ggplot(aes(x = s_chao1)) + 
+#   geom_histogram() +
+#   facet_grid(habitat ~ study_locations)
+# 
+# vis_dists(data_chao_s_Serranidae,
+#           "s_chao1")
+# 
+# vis_dists(data_chao_s_Serranidae,
+#           "s_obs")
 
 
 sampling_design = "s_obs ~  habitat * study_locations"
+#fit glm model
 model_Serranidae <<- 
   glm(formula = sampling_design, 
       family = distribution_family,
       data = data_chao_s_Serranidae)
 
 
-sampling_design = "s_obs ~  habitat * study_locations + (1|study_locations:bait_type)"
+# sampling_design = "s_obs ~  habitat * study_locations + (1|study_locations:bait_type)"
 
 
-# # fit mixed model
-model_Serranidae <<-
-  afex::mixed(formula = sampling_design,
-              family = distribution_family,
-              method = "LRT",
-              sig_symbols = rep("", 4),
-              # all_fit = TRUE,
-              data = data_chao_s_Serranidae)
+# # # fit mixed model
+# model_Serranidae <<-
+#   afex::mixed(formula = sampling_design,
+#               family = distribution_family,
+#               method = "LRT",
+#               sig_symbols = rep("", 4),
+#               # all_fit = TRUE,
+#               data = data_chao_s_Serranidae)
 
 model_Serranidae
 anova(model_Serranidae)
@@ -604,16 +768,15 @@ groupings_model_fixed_sr_Serranidae <<-
                    "study_locations")) %>%
   dplyr::rename(response = 3)
 
-# groupings_model_fixed_sr_Serranidae <- groupings_model_fixed_sr_Serranidae %>%
-#   mutate(habitat = factor(habitat,
-#                           levels = c(
-#                             "Shallow Reef",
-#                             "Mesophotic Reef")))
+groupings_model_fixed_sr_Serranidae <- groupings_model_fixed_sr_Serranidae %>%
+  mutate(habitat = factor(habitat,
+                          levels = c(
+                            "Shallow Reef",
+                            "Mesophotic Reef")))
 
 habitatcolors <- c("#F08080","#6FAFC6")
 habitat(habitatcolors) <- c("Shallow Reef", "Mesophotic Reef")
 
-View(groupings_model_fixed_sr_Serranidae)
 
 ## mean_chao_s Serranidae: Visualize Estimated Marginal Means Output with Group Categories ##
 p_sr_Serranidae <- 
@@ -653,7 +816,7 @@ p_sr_Serranidae <-
   #      ymax) +
   labs(title = "Serranidae",
       x = "Study Locations",
-       y = "EM Means of Chao Estimate of Species Richness") +
+       y = "EM Means of Species Richness") +
   theme(legend.position=c(0.33,0.8),  
         legend.title=element_blank()) +
   scale_fill_manual(values = habitatcolors)
@@ -677,7 +840,42 @@ data_vegan_Lutjanidae <-
   dplyr::select(-op_code) %>%
   dplyr::select(contains("Lutjanidae"))
 
-view(data_vegan_Lutjanidae)
+
+data_vegan.env <-
+  data_all_removed_sp %>%
+  # sum all max_n counts for a taxon and op_code
+  dplyr::select(taxon,
+                op_code,
+                site,
+                study_locations,
+                survey_area,
+                habitat,
+                lat_n,
+                long_e,
+                depth_m,
+                survey_length_hrs,
+                bait_type,
+                max_n) %>%
+  # convert tibble from long to wide format
+  pivot_wider(names_from = taxon,
+              values_from = max_n,
+              values_fill = 0) %>%
+  # sort by op_code
+  arrange(op_code) %>%
+  dplyr::select(op_code:bait_type) %>%
+  mutate(site_code = str_remove(op_code,
+                                "_.*$"),
+         site_code = factor(site_code),
+         study_locations = factor(study_locations,
+                                  levels = c("TRNP",
+                                             "CAGAYANCILLO")),
+         habitat = factor(habitat),
+         bait_type = factor(bait_type),
+         site = factor(site),
+         survey_area = factor(survey_area),
+         habitat_mpa = str_c(habitat,
+                             study_locations,
+                             sep = " "))
 
 attach(data_vegan.env)
 
@@ -685,6 +883,7 @@ pool_Lutjanidae <-
   estimateR(x = data_vegan_Lutjanidae) %>%
   t() %>%
   as_tibble()
+
 
 data_chao_s_Lutjanidae <- pool_Lutjanidae %>%
   clean_names() %>%
@@ -698,29 +897,51 @@ data_chao_s_Lutjanidae <- pool_Lutjanidae %>%
 
 
 # define your response variable, here it is binomial
-response_var = quo(s_chao1) # quo() allows column names to be put into variables 
+response_var = quo(s_obs) # quo() allows column names to be put into variables 
 
 # enter the distribution family for your response variable
-distribution_family = "gaussian"
-
+distribution_family = "poisson"
 
 alpha_sig = 0.05
 
 
-# we start with the loci subjected to 11 primer concentrations (we removed loci with no sum_max_n to simplify)
+## Histogram and Visualizing Distance Matrix
+# data_chao_s_Lutjanidae %>%
+#   ggplot(aes(x = s_obs)) + 
+#   geom_histogram() +
+#   facet_grid(habitat ~ study_locations)
+# 
+# data_chao_s_Lutjanidae %>%
+#   ggplot(aes(x = s_chao1)) + 
+#   geom_histogram() +
+#   facet_grid(habitat ~ study_locations)
+# 
+# vis_dists(data_chao_s_Lutjanidae,
+#           "s_chao1")
+# 
+# vis_dists(data_chao_s_Lutjanidae,
+#           "s_obs")
 
 
-sampling_design = "s_chao1 ~  habitat * study_locations + (1|study_locations:bait_type)"
+sampling_design = "s_obs ~  habitat * study_locations"
+#fit glm model
+model_Lutjanidae <<- 
+  glm(formula = sampling_design, 
+      family = distribution_family,
+      data = data_chao_s_Lutjanidae)
 
 
-# # fit mixed model
-model_Lutjanidae <<-
-  afex::mixed(formula = sampling_design,
-              family = distribution_family,
-              method = "LRT",
-              sig_symbols = rep("", 4),
-              # all_fit = TRUE,
-              data = data_chao_s_Lutjanidae)
+# sampling_design = "s_obs ~  habitat * study_locations + (1|study_locations:bait_type)"
+
+
+# # # fit mixed model
+# model_Lutjanidae <<-
+#   afex::mixed(formula = sampling_design,
+#               family = distribution_family,
+#               method = "LRT",
+#               sig_symbols = rep("", 4),
+#               # all_fit = TRUE,
+#               data = data_chao_s_Lutjanidae)
 
 model_Lutjanidae
 anova(model_Lutjanidae)
@@ -759,7 +980,7 @@ contrast(regrid(emmeans_model_sr_Lutjanidae), # emmeans back transformed to the 
          combine = FALSE, 
          adjust = "bh")
 
-## mean_chao_ Lutjanidae: Group Sites Based on Model Results ##
+## mean_chao_s: Group Sites Based on Model Results ##
 groupings_model_sr_Lutjanidae <<-
   multcomp::cld(emmeans_model_sr_Lutjanidae, 
                 alpha = alpha_sig,
@@ -782,69 +1003,69 @@ groupings_model_fixed_sr_Lutjanidae <<-
   summary(emmeans_model_sr_Lutjanidae,      # emmeans back transformed to the original units of response var
           type="response") %>%
   tibble() %>%
-  left_join(groupings_model_sr_Lutjanidae,
-            # dplyr::select(-response:-asymp.UCL),
+  left_join(groupings_model_sr_Lutjanidae %>%
+              dplyr::select(-rate:-asymp.UCL),
             # by = c(str_replace(fixed_vars,
             #                    "[\\+\\*]",
             #                    '" , "'))) %>%
             by = c("habitat",
-                   "study_locations"))
-            # dplyr::rename(response = 3)
-            
-groupings_model_fixed_sr_Lutjanidae <- groupings_model_fixed_sr_Lutjanidae %>%
-mutate(habitat = factor(habitat,
-                        levels = c("Shallow Reef",
-                                  "Mesophotic Reef")))
+                   "study_locations")) %>%
+  dplyr::rename(response = 3)
 
-view(groupings_model_fixed_sr_Lutjanidae)
-            
+groupings_model_fixed_sr_Lutjanidae <- groupings_model_fixed_sr_Lutjanidae %>%
+  mutate(habitat = factor(habitat,
+                          levels = c(
+                            "Shallow Reef",
+                            "Mesophotic Reef")))
+
 habitatcolors <- c("#F08080","#6FAFC6")
 habitat(habitatcolors) <- c("Shallow Reef", "Mesophotic Reef")
-            
-            ## mean_chao_s Lutjanidae: Visualize Estimated Marginal Means Output with Group Categories ##
- p_sr_Lutjanidae <-  groupings_model_fixed_sr_Lutjanidae %>%
-   ggplot(aes(x=study_locations,
-               y= emmean.x,
-              fill = habitat)) +
-   geom_col(position = "dodge",
+
+
+## mean_chao_s Lutjanidae: Visualize Estimated Marginal Means Output with Group Categories ##
+p_sr_Lutjanidae <- 
+  groupings_model_fixed_sr_Lutjanidae %>%
+  ggplot(aes(x=study_locations,
+             y= response,
+             fill = habitat)) +
+  geom_col(position = "dodge",
            color = "black") +
-              # scale_fill_manual(values = c("lightgrey",
-              #                              "white"),
-              #                   labels = c('Pre-Screen', 
-              #                              'Post-Screen')) +
- geom_point(data = data_chao_s_Lutjanidae,
+  # scale_fill_manual(values = c("lightgrey",
+  #                              "white"),
+  #                   labels = c('Pre-Screen', 
+  #                              'Post-Screen')) +
+  geom_point(data = data_chao_s_Lutjanidae,
              aes(x = study_locations,
-                  y = !!response_var
-                  ),
-                         position = position_jitterdodge(),
-                         # color = "grey70",
-                         # shape = 1,
-                         size = 1) +
- geom_errorbar(aes(ymin=lower.CL.y,
-                ymax=upper.CL.y),
+                 y = !!response_var
+             ),
+             position = position_jitterdodge(),
+             # color = "grey70",
+             # shape = 1,
+             size = 1) +
+  geom_errorbar(aes(ymin=asymp.LCL,
+                    ymax=asymp.UCL),
                 width = 0.2,
                 color = "grey50",
-                            # size = 1,
-                  position = position_dodge(width=0.9)) +
-guides(color = "none",
-                     shape = "none") +   #remove color legend
- geom_text(aes(label=group),
-               position = position_dodge(width=0.9),
-                vjust = -0.5,
-                hjust = -0.15,
-               size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
-theme_classic() +
-              # ylim(ymin, 
-              #      ymax) +
- labs(title = "Lutjanidae",
-   x = "Study Locations",
- y = "EM Means of Chao Estimate of Species Richness") +
+                # size = 1,
+                position = position_dodge(width=0.9)) +
+  guides(color = "none",
+         shape = "none") +   #remove color legend
+  geom_text(aes(label=group),
+            position = position_dodge(width=0.9),
+            vjust = -0.5,
+            hjust = -0.15,
+            size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
+  theme_classic() +
+  # ylim(ymin, 
+  #      ymax) +
+  labs(title = "Lutjanidae",
+       x = "Study Locations",
+       y = "EM Means of Species Richness") +
   theme(legend.position=c(0.33,0.8),  
- legend.title=element_blank()) +
-scale_fill_manual(values = habitatcolors)
-            
-p_sr_Lutjanidae
+        legend.title=element_blank()) +
+  scale_fill_manual(values = habitatcolors)
 
+p_sr_Lutjanidae
 #### mean_chao_s of Lethrinidae ####
 ## Make New Data Vegan for Lethrinidae
 data_vegan_Lethrinidae <-
@@ -862,7 +1083,42 @@ data_vegan_Lethrinidae <-
   dplyr::select(-op_code) %>%
   dplyr::select(contains("Lethrinidae"))
 
-view(data_vegan_Lethrinidae)
+
+data_vegan.env <-
+  data_all_removed_sp %>%
+  # sum all max_n counts for a taxon and op_code
+  dplyr::select(taxon,
+                op_code,
+                site,
+                study_locations,
+                survey_area,
+                habitat,
+                lat_n,
+                long_e,
+                depth_m,
+                survey_length_hrs,
+                bait_type,
+                max_n) %>%
+  # convert tibble from long to wide format
+  pivot_wider(names_from = taxon,
+              values_from = max_n,
+              values_fill = 0) %>%
+  # sort by op_code
+  arrange(op_code) %>%
+  dplyr::select(op_code:bait_type) %>%
+  mutate(site_code = str_remove(op_code,
+                                "_.*$"),
+         site_code = factor(site_code),
+         study_locations = factor(study_locations,
+                                  levels = c("TRNP",
+                                             "CAGAYANCILLO")),
+         habitat = factor(habitat),
+         bait_type = factor(bait_type),
+         site = factor(site),
+         survey_area = factor(survey_area),
+         habitat_mpa = str_c(habitat,
+                             study_locations,
+                             sep = " "))
 
 attach(data_vegan.env)
 
@@ -871,10 +1127,10 @@ pool_Lethrinidae <-
   t() %>%
   as_tibble()
 
+
 data_chao_s_Lethrinidae <- pool_Lethrinidae %>%
   clean_names() %>%
   bind_cols(data_vegan.env)
-
 
 # data_chao_s_Lethrinidae %>%
 #   ggplot(aes(x = s_chao1)) +
@@ -884,29 +1140,51 @@ data_chao_s_Lethrinidae <- pool_Lethrinidae %>%
 
 
 # define your response variable, here it is binomial
-response_var = quo(s_chao1) # quo() allows column names to be put into variables 
+response_var = quo(s_obs) # quo() allows column names to be put into variables 
 
 # enter the distribution family for your response variable
-distribution_family = "gaussian"
-
+distribution_family = "poisson"
 
 alpha_sig = 0.05
 
 
-# we start with the loci subjected to 11 primer concentrations (we removed loci with no sum_max_n to simplify)
+## Histogram and Visualizing Distance Matrix
+# data_chao_s_Lethrinidae %>%
+#   ggplot(aes(x = s_obs)) + 
+#   geom_histogram() +
+#   facet_grid(habitat ~ study_locations)
+# 
+# data_chao_s_Lethrinidae %>%
+#   ggplot(aes(x = s_chao1)) + 
+#   geom_histogram() +
+#   facet_grid(habitat ~ study_locations)
+# 
+# vis_dists(data_chao_s_Lethrinidae,
+#           "s_chao1")
+# 
+# vis_dists(data_chao_s_Lethrinidae,
+#           "s_obs")
 
 
-sampling_design = "s_chao1 ~  habitat * study_locations + (1|study_locations:bait_type)"
+sampling_design = "s_obs ~  habitat * study_locations"
+#fit glm model
+model_Lethrinidae <<- 
+  glm(formula = sampling_design, 
+      family = distribution_family,
+      data = data_chao_s_Lethrinidae)
 
 
-# # fit mixed model
-model_Lethrinidae <<-
-  afex::mixed(formula = sampling_design,
-              family = distribution_family,
-              method = "LRT",
-              sig_symbols = rep("", 4),
-              # all_fit = TRUE,
-              data = data_chao_s_Lethrinidae)
+# sampling_design = "s_obs ~  habitat * study_locations + (1|study_locations:bait_type)"
+
+
+# # # fit mixed model
+# model_Lethrinidae <<-
+#   afex::mixed(formula = sampling_design,
+#               family = distribution_family,
+#               method = "LRT",
+#               sig_symbols = rep("", 4),
+#               # all_fit = TRUE,
+#               data = data_chao_s_Lethrinidae)
 
 model_Lethrinidae
 anova(model_Lethrinidae)
@@ -945,7 +1223,7 @@ contrast(regrid(emmeans_model_sr_Lethrinidae), # emmeans back transformed to the
          combine = FALSE, 
          adjust = "bh")
 
-## mean_chao_ Lethrinidae: Group Sites Based on Model Results ##
+## mean_chao_s: Group Sites Based on Model Results ##
 groupings_model_sr_Lethrinidae <<-
   multcomp::cld(emmeans_model_sr_Lethrinidae, 
                 alpha = alpha_sig,
@@ -968,29 +1246,30 @@ groupings_model_fixed_sr_Lethrinidae <<-
   summary(emmeans_model_sr_Lethrinidae,      # emmeans back transformed to the original units of response var
           type="response") %>%
   tibble() %>%
-  left_join(groupings_model_sr_Lethrinidae,
-            # dplyr::select(-response:-asymp.UCL),
+  left_join(groupings_model_sr_Lethrinidae %>%
+              dplyr::select(-rate:-asymp.UCL),
             # by = c(str_replace(fixed_vars,
             #                    "[\\+\\*]",
             #                    '" , "'))) %>%
             by = c("habitat",
-                   "study_locations"))
-# dplyr::rename(response = 3)
+                   "study_locations")) %>%
+  dplyr::rename(response = 3)
 
 groupings_model_fixed_sr_Lethrinidae <- groupings_model_fixed_sr_Lethrinidae %>%
   mutate(habitat = factor(habitat,
-                          levels = c("Shallow Reef",
-                                     "Mesophotic Reef")))
-
-view(groupings_model_fixed_sr_Lethrinidae)
+                          levels = c(
+                            "Shallow Reef",
+                            "Mesophotic Reef")))
 
 habitatcolors <- c("#F08080","#6FAFC6")
 habitat(habitatcolors) <- c("Shallow Reef", "Mesophotic Reef")
 
+
 ## mean_chao_s Lethrinidae: Visualize Estimated Marginal Means Output with Group Categories ##
-p_sr_Lethrinidae <-  groupings_model_fixed_sr_Lethrinidae %>%
+p_sr_Lethrinidae <- 
+  groupings_model_fixed_sr_Lethrinidae %>%
   ggplot(aes(x=study_locations,
-             y= emmean.x,
+             y= response,
              fill = habitat)) +
   geom_col(position = "dodge",
            color = "black") +
@@ -1006,8 +1285,8 @@ p_sr_Lethrinidae <-  groupings_model_fixed_sr_Lethrinidae %>%
              # color = "grey70",
              # shape = 1,
              size = 1) +
-  geom_errorbar(aes(ymin=lower.CL.y,
-                    ymax=upper.CL.y),
+  geom_errorbar(aes(ymin=asymp.LCL,
+                    ymax=asymp.UCL),
                 width = 0.2,
                 color = "grey50",
                 # size = 1,
@@ -1024,7 +1303,7 @@ p_sr_Lethrinidae <-  groupings_model_fixed_sr_Lethrinidae %>%
   #      ymax) +
   labs(title = "Lethrinidae",
        x = "Study Locations",
-       y = "EM Means of Chao Estimate of Species Richness") +
+       y = "EM Means of Species Richness") +
   theme(legend.position=c(0.33,0.8),  
         legend.title=element_blank()) +
   scale_fill_manual(values = habitatcolors)
@@ -1047,18 +1326,54 @@ data_vegan_Carangidae <-
   dplyr::select(-op_code) %>%
   dplyr::select(contains("Carangidae"))
 
-view(data_vegan_Carangidae)
 
+data_vegan.env <-
+  data_all_removed_sp %>%
+  # sum all max_n counts for a taxon and op_code
+  dplyr::select(taxon,
+                op_code,
+                site,
+                study_locations,
+                survey_area,
+                habitat,
+                lat_n,
+                long_e,
+                depth_m,
+                survey_length_hrs,
+                bait_type,
+                max_n) %>%
+  # convert tibble from long to wide format
+  pivot_wider(names_from = taxon,
+              values_from = max_n,
+              values_fill = 0) %>%
+  # sort by op_code
+  arrange(op_code) %>%
+  dplyr::select(op_code:bait_type) %>%
+  mutate(site_code = str_remove(op_code,
+                                "_.*$"),
+         site_code = factor(site_code),
+         study_locations = factor(study_locations,
+                                  levels = c("TRNP",
+                                             "CAGAYANCILLO")),
+         habitat = factor(habitat),
+         bait_type = factor(bait_type),
+         site = factor(site),
+         survey_area = factor(survey_area),
+         habitat_mpa = str_c(habitat,
+                             study_locations,
+                             sep = " "))
+
+attach(data_vegan.env)
 
 pool_Carangidae <- 
   estimateR(x = data_vegan_Carangidae) %>%
   t() %>%
   as_tibble()
 
+
 data_chao_s_Carangidae <- pool_Carangidae %>%
   clean_names() %>%
   bind_cols(data_vegan.env)
-
 
 # data_chao_s_Carangidae %>%
 #   ggplot(aes(x = s_chao1)) +
@@ -1068,29 +1383,51 @@ data_chao_s_Carangidae <- pool_Carangidae %>%
 
 
 # define your response variable, here it is binomial
-response_var = quo(s_chao1) # quo() allows column names to be put into variables 
+response_var = quo(s_obs) # quo() allows column names to be put into variables 
 
 # enter the distribution family for your response variable
-distribution_family = "gaussian"
-
+distribution_family = "poisson"
 
 alpha_sig = 0.05
 
 
-# we start with the loci subjected to 11 primer concentrations (we removed loci with no sum_max_n to simplify)
+## Histogram and Visualizing Distance Matrix
+# data_chao_s_Carangidae %>%
+#   ggplot(aes(x = s_obs)) + 
+#   geom_histogram() +
+#   facet_grid(habitat ~ study_locations)
+# 
+# data_chao_s_Carangidae %>%
+#   ggplot(aes(x = s_chao1)) + 
+#   geom_histogram() +
+#   facet_grid(habitat ~ study_locations)
+# 
+# vis_dists(data_chao_s_Carangidae,
+#           "s_chao1")
+# 
+# vis_dists(data_chao_s_Carangidae,
+#           "s_obs")
 
 
-sampling_design = "s_chao1 ~  habitat * study_locations + (1|study_locations:bait_type)"
+sampling_design = "s_obs ~  habitat * study_locations"
+#fit glm model
+model_Carangidae <<- 
+  glm(formula = sampling_design, 
+      family = distribution_family,
+      data = data_chao_s_Carangidae)
 
 
-# # fit mixed model
-model_Carangidae <<-
-  afex::mixed(formula = sampling_design,
-              family = distribution_family,
-              method = "LRT",
-              sig_symbols = rep("", 4),
-              # all_fit = TRUE,
-              data = data_chao_s_Carangidae)
+# sampling_design = "s_obs ~  habitat * study_locations + (1|study_locations:bait_type)"
+
+
+# # # fit mixed model
+# model_Carangidae <<-
+#   afex::mixed(formula = sampling_design,
+#               family = distribution_family,
+#               method = "LRT",
+#               sig_symbols = rep("", 4),
+#               # all_fit = TRUE,
+#               data = data_chao_s_Carangidae)
 
 model_Carangidae
 anova(model_Carangidae)
@@ -1129,7 +1466,7 @@ contrast(regrid(emmeans_model_sr_Carangidae), # emmeans back transformed to the 
          combine = FALSE, 
          adjust = "bh")
 
-## mean_chao_ Carangidae: Group Sites Based on Model Results ##
+## mean_chao_s: Group Sites Based on Model Results ##
 groupings_model_sr_Carangidae <<-
   multcomp::cld(emmeans_model_sr_Carangidae, 
                 alpha = alpha_sig,
@@ -1152,29 +1489,30 @@ groupings_model_fixed_sr_Carangidae <<-
   summary(emmeans_model_sr_Carangidae,      # emmeans back transformed to the original units of response var
           type="response") %>%
   tibble() %>%
-  left_join(groupings_model_sr_Carangidae,
-            # dplyr::select(-response:-asymp.UCL),
+  left_join(groupings_model_sr_Carangidae %>%
+              dplyr::select(-rate:-asymp.UCL),
             # by = c(str_replace(fixed_vars,
             #                    "[\\+\\*]",
             #                    '" , "'))) %>%
             by = c("habitat",
-                   "study_locations"))
-# dplyr::rename(response = 3)
+                   "study_locations")) %>%
+  dplyr::rename(response = 3)
 
 groupings_model_fixed_sr_Carangidae <- groupings_model_fixed_sr_Carangidae %>%
   mutate(habitat = factor(habitat,
-                          levels = c("Shallow Reef",
-                                     "Mesophotic Reef")))
-
-view(groupings_model_fixed_sr_Carangidae)
+                          levels = c(
+                            "Shallow Reef",
+                            "Mesophotic Reef")))
 
 habitatcolors <- c("#F08080","#6FAFC6")
 habitat(habitatcolors) <- c("Shallow Reef", "Mesophotic Reef")
 
+
 ## mean_chao_s Carangidae: Visualize Estimated Marginal Means Output with Group Categories ##
-p_sr_Carangidae <-  groupings_model_fixed_sr_Carangidae %>%
+p_sr_Carangidae <- 
+  groupings_model_fixed_sr_Carangidae %>%
   ggplot(aes(x=study_locations,
-             y= emmean.x,
+             y= response,
              fill = habitat)) +
   geom_col(position = "dodge",
            color = "black") +
@@ -1190,8 +1528,8 @@ p_sr_Carangidae <-  groupings_model_fixed_sr_Carangidae %>%
              # color = "grey70",
              # shape = 1,
              size = 1) +
-  geom_errorbar(aes(ymin=lower.CL.y,
-                    ymax=upper.CL.y),
+  geom_errorbar(aes(ymin=asymp.LCL,
+                    ymax=asymp.UCL),
                 width = 0.2,
                 color = "grey50",
                 # size = 1,
@@ -1208,7 +1546,7 @@ p_sr_Carangidae <-  groupings_model_fixed_sr_Carangidae %>%
   #      ymax) +
   labs(title = "Carangidae",
        x = "Study Locations",
-       y = "EM Means of Chao Estimate of Species Richness") +
+       y = "EM Means of Species Richness") +
   theme(legend.position=c(0.33,0.8),  
         legend.title=element_blank()) +
   scale_fill_manual(values = habitatcolors)
@@ -1232,18 +1570,54 @@ data_vegan_Galeomorphii <-
   dplyr::select(-op_code) %>%
   dplyr::select(contains("Galeomorphii"))
 
-view(data_vegan_Galeomorphii)
 
+data_vegan.env <-
+  data_all_removed_sp %>%
+  # sum all max_n counts for a taxon and op_code
+  dplyr::select(taxon,
+                op_code,
+                site,
+                study_locations,
+                survey_area,
+                habitat,
+                lat_n,
+                long_e,
+                depth_m,
+                survey_length_hrs,
+                bait_type,
+                max_n) %>%
+  # convert tibble from long to wide format
+  pivot_wider(names_from = taxon,
+              values_from = max_n,
+              values_fill = 0) %>%
+  # sort by op_code
+  arrange(op_code) %>%
+  dplyr::select(op_code:bait_type) %>%
+  mutate(site_code = str_remove(op_code,
+                                "_.*$"),
+         site_code = factor(site_code),
+         study_locations = factor(study_locations,
+                                  levels = c("TRNP",
+                                             "CAGAYANCILLO")),
+         habitat = factor(habitat),
+         bait_type = factor(bait_type),
+         site = factor(site),
+         survey_area = factor(survey_area),
+         habitat_mpa = str_c(habitat,
+                             study_locations,
+                             sep = " "))
+
+attach(data_vegan.env)
 
 pool_Galeomorphii <- 
   estimateR(x = data_vegan_Galeomorphii) %>%
   t() %>%
   as_tibble()
 
+
 data_chao_s_Galeomorphii <- pool_Galeomorphii %>%
   clean_names() %>%
   bind_cols(data_vegan.env)
-
 
 # data_chao_s_Galeomorphii %>%
 #   ggplot(aes(x = s_chao1)) +
@@ -1253,29 +1627,51 @@ data_chao_s_Galeomorphii <- pool_Galeomorphii %>%
 
 
 # define your response variable, here it is binomial
-response_var = quo(s_chao1) # quo() allows column names to be put into variables 
+response_var = quo(s_obs) # quo() allows column names to be put into variables 
 
 # enter the distribution family for your response variable
-distribution_family = "gaussian"
-
+distribution_family = "poisson"
 
 alpha_sig = 0.05
 
 
-# we start with the loci subjected to 11 primer concentrations (we removed loci with no sum_max_n to simplify)
+## Histogram and Visualizing Distance Matrix
+# data_chao_s_Galeomorphii %>%
+#   ggplot(aes(x = s_obs)) + 
+#   geom_histogram() +
+#   facet_grid(habitat ~ study_locations)
+# 
+# data_chao_s_Galeomorphii %>%
+#   ggplot(aes(x = s_chao1)) + 
+#   geom_histogram() +
+#   facet_grid(habitat ~ study_locations)
+# 
+# vis_dists(data_chao_s_Galeomorphii,
+#           "s_chao1")
+# 
+# vis_dists(data_chao_s_Galeomorphii,
+#           "s_obs")
 
 
-sampling_design = "s_chao1 ~  habitat * study_locations + (1|study_locations:bait_type)"
+sampling_design = "s_obs ~  habitat * study_locations"
+#fit glm model
+model_Galeomorphii <<- 
+  glm(formula = sampling_design, 
+      family = distribution_family,
+      data = data_chao_s_Galeomorphii)
 
 
-# # fit mixed model
-model_Galeomorphii <<-
-  afex::mixed(formula = sampling_design,
-              family = distribution_family,
-              method = "LRT",
-              sig_symbols = rep("", 4),
-              # all_fit = TRUE,
-              data = data_chao_s_Galeomorphii)
+# sampling_design = "s_obs ~  habitat * study_locations + (1|study_locations:bait_type)"
+
+
+# # # fit mixed model
+# model_Galeomorphii <<-
+#   afex::mixed(formula = sampling_design,
+#               family = distribution_family,
+#               method = "LRT",
+#               sig_symbols = rep("", 4),
+#               # all_fit = TRUE,
+#               data = data_chao_s_Galeomorphii)
 
 model_Galeomorphii
 anova(model_Galeomorphii)
@@ -1314,7 +1710,7 @@ contrast(regrid(emmeans_model_sr_Galeomorphii), # emmeans back transformed to th
          combine = FALSE, 
          adjust = "bh")
 
-## mean_chao_ Galeomorphii: Group Sites Based on Model Results ##
+## mean_chao_s: Group Sites Based on Model Results ##
 groupings_model_sr_Galeomorphii <<-
   multcomp::cld(emmeans_model_sr_Galeomorphii, 
                 alpha = alpha_sig,
@@ -1337,29 +1733,30 @@ groupings_model_fixed_sr_Galeomorphii <<-
   summary(emmeans_model_sr_Galeomorphii,      # emmeans back transformed to the original units of response var
           type="response") %>%
   tibble() %>%
-  left_join(groupings_model_sr_Galeomorphii,
-            # dplyr::select(-response:-asymp.UCL),
+  left_join(groupings_model_sr_Galeomorphii %>%
+              dplyr::select(-rate:-asymp.UCL),
             # by = c(str_replace(fixed_vars,
             #                    "[\\+\\*]",
             #                    '" , "'))) %>%
             by = c("habitat",
-                   "study_locations"))
-# dplyr::rename(response = 3)
+                   "study_locations")) %>%
+  dplyr::rename(response = 3)
 
 groupings_model_fixed_sr_Galeomorphii <- groupings_model_fixed_sr_Galeomorphii %>%
   mutate(habitat = factor(habitat,
-                          levels = c("Shallow Reef",
-                                     "Mesophotic Reef")))
-
-view(groupings_model_fixed_sr_Galeomorphii)
+                          levels = c(
+                            "Shallow Reef",
+                            "Mesophotic Reef")))
 
 habitatcolors <- c("#F08080","#6FAFC6")
 habitat(habitatcolors) <- c("Shallow Reef", "Mesophotic Reef")
 
+
 ## mean_chao_s Galeomorphii: Visualize Estimated Marginal Means Output with Group Categories ##
-p_sr_Galeomorphii <-  groupings_model_fixed_sr_Galeomorphii %>%
+p_sr_Galeomorphii <- 
+  groupings_model_fixed_sr_Galeomorphii %>%
   ggplot(aes(x=study_locations,
-             y= emmean.x,
+             y= response,
              fill = habitat)) +
   geom_col(position = "dodge",
            color = "black") +
@@ -1375,8 +1772,8 @@ p_sr_Galeomorphii <-  groupings_model_fixed_sr_Galeomorphii %>%
              # color = "grey70",
              # shape = 1,
              size = 1) +
-  geom_errorbar(aes(ymin=lower.CL.y,
-                    ymax=upper.CL.y),
+  geom_errorbar(aes(ymin=asymp.LCL,
+                    ymax=asymp.UCL),
                 width = 0.2,
                 color = "grey50",
                 # size = 1,
@@ -1393,7 +1790,7 @@ p_sr_Galeomorphii <-  groupings_model_fixed_sr_Galeomorphii %>%
   #      ymax) +
   labs(title = "Galeomorphii",
        x = "Study Locations",
-       y = "EM Means of Chao Estimate of Species Richness") +
+       y = "EM Means of Species Richness") +
   theme(legend.position=c(0.33,0.8),  
         legend.title=element_blank()) +
   scale_fill_manual(values = habitatcolors)
@@ -1417,18 +1814,54 @@ data_vegan_Cheilinus_undulatus <-
   dplyr::select(-op_code) %>%
   dplyr::select(contains("Cheilinus undulatus"))
 
-view(data_vegan_Cheilinus_undulatus)
 
+data_vegan.env <-
+  data_all_removed_sp %>%
+  # sum all max_n counts for a taxon and op_code
+  dplyr::select(taxon,
+                op_code,
+                site,
+                study_locations,
+                survey_area,
+                habitat,
+                lat_n,
+                long_e,
+                depth_m,
+                survey_length_hrs,
+                bait_type,
+                max_n) %>%
+  # convert tibble from long to wide format
+  pivot_wider(names_from = taxon,
+              values_from = max_n,
+              values_fill = 0) %>%
+  # sort by op_code
+  arrange(op_code) %>%
+  dplyr::select(op_code:bait_type) %>%
+  mutate(site_code = str_remove(op_code,
+                                "_.*$"),
+         site_code = factor(site_code),
+         study_locations = factor(study_locations,
+                                  levels = c("TRNP",
+                                             "CAGAYANCILLO")),
+         habitat = factor(habitat),
+         bait_type = factor(bait_type),
+         site = factor(site),
+         survey_area = factor(survey_area),
+         habitat_mpa = str_c(habitat,
+                             study_locations,
+                             sep = " "))
+
+attach(data_vegan.env)
 
 pool_Cheilinus_undulatus <- 
   estimateR(x = data_vegan_Cheilinus_undulatus) %>%
   t() %>%
   as_tibble()
 
+
 data_chao_s_Cheilinus_undulatus <- pool_Cheilinus_undulatus %>%
   clean_names() %>%
   bind_cols(data_vegan.env)
-
 
 # data_chao_s_Cheilinus_undulatus %>%
 #   ggplot(aes(x = s_chao1)) +
@@ -1438,29 +1871,51 @@ data_chao_s_Cheilinus_undulatus <- pool_Cheilinus_undulatus %>%
 
 
 # define your response variable, here it is binomial
-response_var = quo(s_chao1) # quo() allows column names to be put into variables 
+response_var = quo(s_obs) # quo() allows column names to be put into variables 
 
 # enter the distribution family for your response variable
-distribution_family = "gaussian"
-
+distribution_family = "poisson"
 
 alpha_sig = 0.05
 
 
-# we start with the loci subjected to 11 primer concentrations (we removed loci with no sum_max_n to simplify)
+## Histogram and Visualizing Distance Matrix
+# data_chao_s_Cheilinus_undulatus %>%
+#   ggplot(aes(x = s_obs)) + 
+#   geom_histogram() +
+#   facet_grid(habitat ~ study_locations)
+# 
+# data_chao_s_Cheilinus_undulatus %>%
+#   ggplot(aes(x = s_chao1)) + 
+#   geom_histogram() +
+#   facet_grid(habitat ~ study_locations)
+# 
+# vis_dists(data_chao_s_Cheilinus_undulatus,
+#           "s_chao1")
+# 
+# vis_dists(data_chao_s_Cheilinus_undulatus,
+#           "s_obs")
 
 
-sampling_design = "s_chao1 ~  habitat * study_locations + (1|study_locations:bait_type)"
+sampling_design = "s_obs ~  habitat * study_locations"
+#fit glm model
+model_Cheilinus_undulatus <<- 
+  glm(formula = sampling_design, 
+      family = distribution_family,
+      data = data_chao_s_Cheilinus_undulatus)
 
 
-# # fit mixed model
-model_Cheilinus_undulatus <<-
-  afex::mixed(formula = sampling_design,
-              family = distribution_family,
-              method = "LRT",
-              sig_symbols = rep("", 4),
-              # all_fit = TRUE,
-              data = data_chao_s_Cheilinus_undulatus)
+# sampling_design = "s_obs ~  habitat * study_locations + (1|study_locations:bait_type)"
+
+
+# # # fit mixed model
+# model_Cheilinus_undulatus <<-
+#   afex::mixed(formula = sampling_design,
+#               family = distribution_family,
+#               method = "LRT",
+#               sig_symbols = rep("", 4),
+#               # all_fit = TRUE,
+#               data = data_chao_s_Cheilinus_undulatus)
 
 model_Cheilinus_undulatus
 anova(model_Cheilinus_undulatus)
@@ -1499,7 +1954,7 @@ contrast(regrid(emmeans_model_sr_Cheilinus_undulatus), # emmeans back transforme
          combine = FALSE, 
          adjust = "bh")
 
-## mean_chao_ Cheilinus_undulatus: Group Sites Based on Model Results ##
+## mean_chao_s: Group Sites Based on Model Results ##
 groupings_model_sr_Cheilinus_undulatus <<-
   multcomp::cld(emmeans_model_sr_Cheilinus_undulatus, 
                 alpha = alpha_sig,
@@ -1522,29 +1977,30 @@ groupings_model_fixed_sr_Cheilinus_undulatus <<-
   summary(emmeans_model_sr_Cheilinus_undulatus,      # emmeans back transformed to the original units of response var
           type="response") %>%
   tibble() %>%
-  left_join(groupings_model_sr_Cheilinus_undulatus,
-            # dplyr::select(-response:-asymp.UCL),
+  left_join(groupings_model_sr_Cheilinus_undulatus %>%
+              dplyr::select(-rate:-asymp.UCL),
             # by = c(str_replace(fixed_vars,
             #                    "[\\+\\*]",
             #                    '" , "'))) %>%
             by = c("habitat",
-                   "study_locations"))
-# dplyr::rename(response = 3)
+                   "study_locations")) %>%
+  dplyr::rename(response = 3)
 
 groupings_model_fixed_sr_Cheilinus_undulatus <- groupings_model_fixed_sr_Cheilinus_undulatus %>%
   mutate(habitat = factor(habitat,
-                          levels = c("Shallow Reef",
-                                     "Mesophotic Reef")))
-
-view(groupings_model_fixed_sr_Cheilinus_undulatus)
+                          levels = c(
+                            "Shallow Reef",
+                            "Mesophotic Reef")))
 
 habitatcolors <- c("#F08080","#6FAFC6")
 habitat(habitatcolors) <- c("Shallow Reef", "Mesophotic Reef")
 
+
 ## mean_chao_s Cheilinus_undulatus: Visualize Estimated Marginal Means Output with Group Categories ##
-p_sr_Cheilinus_undulatus <-  groupings_model_fixed_sr_Cheilinus_undulatus %>%
+p_sr_Cheilinus_undulatus <- 
+  groupings_model_fixed_sr_Cheilinus_undulatus %>%
   ggplot(aes(x=study_locations,
-             y= emmean.x,
+             y= response,
              fill = habitat)) +
   geom_col(position = "dodge",
            color = "black") +
@@ -1560,8 +2016,8 @@ p_sr_Cheilinus_undulatus <-  groupings_model_fixed_sr_Cheilinus_undulatus %>%
              # color = "grey70",
              # shape = 1,
              size = 1) +
-  geom_errorbar(aes(ymin=lower.CL.y,
-                    ymax=upper.CL.y),
+  geom_errorbar(aes(ymin=asymp.LCL,
+                    ymax=asymp.UCL),
                 width = 0.2,
                 color = "grey50",
                 # size = 1,
@@ -1578,14 +2034,20 @@ p_sr_Cheilinus_undulatus <-  groupings_model_fixed_sr_Cheilinus_undulatus %>%
   #      ymax) +
   labs(title = "Cheilinus undulatus",
        x = "Study Locations",
-       y = "EM Means of Chao Estimate of Species Richness") +
+       y = "EM Means of Species Richness") +
   theme(legend.position=c(0.33,0.8),  
         legend.title=element_blank()) +
   scale_fill_manual(values = habitatcolors)
 
 p_sr_Cheilinus_undulatus
 
-emmeans_sr <- ggarrange(p_sr_Serranidae, p_sr_Lutjanidae, p_sr_Lethrinidae, p_sr_Carangidae, p_sr_Galeomorphii, p_sr_Cheilinus_undulatus, 
+
+emmeans_sr <- ggarrange(p_sr_Serranidae,
+                        p_sr_Lutjanidae,
+                        p_sr_Lethrinidae, 
+                        p_sr_Carangidae,
+                        p_sr_Galeomorphii,
+                        p_sr_Cheilinus_undulatus, 
                           ncol = 2,
                           nrow = 3)
 ggsave("FacetedEmMeansSpeciesRichness.pdf", 

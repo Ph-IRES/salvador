@@ -449,7 +449,20 @@ data_vegan_Serranidae <-
   dplyr::select(-op_code) %>%
   dplyr::select(contains("Serranidae"))
 
+
+data_vegan_Serranidae_nozeros <- data_vegan_Serranidae %>%
+                            select_if(colSums(.) != 0)
+
+p_Serranidae_nz <- estaccumR(data_vegan_Serranidae_nozeros, permutations = 999)
+p_Serranidae_plot_nz <- plot(p_Serranidae_nz,
+                          display = c("chao"),
+                          main = "Serranidae")
+p_Serranidae_plot_nz
+
+  
+
 p_Serranidae <- estaccumR(data_vegan_Serranidae, permutations = 999)
+View(p_Serranidae)
 
 p_Serranidae_plot <- plot(p_Serranidae,
                         display = c("chao"),
@@ -823,10 +836,13 @@ data_vegan_Cheilinus_undulatus <-
   # remove the op_code column for vegan
   dplyr::select(-op_code) %>%
   dplyr::select(contains("Cheilinus undulatus"))
+  # select_if(colSums(.) != 0)
+
 
 View(data_vegan_Cheilinus_undulatus)
 
-p_Cheilinus_undulatus_pa <- poolaccum(data_vegan_Cheilinus_undulatus, permutations = 999)
+p_Cheilinus_undulatus_pa <- poolaccum(data_vegan_Cheilinus_undulatus, permutations = 999) 
+
 
 p_Cheilinus_undulatus_plot_pa <- plot(p_Cheilinus_undulatus_pa,
                                    display = c("chao"),
