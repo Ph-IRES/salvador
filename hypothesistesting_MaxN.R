@@ -412,10 +412,10 @@ p <-
   theme_classic() +
   # ylim(ymin, 
   #      ymax) +
-  labs(title = sampling_design,
+  labs(title = "Abundance at TRNP vs. Cagayancillo",
        subtitle = "Distribution Family = Poisson",
-       x = "Depth",
-       y = "Mean Sum_Max_N") +
+       x = "Study Locations",
+       y = "Estimated Marginal Mean of Sum of MaxN") +
   theme(legend.position=c(0.33,0.9),  
         legend.title=element_blank()) +
   scale_fill_manual(values = habitatcolors)

@@ -401,8 +401,10 @@ p_sr <-
   theme_classic() +
   # ylim(ymin, 
   #      ymax) +
-  labs(x = "Study Locations",
-       y = "Estimated Marginal Means of Chao Estimate of Species Richness") +
+  labs(title = "Species Richness at TRNP vs. Cagayancillo",
+       subtitle = "Distribution Family = Gamma",
+        x = "Study Locations",
+       y = "EM Means of Chao Estimate of Species Richness") +
   theme(legend.position=c(0.33,0.8),  
         legend.title=element_blank()) +
   scale_fill_manual(values = habitatcolors)
@@ -565,9 +567,11 @@ p_sr <-
   theme_classic() +
   # ylim(ymin, 
   #      ymax) +
-  labs(x = "Study Locations",
+  labs(title = "Species Observations at TRNP vs. Cagayancillo",
+       subtitle = "Distribution Family = Poisson",
+        x = "Study Locations",
        y = "Estimated Marginal Means of Species Richness") +
-  theme(legend.position=c(0.33,0.8),  
+  theme(legend.position=c(0.6,0.8),  
         legend.title=element_blank()) +
   scale_fill_manual(values = habitatcolors)
 
