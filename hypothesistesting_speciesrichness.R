@@ -819,6 +819,7 @@ p_sr_Serranidae <-
   # ylim(ymin, 
   #      ymax) +
   labs(title = "Serranidae",
+       subtitle = "Distribution Family = Poisson",
       x = "Study Locations",
        y = "EM Means of Species Richness") +
   theme(legend.position=c(0.33,0.8),  
@@ -1063,6 +1064,7 @@ p_sr_Lutjanidae <-
   # ylim(ymin, 
   #      ymax) +
   labs(title = "Lutjanidae",
+       subtitle = "Distribution Family = Poisson",
        x = "Study Locations",
        y = "EM Means of Species Richness") +
   theme(legend.position=c(0.33,0.8),  
@@ -1306,6 +1308,7 @@ p_sr_Lethrinidae <-
   # ylim(ymin, 
   #      ymax) +
   labs(title = "Lethrinidae",
+       subtitle = "Distribution Family = Poisson",
        x = "Study Locations",
        y = "EM Means of Species Richness") +
   theme(legend.position=c(0.33,0.8),  
@@ -1549,6 +1552,7 @@ p_sr_Carangidae <-
   # ylim(ymin, 
   #      ymax) +
   labs(title = "Carangidae",
+       subtitle = "Distribution Family = Poisson",
        x = "Study Locations",
        y = "EM Means of Species Richness") +
   theme(legend.position=c(0.33,0.8),  
@@ -1793,6 +1797,7 @@ p_sr_Galeomorphii <-
   # ylim(ymin, 
   #      ymax) +
   labs(title = "Galeomorphii",
+       subtitle = "Distribution Family = Poisson",
        x = "Study Locations",
        y = "EM Means of Species Richness") +
   theme(legend.position=c(0.33,0.8),  
@@ -2051,7 +2056,6 @@ emmeans_sr <- ggarrange(p_sr_Serranidae,
                         p_sr_Lethrinidae, 
                         p_sr_Carangidae,
                         p_sr_Galeomorphii,
-                        p_sr_Cheilinus_undulatus, 
                           ncol = 2,
                           nrow = 3)
 ggsave("FacetedEmMeansSpeciesRichness.pdf", 
