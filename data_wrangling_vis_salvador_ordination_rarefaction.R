@@ -22,6 +22,7 @@ library(ggordiplots)
 library(ggbiplot)
 library(ggvegan)
 library(ggpubr)
+library(ggplot2)
 
 #### USER DEFINED VARIABLES ####
 
@@ -204,6 +205,34 @@ View(data_vegan.env)
 
 attach(data_vegan.env)
 
+#### Top 10 Most Abundant Species ####
+abundant_species <- data_vegan %>%
+                    clean_names() %>%
+                    bind_cols(data_vegan.env) %>% 
+                    pivot_longer(carangidae_carangoides_coeruleopinnatus:sphyrnidae_sphyrna_lewini,
+                                 names_to = "taxon") %>%
+                    group_by(taxon,
+                            habitat,
+                            study_locations) %>%
+                    summarize(taxon_sum = sum(value)) %>%
+                    filter(taxon_sum >= 3) %>% 
+                    ##visualize
+                    ggplot(aes(x = reorder(taxon, - taxon_sum, sum),
+                               y = taxon_sum)) +
+                    geom_bar(stat = "identity") +
+                    theme_classic() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  xlab("Species") +
+  ylab("Species Count") 
+
+                    
+abundant_species
+ggsave("MostAbundantSpecies.pdf",
+       abundant_species,
+       height = 7, 
+       width = 7, 
+       units = "in")
+                  
 #### ORDINATION: Detrended correspondence analysis ####
 
 #ord <- decorana(data_vegan)
