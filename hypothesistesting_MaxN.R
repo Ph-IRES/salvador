@@ -399,7 +399,7 @@ p <-
                  shape = habitat),
              position=position_jitterdodge(),
              size = 3,
-             color = "darkgrey",
+             color = "black",
              inherit.aes = FALSE) +
   geom_text(aes(label=group),
             position = position_dodge(width=0.9),
@@ -770,7 +770,7 @@ p_Serranidae <-
                  shape = habitat),
              position=position_jitterdodge(),
              size = 3,
-             color = "darkgrey",
+             color = "black",
              inherit.aes = FALSE) +
   geom_text(aes(label=group),
             position = position_dodge(width=0.9),
@@ -949,7 +949,7 @@ p_Lutjanidae <-
                  shape = habitat),
              position=position_jitterdodge(),
              size = 3,
-             color = "darkgrey",
+             color = "black",
              inherit.aes = FALSE) +
   geom_text(aes(label=group),
             position = position_dodge(width=0.9),
@@ -1128,7 +1128,7 @@ p_Lethrinidae <-
                  shape = habitat),
              position=position_jitterdodge(),
              size = 3,
-             color = "darkgrey",
+             color = "black",
              inherit.aes = FALSE) +
   geom_text(aes(label=group),
             position = position_dodge(width=0.9),
@@ -1306,7 +1306,7 @@ p_Carangidae <-
                  shape = habitat),
              position=position_jitterdodge(),
              size = 3,
-             color = "darkgrey",
+             color = "black",
              inherit.aes = FALSE) +
   geom_text(aes(label=group),
             position = position_dodge(width=0.9),
@@ -1489,7 +1489,7 @@ p_Galeomorphii <-
                  shape = habitat),
              position=position_jitterdodge(),
              size = 3,
-             color = "darkgrey",
+             color = "black",
              inherit.aes = FALSE) +
   geom_text(aes(label=group),
             position = position_dodge(width=0.9),
@@ -1671,7 +1671,7 @@ p_Cheilinus_undulatus <-
                  shape = habitat),
              position=position_jitterdodge(),
              size = 3,
-             color = "darkgrey",
+             color = "black",
              inherit.aes = FALSE) +
   geom_text(aes(label=group),
             position = position_dodge(width=0.9),

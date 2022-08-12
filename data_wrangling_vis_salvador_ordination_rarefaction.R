@@ -209,12 +209,12 @@ attach(data_vegan.env)
 abundant_species <- data_vegan %>%
                     clean_names() %>%
                     bind_cols(data_vegan.env) %>% 
-                    pivot_longer(carangidae_carangoides_coeruleopinnatus:sphyrnidae_sphyrna_lewini,
+                    pivot_longer(carangidae_carangoides_coeruleopinnatus:galeomorphii_sphyrna_lewini,
                                  names_to = "taxon") %>%
                     group_by(taxon,
                             habitat,
                             study_locations) %>%
-                    summarize(taxon_sum = sum(value)) %>%
+                    dplyr::summarize(taxon_sum = sum(value)) %>% 
                     filter(taxon_sum >= 3) %>% 
                     ##visualize
                     ggplot(aes(x = reorder(taxon, - taxon_sum, sum),
@@ -223,11 +223,12 @@ abundant_species <- data_vegan %>%
                     theme_classic() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   xlab("Species") +
-  ylab("Species Count") 
+  ylab("Species Count") +
+  facet_grid(habitat ~ study_locations)
 
                     
 abundant_species
-ggsave("MostAbundantSpecies.pdf",
+ggsave("MostAbundantSpecies.png",
        abundant_species,
        height = 7, 
        width = 7, 

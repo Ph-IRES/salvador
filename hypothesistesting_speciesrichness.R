@@ -379,12 +379,13 @@ p_sr <-
   #                              'Post-Screen')) +
   geom_point(data = data_chao_s,
              aes(x = study_locations,
-                 y = !!response_var
+                 y = !!response_var,
+                 shape = habitat
              ),
              position = position_jitterdodge(),
              # color = "grey70",
              # shape = 1,
-             size = 1) +
+             size = 3) +
   geom_errorbar(aes(ymin=asymp.LCL,
                     ymax=asymp.UCL),
                 width = 0.2,
@@ -405,7 +406,7 @@ p_sr <-
        subtitle = "Distribution Family = Gamma",
         x = "Study Locations",
        y = "EM Means of Chao Estimate of Species Richness") +
-  theme(legend.position=c(0.33,0.8),  
+  theme(legend.position=c(0.45,0.8),  
         legend.title=element_blank()) +
   scale_fill_manual(values = habitatcolors)
 
@@ -796,12 +797,13 @@ p_sr_Serranidae <-
   #                              'Post-Screen')) +
   geom_point(data = data_chao_s_Serranidae,
              aes(x = study_locations,
-                 y = !!response_var
+                 y = !!response_var,
+                 shape = habitat
              ),
              position = position_jitterdodge(),
              # color = "grey70",
              # shape = 1,
-             size = 1) +
+             size = 3) +
   geom_errorbar(aes(ymin=asymp.LCL,
                     ymax=asymp.UCL),
                 width = 0.2,
@@ -1041,12 +1043,13 @@ p_sr_Lutjanidae <-
   #                              'Post-Screen')) +
   geom_point(data = data_chao_s_Lutjanidae,
              aes(x = study_locations,
-                 y = !!response_var
+                 y = !!response_var,
+                 shape = habitat
              ),
              position = position_jitterdodge(),
              # color = "grey70",
              # shape = 1,
-             size = 1) +
+             size = 3) +
   geom_errorbar(aes(ymin=asymp.LCL,
                     ymax=asymp.UCL),
                 width = 0.2,
@@ -1285,12 +1288,13 @@ p_sr_Lethrinidae <-
   #                              'Post-Screen')) +
   geom_point(data = data_chao_s_Lethrinidae,
              aes(x = study_locations,
-                 y = !!response_var
+                 y = !!response_var,
+                 shape = habitat
              ),
              position = position_jitterdodge(),
              # color = "grey70",
              # shape = 1,
-             size = 1) +
+             size = 3) +
   geom_errorbar(aes(ymin=asymp.LCL,
                     ymax=asymp.UCL),
                 width = 0.2,
@@ -1529,12 +1533,13 @@ p_sr_Carangidae <-
   #                              'Post-Screen')) +
   geom_point(data = data_chao_s_Carangidae,
              aes(x = study_locations,
-                 y = !!response_var
+                 y = !!response_var,
+                 shape = habitat
              ),
              position = position_jitterdodge(),
              # color = "grey70",
              # shape = 1,
-             size = 1) +
+             size = 3) +
   geom_errorbar(aes(ymin=asymp.LCL,
                     ymax=asymp.UCL),
                 width = 0.2,
@@ -1774,12 +1779,13 @@ p_sr_Galeomorphii <-
   #                              'Post-Screen')) +
   geom_point(data = data_chao_s_Galeomorphii,
              aes(x = study_locations,
-                 y = !!response_var
+                 y = !!response_var,
+                 shape = habitat
              ),
              position = position_jitterdodge(),
              # color = "grey70",
              # shape = 1,
-             size = 1) +
+             size = 3) +
   geom_errorbar(aes(ymin=asymp.LCL,
                     ymax=asymp.UCL),
                 width = 0.2,
