@@ -5,7 +5,8 @@ Keywords: BRUVs, fish assemblages, deep reefs, mesophotic reefs, predatory fish
 
 ---
 
-#Description of Data Files and Subdirectories
+##Description of Data Files and Subdirectories ##
+
 sandbox subdirectory contains R scripts from tutorials that were used to construct the scripts for the manuscript. It also contains first drafts of R scripts. 
 
 Misc. Figures subdirectory contains drafts of supplementary figures and first drafts of figures that were not included in the main manuscript. 
