@@ -224,6 +224,7 @@ abundant_species <- data_vegan %>%
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   xlab("Species") +
   ylab("Species Count") +
+  scale_y_continuous(trans='log10') +
   facet_grid(habitat ~ study_locations)
 
                     
