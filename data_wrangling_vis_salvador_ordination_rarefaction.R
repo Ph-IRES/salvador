@@ -199,11 +199,56 @@ data_vegan.env <-
                                 habitat,
                                 sep = "_"))
 
-View(data_vegan.env)
-
 # and now we "attach" the metadata to the data
 
 attach(data_vegan.env)
+
+##Create data_vegan and data_vegan.env for TRNP
+
+data_vegan_TRNP.env <- data_vegan.env %>%
+  filter(study_locations == "TRNP")
+
+data_vegan_TRNP <- bind_cols(data_vegan, data_vegan.env) %>%
+  filter(study_locations == "TRNP") %>%
+  select(-op_code:-studylocation_habitat) %>%
+  select_if(colSums(.) != 0)
+
+
+attach(data_vegan_TRNP.env)
+
+##Create data_vegan and data_vegan.env for Cagayancillo
+data_vegan_CAG.env <- data_vegan.env %>%
+  filter(study_locations == "CAGAYANCILLO")
+
+data_vegan_CAG <- bind_cols(data_vegan, data_vegan.env) %>%
+  filter(study_locations == "CAGAYANCILLO") %>%
+  select(-op_code:-studylocation_habitat) %>%
+  select_if(colSums(.) != 0)
+
+
+attach(data_vegan_CAG.env)
+
+##Create data_vegan for shallow reefs
+data_vegan_shallow.env <- data_vegan.env %>%
+  filter(habitat == "Shallow Reef")
+
+data_vegan_shallow <- bind_cols(data_vegan, data_vegan.env) %>%
+  filter(habitat == "Shallow Reef") %>% 
+  select(-op_code:-studylocation_habitat) %>%
+  select_if(colSums(.) != 0)
+
+attach(data_vegan_shallow.env)
+
+##Create data_vegan for deep reefs
+data_vegan_deep.env <- data_vegan.env %>%
+  filter(habitat == "Deep Reef")
+
+data_vegan_deep <- bind_cols(data_vegan, data_vegan.env) %>%
+  filter(habitat == "Deep Reef") %>%
+  select(-op_code:-studylocation_habitat) %>%
+  select_if(colSums(.) != 0)
+
+attach(data_vegan_deep.env)
 
 #### Top 10 Most Abundant Species ####
 abundant_species <- data_vegan %>%
@@ -280,8 +325,8 @@ ggord <-
   tibble() %>% 
   clean_names() %>%
   filter(score == "sites") %>% 
-  bind_cols(tibble(data_vegan.env)%>%
-              filter(op_code != "CAG_017")) %>% 
+  bind_cols(tibble(data_vegan.env) %>%
+              filter(op_code != "CAG_017")) %>%
   clean_names()
 
 habitatcolors <- c("#6FAFC6", "#F08080")
@@ -309,7 +354,7 @@ ggord %>%
                     labels =
                        c("Mesophotic Reef",
                          "Shallow Reef"))
-save_plot("NMDSfishassemblageversion2.png")
+save_plot("NMDSfishassemblageversion3.png")
 save_plot("NMDSfishassemblageversion2groupings.png")
 
 # ggord %>%
@@ -319,6 +364,78 @@ save_plot("NMDSfishassemblageversion2groupings.png")
 #   ggbiplot()
 # 
 # gg_ordiplot(ord, groups = data_vegan.env$habitat_mpa, pt.size = 3)
+
+#### SIMPER ####
+##Overall Influential Species 
+data.simper <- data_vegan %>%
+  simper()
+
+summary(data.simper)
+
+##Overall Influential Species of Shallow vs. Deep Reefs
+data.simper.habitat <- data_vegan %>%
+  simper(group = habitat)
+summary(data.simper.habitat)
+
+
+##Overall Influential Species of TRNP vs. Cagayancillo
+data.simper.study.locations <- data_vegan %>%
+  simper(group = study_locations)
+summary(data.simper.study.locations)
+
+
+##Influential Species of TRNP
+
+data.simper.TRNP <- data_vegan_TRNP %>%
+  simper()
+
+summary(data.simper.TRNP)
+
+
+##Influential Species of TRNP shallow and deep reefs
+data.simper.TRNP.habitat <- data_vegan_TRNP %>%
+  simper(group = habitat)
+
+summary(data.simper.TRNP.habitat)
+
+
+##Influential Species of CAG
+data.simper.CAG <- data_vegan_CAG %>%
+  simper()
+
+summary(data.simper.CAG)
+
+##Influential Species of Cagayancillo shallow and deep reefs
+data.simper.CAG.habitat <- data_vegan_CAG %>%
+  simper(group = habitat)
+
+summary(data.simper.CAG.habitat)
+
+##Influential Species of Shallow Reefs
+data.simper.shallow.reefs <- data_vegan_shallow %>%
+  simper()
+
+summary(data.simper.shallow.reefs)
+
+##Influential Species of Shallow Reefs between TRNP and Cagayancillo
+data.simper.shallow.reefs.study.locations <- data_vegan_shallow %>%
+  simper(group = study_locations)
+
+summary(data.simper.shallow.reefs.study.locations)
+
+##Influential Species of Deep Reefs
+data.simper.deep.reefs <- data_vegan_deep %>%
+  simper()
+
+summary(data.simper.deep.reefs)
+
+##Influential Species of Deep Reefs between TRNP and Cagayancillo
+data.simper.deep.reefs.study.locations <- data_vegan_deep %>%
+  simper(group = study_locations)
+
+summary(data.simper.deep.reefs.study.locations)
+
+write.csv(data.simper.deep.reefs, "C:/Users/17193/Downloads/salvador/data.simper.deep.reefs.study.locations.csv", row.names = FALSE)
 
 #### nMDS of Fish Assemblage at Cagayancillo and Tubbataha w/ Bait Type ####
 ggord %>%
