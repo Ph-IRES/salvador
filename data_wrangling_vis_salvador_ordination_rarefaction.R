@@ -311,8 +311,8 @@ ggsave("MostAbundantSpecies.png",
 #ordiellipse(ord, habitat, col=1:2, draw="polygon")
 #points(ord, disp="sites", pch=21, col=1:2, bg="yellow", cex=1.3)
 # ordispider(ord, habitat, col=1:2, label = TRUE)
-ord <- metaMDS(data_vegan %>%
-                 filter(op_code != "CAG_017"),
+ord <- metaMDS(data_vegan,
+              # filter(op_code != "CAG_017"),
                distance = "bray",
                k = 3,
                maxit = 999, 
@@ -337,7 +337,7 @@ studylocationcolors <- c("#C97CD5","#79CE7A")
 study_locations(studylocationcolors) <- c("CAGAYANCILLO", "TRNP")
 View(ord)
 View(ggord)
-ggord %>%
+ggord_plot <- ggord %>%
   # filter(label != 17) %>%
   ggplot(aes(x = nmds1,
              y= nmds2,
@@ -354,7 +354,11 @@ ggord %>%
                     labels =
                        c("Mesophotic Reef",
                          "Shallow Reef"))
-save_plot("NMDSfishassemblageversion3.png")
+ggsave("NMDSfishassemblageversion3.png",
+       ggord_plot,
+       height = 5,
+       width = 7,
+       units = "in")
 save_plot("NMDSfishassemblageversion2groupings.png")
 
 # ggord %>%
