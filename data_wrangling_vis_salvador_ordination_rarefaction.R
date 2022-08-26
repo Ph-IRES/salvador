@@ -435,7 +435,11 @@ data.simper.deep.reefs.study.locations <- data_vegan_deep %>%
 
 summary(data.simper.deep.reefs.study.locations)
 
-write.csv(data.simper.deep.reefs, "C:/Users/17193/Downloads/salvador/data.simper.deep.reefs.study.locations.csv", row.names = FALSE)
+#### Varpart ####
+varpart.p <- varpart(X = vegdist(data_vegan), 
+        ~ habitat + study_locations,
+        data = data_vegan.env)
+       # distance = "bray")
 
 #### nMDS of Fish Assemblage at Cagayancillo and Tubbataha w/ Bait Type ####
 ggord %>%
@@ -502,10 +506,41 @@ pool %>%
 p<- vegan::estaccumR(data_vegan, permutations = 999)
 # filter(estimator != "ace")
 
-View(p)
-p.plot<-plot(p, 
-             display = c("chao"))
-p.plot
+data_estaccumR_plot <-
+  p$chao %>%
+  # t() %>%
+  as_tibble() %>%
+  dplyr::mutate(N = row_number()) %>%
+  pivot_longer(cols = starts_with("V"),
+               names_to = "permutation") %>%
+  group_by(N) %>%
+  dplyr::summarize(chao_mean = mean(value),
+                   chao_ci_lower = quantile(value,
+                                            probs = 0.025),
+                   chao_ci_upper = quantile(value,
+                                            probs = 0.975))
+
+data_estaccumR_plot
+
+data_estaccumR_plots <- data_estaccumR_plot %>%
+  ggplot(aes(x=N,
+             y=chao_mean)) +
+  geom_ribbon(aes(ymin=chao_ci_lower,
+                  ymax=chao_ci_upper),
+              fill = "#ebe8f3") +
+  geom_line() +
+  xlab("Sample Size") +
+  ylab("Mean Chao1 Species Richness") +
+  theme_classic()
+
+data_estaccumR_plots
+ggsave("SpeciesRarefactionCurveAbundance.png",
+          data_estaccumR_plots)
+
+##Old Plot
+# p.plot<-plot(p, 
+#              display = c("chao"))
+# p.plot
 save_plot("SpeciesRichnessRarefactionCurveAbundance.png", 
           p.plot)
 
@@ -522,10 +557,39 @@ data_vegan_CAG_shallow <-
 
 p_CAG_shallow <- estaccumR(data_vegan_CAG_shallow, permutations = 999)
 
-p_CAG_shallow_plot <- plot(p_CAG_shallow,
-                           display = c("chao"),
-                           main = "Shallow Reef at Cagayancillo")
-p_CAG_shallow_plot
+p_CAG_shallow_plot <-
+  p_CAG_shallow$chao %>%
+  # t() %>%
+  as_tibble() %>%
+  dplyr::mutate(N = row_number()) %>%
+  pivot_longer(cols = starts_with("V"),
+               names_to = "permutation") %>%
+  group_by(N) %>%
+  dplyr::summarize(chao_mean = mean(value),
+                   chao_ci_lower = quantile(value,
+                                            probs = 0.025),
+                   chao_ci_upper = quantile(value,
+                                            probs = 0.975))
+p_CAG_shallow_plots <- p_CAG_shallow_plot %>%
+  ggplot(aes(x=N,
+             y=chao_mean)) +
+  geom_ribbon(aes(ymin=chao_ci_lower,
+                  ymax=chao_ci_upper),
+              fill = "#f8bac4") +
+  geom_line() +
+  xlab("Sample Size") +
+  ylab("Mean Chao1 Species Richness") +
+  labs(title ="Shallow Reef at Cagayancillo") +
+  ylim(0,100) +
+  theme_classic()
+
+p_CAG_shallow_plots
+
+##Old Plot
+# p_CAG_shallow_plot <- plot(p_CAG_shallow,
+#                            display = c("chao"),
+#                            main = "Shallow Reef at Cagayancillo")
+# p_CAG_shallow_plot
 
 ## Species Rarefaction Curve for Deep Reef at Cagayancillo ##
 data_vegan_CAG_deep <- 
@@ -535,11 +599,40 @@ data_vegan_CAG_deep <-
 
 p_CAG_deep <- estaccumR(data_vegan_CAG_deep, permutations = 999)
 
-p_CAG_deep_plot <- plot(p_CAG_deep,
-                           display = c("chao"),
-                        main = "Mesophotic Reef at Cagayancillo")
+p_CAG_deep_plot <-
+  p_CAG_deep$chao %>%
+  # t() %>%
+  as_tibble() %>%
+  dplyr::mutate(N = row_number()) %>%
+  pivot_longer(cols = starts_with("V"),
+               names_to = "permutation") %>%
+  group_by(N) %>%
+  dplyr::summarize(chao_mean = mean(value),
+                   chao_ci_lower = quantile(value,
+                                            probs = 0.025),
+                   chao_ci_upper = quantile(value,
+                                            probs = 0.975))
+p_CAG_deep_plots <- p_CAG_deep_plot %>%
+  ggplot(aes(x=N,
+             y=chao_mean)) +
+  geom_ribbon(aes(ymin=chao_ci_lower,
+                  ymax=chao_ci_upper),
+              fill = "#c5d8ea") +
+  geom_line() +
+  xlab("Sample Size") +
+  ylab("Mean Chao1 Species Richness") +
+  labs(title ="Mesophotic Reef at Cagayancillo") +
+  ylim(0,100) +
+  theme_classic()
 
-p_CAG_deep_plot
+p_CAG_deep_plots
+
+##Old Plot
+# p_CAG_deep_plot <- plot(p_CAG_deep,
+#                            display = c("chao"),
+#                         main = "Mesophotic Reef at Cagayancillo")
+# 
+# p_CAG_deep_plot
 
 ## Species Rarefaction Curve for Shallow Reef at TRNP ##
 data_vegan_TUB_shallow <- 
@@ -549,10 +642,40 @@ data_vegan_TUB_shallow <-
 
 p_TUB_shallow <- estaccumR(data_vegan_TUB_shallow, permutations = 999)
 
-p_TUB_shallow_plot <- plot(p_TUB_shallow,
-                        display = c("chao"),
-                        main = "Shallow Reef at TRNP")
-p_TUB_shallow_plot
+p_TUB_shallow_plot <-
+  p_TUB_shallow$chao %>%
+  # t() %>%
+  as_tibble() %>%
+  dplyr::mutate(N = row_number()) %>%
+  pivot_longer(cols = starts_with("V"),
+               names_to = "permutation") %>%
+  group_by(N) %>%
+  dplyr::summarize(chao_mean = mean(value),
+                   chao_ci_lower = quantile(value,
+                                            probs = 0.025),
+                   chao_ci_upper = quantile(value,
+                                            probs = 0.975))
+p_TUB_shallow_plots <- p_TUB_shallow_plot %>%
+  ggplot(aes(x=N,
+             y=chao_mean)) +
+  geom_ribbon(aes(ymin=chao_ci_lower,
+                  ymax=chao_ci_upper),
+              fill = "#f8bac4") +
+  geom_line() +
+  xlab("Sample Size") +
+  ylab("Mean Chao1 Species Richness") +
+  labs(title ="Shallow Reef at TRNP") +
+  ylim(0,100) +
+  theme_classic()
+
+p_TUB_shallow_plots
+
+##Old Plot
+
+# p_TUB_shallow_plot <- plot(p_TUB_shallow,
+#                         display = c("chao"),
+#                         main = "Shallow Reef at TRNP")
+# p_TUB_shallow_plot
 
 ## Species Rarefaction Curve for Deep Reef at TRNP ##
 data_vegan_TUB_deep <- 
@@ -561,22 +684,54 @@ data_vegan_TUB_deep <-
   dplyr::select(colnames(data_vegan))
 
 p_TUB_deep <- estaccumR(data_vegan_TUB_deep, permutations = 999)
+p_TUB_deep_plot <-
+  p_TUB_deep$chao %>%
+  # t() %>%
+  as_tibble() %>%
+  dplyr::mutate(N = row_number()) %>%
+  pivot_longer(cols = starts_with("V"),
+               names_to = "permutation") %>%
+  group_by(N) %>%
+  dplyr::summarize(chao_mean = mean(value),
+                   chao_ci_lower = quantile(value,
+                                            probs = 0.025),
+                   chao_ci_upper = quantile(value,
+                                            probs = 0.975))
+p_TUB_deep_plots <- p_TUB_deep_plot %>%
+  ggplot(aes(x=N,
+             y=chao_mean)) +
+  geom_ribbon(aes(ymin=chao_ci_lower,
+                  ymax=chao_ci_upper),
+              fill = "#c5d8ea") +
+  geom_line() +
+  xlab("Sample Size") +
+  ylab("Mean Chao1 Species Richness") +
+  labs(title ="Mesophotic Reef at TRNP") +
+  ylim(0,100) +
+  theme_classic()
 
-p_TUB_deep_plot <- plot(p_TUB_deep,
-                           display = c("chao"),
-                        main = "Mesophotic Reef at TRNP")
+p_TUB_deep_plots
 
-p_TUB_deep_plot
+##Old Plot
+# p_TUB_deep_plot <- plot(p_TUB_deep,
+#                            display = c("chao"),
+#                         main = "Mesophotic Reef at TRNP")
+# 
+# p_TUB_deep_plot
+
+
 
 ##All Habitat and Study Locations Chao Plot ##
-p_habitat_locations_plot <- ggarrange(p_CAG_shallow_plot,
-                                      p_CAG_deep_plot,
-                                      p_TUB_shallow_plot,
-                                      p_TUB_deep_plot,
+p_habitat_locations_plot <- ggarrange(p_TUB_shallow_plots,
+                                      p_TUB_deep_plots,
+                                      p_CAG_shallow_plots,
+                                      p_CAG_deep_plots,
                                       ncol = 2,
                                       nrow = 2)
-ggsave("SpeciesRichnessRarefactionCurveHabitatandStudyLocations.pdf", 
-       p_habitat_locations_plot, 
+
+dev.off()
+ggsave("SpeciesRichnessRarefactionCurveHabitatandStudyLocations.png", 
+       p_habitat_locations_plot,
        height = 11,
        width = 8.5,
        units = "in")
@@ -612,11 +767,41 @@ data_vegan_Serranidae <-
 p_Serranidae <- estaccumR(data_vegan_Serranidae, permutations = 999)
 View(p_Serranidae)
 
-p_Serranidae_plot <- plot(p_Serranidae,
-                        display = c("chao"),
-                        main = "Serranidae")
+p_Serranidae_plot <-
+  p_Serranidae$S %>%
+  # t() %>%
+  as_tibble() %>%
+  dplyr::mutate(N = row_number()) %>%
+  pivot_longer(cols = starts_with("V"),
+               names_to = "permutation") %>%
+  group_by(N) %>%
+  dplyr::summarize(chao_mean = mean(value),
+                   chao_ci_lower = quantile(value,
+                                            probs = 0.025),
+                   chao_ci_upper = quantile(value,
+                                            probs = 0.975))
+p_Serranidae_plots <- p_Serranidae_plot %>%
+  ggplot(aes(x=N,
+             y=chao_mean)) +
+  geom_ribbon(aes(ymin=chao_ci_lower,
+                  ymax=chao_ci_upper),
+              fill = "#ebe8f3") +
+  geom_line() +
+  xlab("Sample Size") +
+  ylab("Mean Species Richness") +
+  labs(title ="Serranidae") +
+  ylim(0,20) +
+  theme_classic()
 
-p_Serranidae_plot
+p_Serranidae_plots
+
+##Old Plots
+
+# p_Serranidae_plot <- plot(p_Serranidae,
+#                         display = c("chao"),
+#                         main = "Serranidae")
+# 
+# p_Serranidae_plot
 
 ## Species Rarefaction Curve for Lutjanidae ##
 data_vegan_Lutjanidae <- 
@@ -636,11 +821,40 @@ data_vegan_Lutjanidae <-
 
 p_Lutjanidae <- estaccumR(data_vegan_Lutjanidae, permutations = 999)
 
-p_Lutjanidae_plot <- plot(p_Lutjanidae,
-                          display = c("chao"),
-                          main = "Lutjanidae")
+p_Lutjanidae_plot <-
+  p_Lutjanidae$S %>%
+  # t() %>%
+  as_tibble() %>%
+  dplyr::mutate(N = row_number()) %>%
+  pivot_longer(cols = starts_with("V"),
+               names_to = "permutation") %>%
+  group_by(N) %>%
+  dplyr::summarize(chao_mean = mean(value),
+                   chao_ci_lower = quantile(value,
+                                            probs = 0.025),
+                   chao_ci_upper = quantile(value,
+                                            probs = 0.975))
+p_Lutjanidae_plots <- p_Lutjanidae_plot %>%
+  ggplot(aes(x=N,
+             y=chao_mean)) +
+  geom_ribbon(aes(ymin=chao_ci_lower,
+                  ymax=chao_ci_upper),
+              fill = "#ebe8f3") +
+  geom_line() +
+  xlab("Sample Size") +
+  ylab("Mean Species Richness") +
+  labs(title ="Lutjanidae") +
+  ylim(0,20) +
+  theme_classic()
 
-p_Lutjanidae_plot
+p_Lutjanidae_plots
+
+##Old Plots
+# p_Lutjanidae_plot <- plot(p_Lutjanidae,
+#                           display = c("chao"),
+#                           main = "Lutjanidae")
+# 
+# p_Lutjanidae_plot
 
 ## Species Rarefaction Curve for Lethrinidae ##
 data_vegan_Lethrinidae <- 
@@ -659,12 +873,40 @@ data_vegan_Lethrinidae <-
   dplyr::select(contains("Lethrinidae"))
 
 p_Lethrinidae <- estaccumR(data_vegan_Lethrinidae, permutations = 999)
+p_Lethrinidae_plot <-
+  p_Lethrinidae$S %>%
+  # t() %>%
+  as_tibble() %>%
+  dplyr::mutate(N = row_number()) %>%
+  pivot_longer(cols = starts_with("V"),
+               names_to = "permutation") %>%
+  group_by(N) %>%
+  dplyr::summarize(chao_mean = mean(value),
+                   chao_ci_lower = quantile(value,
+                                            probs = 0.025),
+                   chao_ci_upper = quantile(value,
+                                            probs = 0.975))
+p_Lethrinidae_plots <- p_Lethrinidae_plot %>%
+  ggplot(aes(x=N,
+             y=chao_mean)) +
+  geom_ribbon(aes(ymin=chao_ci_lower,
+                  ymax=chao_ci_upper),
+              fill = "#ebe8f3") +
+  geom_line() +
+  xlab("Sample Size") +
+  ylab("Mean Species Richness") +
+  labs(title ="Lethrinidae") +
+  ylim(0,20) +
+  theme_classic()
 
-p_Lethrinidae_plot <- plot(p_Lethrinidae,
-                          display = c("chao"),
-                          main = "Lethrinidae")
+p_Lethrinidae_plots
 
-p_Lethrinidae_plot
+##Old Plots
+# p_Lethrinidae_plot <- plot(p_Lethrinidae,
+#                           display = c("chao"),
+#                           main = "Lethrinidae")
+# 
+# p_Lethrinidae_plot
 
 ## Species Rarefaction Curve for Carangidae ##
 data_vegan_Carangidae <- 
@@ -683,12 +925,40 @@ data_vegan_Carangidae <-
   dplyr::select(contains("Carangidae"))
 
 p_Carangidae <- estaccumR(data_vegan_Carangidae, permutations = 999)
+p_Carangidae_plot <-
+  p_Carangidae$S %>%
+  # t() %>%
+  as_tibble() %>%
+  dplyr::mutate(N = row_number()) %>%
+  pivot_longer(cols = starts_with("V"),
+               names_to = "permutation") %>%
+  group_by(N) %>%
+  dplyr::summarize(chao_mean = mean(value),
+                   chao_ci_lower = quantile(value,
+                                            probs = 0.025),
+                   chao_ci_upper = quantile(value,
+                                            probs = 0.975))
+p_Carangidae_plots <- p_Carangidae_plot %>%
+  ggplot(aes(x=N,
+             y=chao_mean)) +
+  geom_ribbon(aes(ymin=chao_ci_lower,
+                  ymax=chao_ci_upper),
+              fill = "#ebe8f3") +
+  geom_line() +
+  xlab("Sample Size") +
+  ylab("Mean Species Richness") +
+  labs(title ="Carangidae") +
+  ylim(0,20) +
+  theme_classic()
 
-p_Carangidae_plot <- plot(p_Carangidae,
-                           display = c("chao"),
-                          main = "Carangidae")
+p_Carangidae_plots
 
-p_Carangidae_plot
+#Old Plots
+# p_Carangidae_plot <- plot(p_Carangidae,
+#                            display = c("chao"),
+#                           main = "Carangidae")
+# 
+# p_Carangidae_plot
 
 
 ## Species Rarefaction Curve for Galeomorphii ##
@@ -711,11 +981,40 @@ view(data_vegan_Galeomorphii)
 
 p_Galeomorphii <- estaccumR(data_vegan_Galeomorphii, permutations = 999)
 
-p_Galeomorphii_plot <- plot(p_Galeomorphii,
-                          display = c("chao"),
-                          main = "Galeomorphii")
+p_Galeomorphii_plot <-
+  p_Galeomorphii$S %>%
+  # t() %>%
+  as_tibble() %>%
+  dplyr::mutate(N = row_number()) %>%
+  pivot_longer(cols = starts_with("V"),
+               names_to = "permutation") %>%
+  group_by(N) %>%
+  dplyr::summarize(chao_mean = mean(value),
+                   chao_ci_lower = quantile(value,
+                                            probs = 0.025),
+                   chao_ci_upper = quantile(value,
+                                            probs = 0.975))
+p_Galeomorphii_plots <- p_Galeomorphii_plot %>%
+  ggplot(aes(x=N,
+             y=chao_mean)) +
+  geom_ribbon(aes(ymin=chao_ci_lower,
+                  ymax=chao_ci_upper),
+              fill = "#ebe8f3") +
+  geom_line() +
+  xlab("Sample Size") +
+  ylab("Mean Species Richness") +
+  labs(title ="Galeomorphii") +
+  ylim(0,20) +
+  theme_classic()
 
-p_Galeomorphii_plot
+p_Galeomorphii_plots
+
+##Old Plots
+# p_Galeomorphii_plot <- plot(p_Galeomorphii,
+#                           display = c("chao"),
+#                           main = "Galeomorphii")
+# 
+# p_Galeomorphii_plot
 
 ##Species Rarefaction Curve for Cheilinus undulatus ##
 data_vegan_Cheilinus_undulatus <- 
@@ -744,14 +1043,14 @@ p_Cheilinus_undulatus_plot <- plot(p_Cheilinus_undulatus,
 p_Cheilinus_undulatus_plot
                             
 ## Species Rarefaction Curves for All Groupings ##
-p_groupings_plot <- ggarrange(p_Serranidae_plot,
-                              p_Lutjanidae_plot,
-                              p_Lethrinidae_plot,
-                              p_Carangidae_plot,
-                              p_Galeomorphii_plot,
+p_groupings_plot <- ggarrange(p_Serranidae_plots,
+                              p_Lutjanidae_plots,
+                              p_Lethrinidae_plots,
+                              p_Carangidae_plots,
+                              p_Galeomorphii_plots,
                                       ncol = 2,
                                       nrow = 3)
-ggsave("SpeciesRichnessRarefactionCurveGroupings.pdf", 
+ggsave("SpeciesRichnessRarefactionCurveGroupings.png", 
        p_groupings_plot, 
        height = 11,
        width = 8.5,
