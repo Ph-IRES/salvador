@@ -258,7 +258,7 @@ data_vegan_deep <- bind_cols(data_vegan, data_vegan.env) %>%
 
 #attach(data_vegan_deep.env)
 
-#### Top 10 Most Abundant Species ####
+#### Visualize Counts of Top 10 Most Abundant Species by MPA and Depth ####
 abundant_species <- data_vegan %>%
                     clean_names() %>%
                     bind_cols(data_vegan.env) %>% 
@@ -319,55 +319,128 @@ ggsave("MostAbundantSpecies.png",
 #ordiellipse(ord, habitat, col=1:2, draw="polygon")
 #points(ord, disp="sites", pch=21, col=1:2, bg="yellow", cex=1.3)
 # ordispider(ord, habitat, col=1:2, label = TRUE)
-ord <- metaMDS(data_vegan,
-              # filter(op_code != "CAG_017"),
-               distance = "bray",
-               k = 3,
-               maxit = 999, 
-               trymax = 500,
-               wascores = TRUE) 
-View(ord)
+ord <- 
+  metaMDS(data_vegan %>%
+            filter(row_number() != 17), # CAG_017 very different from all other bruvs
+          distance = "bray",
+          k = 3,
+          maxit = 999, 
+          trymax = 500) 
+# View(ord)
+ord
 
+# use envfit to generate species loading vectors
+ord_species_vectors <- 
+  envfit(ord$points, 
+         data_vegan %>%
+           filter(row_number() != 17), 
+         perm=1000)
+
+ord_species_vectors
+
+# convert envfit output to ggplot tibble
+ggord_species_vectors <- 
+  as.data.frame(scores(ord_species_vectors, 
+                       display = "vectors")) %>%
+  clean_names() %>%
+  dplyr::rename(nmds1 = mds1,
+                nmds2 = mds2) %>%
+  mutate(species = rownames(.))
+
+# convert metaMDS output to ggplot tibble
 ggord <- 
   fortify(ord) %>% 
   tibble() %>% 
   clean_names() %>%
   filter(score == "sites") %>% 
-  bind_cols(tibble(data_vegan.env) %>%
-              filter(op_code != "CAG_017")) %>%
+  bind_cols(data_vegan.env %>%
+              filter(op_code != "CAG_017") # very different from all other bruvs
+            ) %>%
   clean_names()
 
-habitatcolors <- c("#6FAFC6", "#F08080")
-habitat(habitatcolors) <- c("Shallow Reef", "Deep Reef")
 
 #### nMDS of Fish Assemblage at Different Shallow and Deep Reefs at Cagayancillo and Tubbataha ####
-studylocationcolors <- c("#C97CD5","#79CE7A")
-study_locations(studylocationcolors) <- c("CAGAYANCILLO", "TRNP")
-View(ord)
-View(ggord)
-ggord_plot <- ggord %>%
+
+habitatcolors <- c("#6FAFC6", 
+                   "#F08080")
+habitatlabels <- c("Mesophotic Reef",
+                   "Shallow Reef")
+
+studylocationcolors <- c("#C97CD5",
+                         "#79CE7A")
+studylocationlabels <- c("CAGAYANCILLO", 
+                         "TRNP")
+# View(ord)
+# View(ggord)
+
+ggord_plot <- 
+  ggord %>%
   # filter(label != 17) %>%
   ggplot(aes(x = nmds1,
-             y= nmds2,
+             y = nmds2,
              color = habitat,
              shape = study_locations)) +
-  scale_x_continuous(limits = c(-3,3)) +
+  # scale_x_continuous(limits = c(-3,3)) +
   geom_point(size = 5) +
-  # stat_ellipse(aes(group = studylocation_habitat)) +
+  scale_shape_manual(values = c(16,2)) +
+  stat_ellipse(aes(group = studylocation_habitat,
+                   lty=factor(study_locations))) +
+  scale_linetype_manual(values=c(1,2,1,2)) +
+  
+  coord_fixed() + ## need aspect ratio of 1!
+  geom_segment(data = ggord_species_vectors,
+               aes(x = 0, 
+                   xend = nmds1*3, 
+                   y = 0, 
+                   yend = nmds2*3),
+               arrow = arrow(length = unit(.25,
+                                           "cm")),
+               color = "grey",
+               inherit.aes = FALSE) +
+  geom_text(data = ggord_species_vectors,
+            aes(x = nmds1*3,
+                y = nmds2*3,
+                label = species),
+            size = 3,
+            inherit.aes = FALSE) +
+  
   theme_classic() +
   xlab("NMDS 1") +
   ylab("NMDS 2") +
-  labs(color = "Habitat", shape = "Study Locations", title = "NMDS Plots of Fish Assemblage") + 
+  labs(color = "Habitat", 
+       shape = "Study Locations", 
+       linetype = "Study Locations",
+       title = "NMDS Plots of Fish Assemblage") + 
    scale_color_manual(values = habitatcolors,
-                    labels =
-                       c("Mesophotic Reef",
-                         "Shallow Reef"))
+                      labels = habitatlabels)
+ggord_plot
+
 ggsave("NMDSfishassemblageversion3.png",
        ggord_plot,
        height = 5,
        width = 7,
        units = "in")
 save_plot("NMDSfishassemblageversion2groupings.png")
+
+ggord_plot_2_3 <- 
+  ggord %>%
+  # filter(label != 17) %>%
+  ggplot(aes(x = nmds2,
+             y = nmds3,
+             color = habitat,
+             shape = study_locations)) +
+  # scale_x_continuous(limits = c(-3,3)) +
+  geom_point(size = 5) +
+  stat_ellipse(aes(group = studylocation_habitat)) +
+  theme_classic() +
+  xlab("NMDS 2") +
+  ylab("NMDS 3") +
+  labs(color = "Habitat", 
+       shape = "Study Locations", 
+       title = "NMDS Plots of Fish Assemblage") + 
+  scale_color_manual(values = habitatcolors,
+                     labels = habitatlabels)
+
 
 # ggord %>%
 #   ggbiplot(ellipse = TRUE)
