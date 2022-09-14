@@ -59,6 +59,14 @@ data <-
            taxon,
            .keep_all = TRUE)
 
+metadata <-
+  read_excel(inFilePath2,
+             na="NA") %>%
+  clean_names() %>%
+  dplyr::rename(bait_weight_grams = weight_grams)
+
+#### SUBSET AND MODIFY DATA: remove taxa not identified to species level for maxN analysis ####
+ 
 data_removed_sp <- data %>%
   filter(species != "sp") %>% 
   mutate(family = str_to_title(family),
@@ -90,16 +98,10 @@ data_removed_sp <- data %>%
            taxon,
            .keep_all = TRUE)
 
-View(data_removed_sp)
+# View(data_removed_sp)
 
 
-metadata <-
-  read_excel(inFilePath2,
-             na="NA") %>%
-  clean_names() %>%
-  dplyr::rename(bait_weight_grams = weight_grams)
-
-#### COMBINE DATA ####
+#### COMBINE DATA & METADATA ####
 
 data_all <-
   data %>%
@@ -201,7 +203,11 @@ data_vegan.env <-
 
 # and now we "attach" the metadata to the data
 
-attach(data_vegan.env)
+# Upon reviewing the function of `attach` we should involk it just prior to running code that uses it, then involk `detach` when we no longer need the data to be attached.  this will prevent interference between different versions of the vegan data tibbles
+# https://statisticsglobe.com/r-warning-the-following-objects-are-masked
+#attach(data_vegan.env)
+
+#### PREP DATA FOR VEGAN: TRNP & Cagayancillo ####
 
 ##Create data_vegan and data_vegan.env for TRNP
 
@@ -214,7 +220,7 @@ data_vegan_TRNP <- bind_cols(data_vegan, data_vegan.env) %>%
   select_if(colSums(.) != 0)
 
 
-attach(data_vegan_TRNP.env)
+#attach(data_vegan_TRNP.env)
 
 ##Create data_vegan and data_vegan.env for Cagayancillo
 data_vegan_CAG.env <- data_vegan.env %>%
@@ -226,7 +232,9 @@ data_vegan_CAG <- bind_cols(data_vegan, data_vegan.env) %>%
   select_if(colSums(.) != 0)
 
 
-attach(data_vegan_CAG.env)
+#attach(data_vegan_CAG.env)
+
+#### PREP DATA FOR VEGAN: shallow & deep reefs ####
 
 ##Create data_vegan for shallow reefs
 data_vegan_shallow.env <- data_vegan.env %>%
@@ -237,7 +245,7 @@ data_vegan_shallow <- bind_cols(data_vegan, data_vegan.env) %>%
   select(-op_code:-studylocation_habitat) %>%
   select_if(colSums(.) != 0)
 
-attach(data_vegan_shallow.env)
+#attach(data_vegan_shallow.env)
 
 ##Create data_vegan for deep reefs
 data_vegan_deep.env <- data_vegan.env %>%
@@ -248,7 +256,7 @@ data_vegan_deep <- bind_cols(data_vegan, data_vegan.env) %>%
   select(-op_code:-studylocation_habitat) %>%
   select_if(colSums(.) != 0)
 
-attach(data_vegan_deep.env)
+#attach(data_vegan_deep.env)
 
 #### Top 10 Most Abundant Species ####
 abundant_species <- data_vegan %>%
