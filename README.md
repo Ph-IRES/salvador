@@ -37,4 +37,5 @@ is the R script used to make the barplot of the estimated marginal means of spec
 
 # Work Completed
 
+* [Chris's Log of Changes Made on 9/14/2022](log_ceb_2022-09-14.md)
 * [Chris's Log of Changes Made on 7/26/2022](log_ceb_2022-07-26.md)
