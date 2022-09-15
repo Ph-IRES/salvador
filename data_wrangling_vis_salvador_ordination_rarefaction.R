@@ -63,18 +63,22 @@ metadata <-
   read_excel(inFilePath2,
              na="NA") %>%
   clean_names() %>%
-  dplyr::rename(bait_weight_grams = weight_grams)
+  dplyr::rename(bait_weight_grams = weight_grams) %>%
+  mutate(habitat = factor(habitat,
+                          levels = c("Shallow Reef",
+                                     "Deep Reef")))
 
 #### SUBSET AND MODIFY DATA: remove taxa not identified to species level for maxN analysis ####
  
-data_removed_sp <- data %>%
+data_removed_sp <- 
+  data %>%
   filter(species != "sp") %>% 
-  mutate(family = str_to_title(family),
-         genus = str_to_title(genus),
-         species = str_to_lower(species),
-         family_clean = case_when(
-           family == "Epinephelidae" ~ "Serranidae",
-           TRUE ~ family)) %>%
+  # mutate(family = str_to_title(family),
+  #        genus = str_to_title(genus),
+  #        species = str_to_lower(species),
+  #        family_clean = case_when(
+  #          family == "Epinephelidae" ~ "Serranidae",
+  #          TRUE ~ family)) %>%
   mutate(groupings = case_when(
     family == "Labridae" ~ "Cheilinus undulatus",
     family == "Sphyrnidae" ~ "Galeomorphii",
@@ -86,8 +90,8 @@ data_removed_sp <- data %>%
                        genus,
                        species,
                        sep = "_")) %>%
-  mutate(depth_m = case_when(op_code == "CAG_024" ~ 8,
-                             TRUE ~ depth_m)) %>%
+  # mutate(depth_m = case_when(op_code == "CAG_024" ~ 8,
+  #                            TRUE ~ depth_m)) %>%
   # keep only max_n
   group_by(op_code,
            taxon) %>%
@@ -110,19 +114,18 @@ data_all <-
                    "depth_m" = "depth_m")) %>%
   # rearrange order of columns, metadata then data
   dplyr::select(op_code,
-         site:long_e,
-         depth_m,
-         time_in:bait_weight_grams,
-         everything()) %>%
+                site:long_e,
+                depth_m,
+                time_in:bait_weight_grams,
+                everything()) %>%
   mutate(study_locations = case_when(
     site == "Cawili" ~ "CAGAYANCILLO",
     site == "Calusa" ~ "CAGAYANCILLO",
     site == "Cagayancillo" ~ "CAGAYANCILLO",
     site == "TUBBATAHA" ~ "TRNP")) %>%
-mutate(study_locations = factor(study_locations,
-                                levels = c("TRNP", 
-                                      "CAGAYANCILLO")))
-
+  mutate(study_locations = factor(study_locations,
+                                  levels = c("TRNP", 
+                                             "CAGAYANCILLO")))
 data_all_removed_sp <- 
   data_removed_sp %>%
   left_join(metadata,
@@ -130,10 +133,10 @@ data_all_removed_sp <-
                    "depth_m" = "depth_m")) %>%
   # rearrange order of columns, metadata then data
   dplyr::select(op_code,
-         site:long_e,
-         depth_m,
-         time_in:bait_weight_grams,
-         everything()) %>%
+                site:long_e,
+                depth_m,
+                time_in:bait_weight_grams,
+                everything()) %>%
   mutate(study_locations = case_when(
     site == "Cawili" ~ "CAGAYANCILLO",
     site == "Calusa" ~ "CAGAYANCILLO",
@@ -288,37 +291,8 @@ ggsave("MostAbundantSpecies.png",
        width = 7, 
        units = "in")
                   
-#### ORDINATION: Detrended correspondence analysis ####
-
-#ord <- decorana(data_vegan)
-# ord
-# summary(ord)
-# #boring plot
-# plot(ord)
-# #fancier plot
-# plot(ord, type = "n")
-# points(ord, display = "sites", cex = 0.8, pch=21, col="black", bg="yellow")
-# text(ord, display = "spec", cex=0.7, col="red")
-# #fanciest plot
-# plot(ord, disp="sites", type="n")
-# ordihull(ord, habitat, col=1:2, lwd=3)
-# ordiellipse(ord, habitat, col=1:2, kind = "ehull", lwd=3)
-# ordiellipse(ord, habitat, col=1:2, draw="polygon")
-# points(ord, disp="sites", pch=21, col=1:2, bg="yellow", cex=1.3)
-# ordispider(ord, habitat, col=1:2, label = TRUE)
-
-
 #### ORDINATION: Non-metric multidimensional scaling (NMDS) ####
 
-# ord
-# summary(ord)
-# #fanciest plot
-#plot(ord, disp="sites", type="n")
-#ordihull(ord, habitat, col=1:2, lwd=3)
-# ordiellipse(ord, habitat, col=1:2, kind = "ehull", lwd=3)
-#ordiellipse(ord, habitat, col=1:2, draw="polygon")
-#points(ord, disp="sites", pch=21, col=1:2, bg="yellow", cex=1.3)
-# ordispider(ord, habitat, col=1:2, label = TRUE)
 ord <- 
   metaMDS(data_vegan %>%
             filter(row_number() != 17), # CAG_017 very different from all other bruvs
@@ -345,7 +319,14 @@ ggord_species_vectors <-
   clean_names() %>%
   dplyr::rename(nmds1 = mds1,
                 nmds2 = mds2) %>%
-  mutate(species = rownames(.))
+  mutate(taxon = rownames(.),
+         taxon = str_replace(taxon,
+                             "_",
+                             "\n"),
+         pvals = ord_species_vectors$vectors$pvals) %>%
+  filter(pvals <= 0.05)
+
+ggord_species_vectors
 
 # convert metaMDS output to ggplot tibble
 ggord <- 
@@ -358,13 +339,14 @@ ggord <-
             ) %>%
   clean_names()
 
+ggord
 
-#### nMDS of Fish Assemblage at Different Shallow and Deep Reefs at Cagayancillo and Tubbataha ####
+#### nMDS Plot of Fish Assemblage at Different Shallow and Deep Reefs at Cagayancillo and Tubbataha ####
 
-habitatcolors <- c("#6FAFC6", 
-                   "#F08080")
-habitatlabels <- c("Mesophotic Reef",
-                   "Shallow Reef")
+habitatcolors <- c("#F08080",
+                   "#6FAFC6")
+habitatlabels <- c("Shallow Reef",
+                   "Mesophotic Reef")
 
 studylocationcolors <- c("#C97CD5",
                          "#79CE7A")
@@ -372,7 +354,7 @@ studylocationlabels <- c("CAGAYANCILLO",
                          "TRNP")
 # View(ord)
 # View(ggord)
-
+vector_scale_factor = 3.5  #will multiply the vector length by this value to improve clarity of plot
 ggord_plot <- 
   ggord %>%
   # filter(label != 17) %>%
@@ -380,39 +362,50 @@ ggord_plot <-
              y = nmds2,
              color = habitat,
              shape = study_locations)) +
-  # scale_x_continuous(limits = c(-3,3)) +
-  geom_point(size = 5) +
-  scale_shape_manual(values = c(16,2)) +
-  stat_ellipse(aes(group = studylocation_habitat,
-                   lty=factor(study_locations))) +
-  scale_linetype_manual(values=c(1,2,1,2)) +
-  
-  coord_fixed() + ## need aspect ratio of 1!
+  scale_x_continuous(limits = c(NA,1.6)) +
+  scale_y_continuous(limits = c(NA,2)) +
+    coord_fixed() + ## need aspect ratio of 1!
   geom_segment(data = ggord_species_vectors,
                aes(x = 0, 
-                   xend = nmds1*3, 
+                   xend = nmds1*vector_scale_factor, 
                    y = 0, 
-                   yend = nmds2*3),
+                   yend = nmds2*vector_scale_factor),
                arrow = arrow(length = unit(.25,
                                            "cm")),
                color = "grey",
                inherit.aes = FALSE) +
-  geom_text(data = ggord_species_vectors,
-            aes(x = nmds1*3,
-                y = nmds2*3,
-                label = species),
-            size = 3,
-            inherit.aes = FALSE) +
+  # geom_label(data = ggord_species_vectors,
+  #            aes(x = nmds1*vector_scale_factor,
+  #                y = nmds2*vector_scale_factor,
+  #                label = taxon),
+  #            # label.padding = 0,
+  #            size = 3,
+  #            color = "grey20",
+  #            inherit.aes = FALSE) +
+  geom_text_repel(data = ggord_species_vectors,
+                   aes(x = nmds1*vector_scale_factor,
+                       y = nmds2*vector_scale_factor,
+                       label = taxon),
+                   # label.padding = 0,
+                   size = 3,
+                   color = "grey20",
+                   inherit.aes = FALSE) +
   
+  geom_point(size = 5) +
+  scale_color_manual(values = habitatcolors,
+                     labels = habitatlabels)+
+  scale_shape_manual(values = c(16,2)) +
+  stat_ellipse(aes(group = studylocation_habitat,
+                   lty=factor(study_locations))) +
+  scale_linetype_manual(values=c(1,2,1,2)) +
   theme_classic() +
   xlab("NMDS 1") +
   ylab("NMDS 2") +
   labs(color = "Habitat", 
        shape = "Study Locations", 
        linetype = "Study Locations",
-       title = "NMDS Plots of Fish Assemblage") + 
-   scale_color_manual(values = habitatcolors,
-                      labels = habitatlabels)
+       title = "NMDS: Fish Assemblages") 
+
 ggord_plot
 
 ggsave("NMDSfishassemblageversion3.png",
