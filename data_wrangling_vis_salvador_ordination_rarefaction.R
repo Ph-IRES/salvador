@@ -322,10 +322,26 @@ ggord_species_vectors <-
   dplyr::rename(nmds1 = mds1,
                 nmds2 = mds2) %>%
   mutate(taxon = rownames(.),
+         # convert taxon to plotmath format for figure text/labels
+         # https://stackoverflow.com/questions/41528953/how-do-i-include-italic-text-in-geom-text-repel-or-geom-text-labels-for-ggplot
+         # https://stackoverflow.com/questions/18237134/line-break-in-expression
+         taxon = str_replace(taxon,
+                             "^",
+                             "atop("),
          taxon = str_replace(taxon,
                              "_",
-                             "\n"),
-         pvals = ord_species_vectors$vectors$pvals) %>%
+                             ",~italic('"),
+         taxon = str_replace(taxon,
+                             "_",
+                             " "),
+         taxon = str_replace(taxon,
+                             "$",
+                             "'))"),
+          pvals = ord_species_vectors$vectors$pvals) %>%
+  # separate(taxon,
+  #          into=c("family",
+  #                 "species"),
+  #          sep = "-") %>%
   filter(pvals <= 0.05)
 
 ggord_species_vectors
@@ -364,7 +380,7 @@ ggord_plot <-
              y = nmds2,
              color = habitat,
              shape = study_locations)) +
-  scale_x_continuous(limits = c(NA,1.6)) +
+  # scale_x_continuous(limits = c(NA,2)) +
   scale_y_continuous(limits = c(NA,2)) +
     coord_fixed() + ## need aspect ratio of 1!
   geom_segment(data = ggord_species_vectors,
@@ -376,6 +392,14 @@ ggord_plot <-
                                            "cm")),
                color = "grey",
                inherit.aes = FALSE) +
+  
+  geom_point(size = 5) +
+  scale_color_manual(values = habitatcolors,
+                     labels = habitatlabels)+
+  scale_shape_manual(values = c(16,2)) +
+  stat_ellipse(aes(group = studylocation_habitat,
+                   lty=factor(study_locations))) +
+  scale_linetype_manual(values=c(1,2,1,2)) +
   # geom_label(data = ggord_species_vectors,
   #            aes(x = nmds1*vector_scale_factor,
   #                y = nmds2*vector_scale_factor,
@@ -385,21 +409,15 @@ ggord_plot <-
   #            color = "grey20",
   #            inherit.aes = FALSE) +
   geom_text_repel(data = ggord_species_vectors,
-                   aes(x = nmds1*vector_scale_factor,
-                       y = nmds2*vector_scale_factor,
-                       label = taxon),
-                   # label.padding = 0,
-                   size = 3,
-                   color = "grey20",
-                   inherit.aes = FALSE) +
+                  parse = TRUE,
+                  aes(x = nmds1*vector_scale_factor,
+                      y = nmds2*vector_scale_factor,
+                      label = taxon),
+                  # label.padding = 0,
+                  size = 3,
+                  color = "grey30",
+                  inherit.aes = FALSE) +
   
-  geom_point(size = 5) +
-  scale_color_manual(values = habitatcolors,
-                     labels = habitatlabels)+
-  scale_shape_manual(values = c(16,2)) +
-  stat_ellipse(aes(group = studylocation_habitat,
-                   lty=factor(study_locations))) +
-  scale_linetype_manual(values=c(1,2,1,2)) +
   theme_classic() +
   xlab("NMDS 1") +
   ylab("NMDS 2") +
