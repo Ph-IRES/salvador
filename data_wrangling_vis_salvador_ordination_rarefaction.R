@@ -22,7 +22,8 @@ library(ggordiplots)
 library(ggbiplot)
 library(ggvegan)
 library(ggpubr)
-library(ggplot2)
+
+library(ggrepel)
 
 #### USER DEFINED VARIABLES ####
 
@@ -304,6 +305,7 @@ ord <-
 ord
 
 # use envfit to generate species loading vectors
+# https://stackoverflow.com/questions/14711470/plotting-envfit-vectors-vegan-package-in-ggplot2
 ord_species_vectors <- 
   envfit(ord$points, 
          data_vegan %>%
