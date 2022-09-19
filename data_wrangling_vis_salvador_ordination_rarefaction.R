@@ -220,11 +220,11 @@ data_vegan_TRNP.env <- data_vegan.env %>%
 
 data_vegan_TRNP <- bind_cols(data_vegan, data_vegan.env) %>%
   filter(study_locations == "TRNP") %>%
-  select(-op_code:-studylocation_habitat) %>%
-  select_if(colSums(.) != 0)
+  dplyr::select(-op_code:-studylocation_habitat) %>%
+  dplyr::select_if(colSums(.) != 0)
 
 
-#attach(data_vegan_TRNP.env)
+attach(data_vegan_TRNP.env)
 
 ##Create data_vegan and data_vegan.env for Cagayancillo
 data_vegan_CAG.env <- data_vegan.env %>%
@@ -232,11 +232,11 @@ data_vegan_CAG.env <- data_vegan.env %>%
 
 data_vegan_CAG <- bind_cols(data_vegan, data_vegan.env) %>%
   filter(study_locations == "CAGAYANCILLO") %>%
-  select(-op_code:-studylocation_habitat) %>%
-  select_if(colSums(.) != 0)
+  dplyr::select(-op_code:-studylocation_habitat) %>%
+  dplyr::select_if(colSums(.) != 0)
 
 
-#attach(data_vegan_CAG.env)
+attach(data_vegan_CAG.env)
 
 #### PREP DATA FOR VEGAN: shallow & deep reefs ####
 
@@ -363,8 +363,8 @@ ggord
 
 habitatcolors <- c("#F08080",
                    "#6FAFC6")
-habitatlabels <- c("Shallow Reef",
-                   "Mesophotic Reef")
+habitatlabels <- c("Shallow",
+                   "Mesophotic")
 
 studylocationcolors <- c("#C97CD5",
                          "#79CE7A")
@@ -373,6 +373,33 @@ studylocationlabels <- c("CAGAYANCILLO",
 # View(ord)
 # View(ggord)
 vector_scale_factor = 3.5  #will multiply the vector length by this value to improve clarity of plot
+
+ggord_plot_wo_vectors <-
+  ggord %>%
+  ggplot(aes(x = nmds1,
+             y = nmds2,
+             color = habitat,
+             shape = study_locations)) +
+  scale_y_continuous(limits = c(NA,2)) +
+  coord_fixed() +
+  theme_classic() +
+  geom_point(size = 5) +
+  xlab("NMDS 1") +
+  ylab("NMDS 2") +
+  scale_color_manual(values = habitatcolors,
+                     labels = habitatlabels) +
+  labs(color = "Depth", 
+       shape = "Study Locations", 
+       linetype = "Study Locations")
+
+ggord_plot_wo_vectors
+
+ggsave("nMDSplotwovectors.png",
+       ggord_plot_wo_vectors,
+       height = 5,
+       width = 7,
+       units = "in")
+
 ggord_plot <- 
   ggord %>%
   # filter(label != 17) %>%
@@ -421,10 +448,10 @@ ggord_plot <-
   theme_classic() +
   xlab("NMDS 1") +
   ylab("NMDS 2") +
-  labs(color = "Habitat", 
+  labs(color = "Depth", 
        shape = "Study Locations", 
-       linetype = "Study Locations",
-       title = "NMDS: Fish Assemblages") 
+       linetype = "Study Locations") 
+  
 
 ggord_plot
 
@@ -433,7 +460,6 @@ ggsave("NMDSfishassemblageversion3.png",
        height = 5,
        width = 7,
        units = "in")
-save_plot("NMDSfishassemblageversion2groupings.png")
 
 ggord_plot_2_3 <- 
   ggord %>%
@@ -491,7 +517,7 @@ summary(data.simper.TRNP)
 
 
 ##Influential Species of TRNP shallow and deep reefs
-data.simper.TRNP.habitat <- data_vegan_TRNP %>%
+data.simper.TRNP.habitat <- data_vegan_TRNP %>% 
   simper(group = habitat)
 
 summary(data.simper.TRNP.habitat)
@@ -629,7 +655,8 @@ data_estaccumR_plots <- data_estaccumR_plot %>%
   geom_line() +
   xlab("Sample Size") +
   ylab("Mean Chao1 Species Richness") +
-  theme_classic()
+  theme_classic() +
+  labs(title =  "Overall Species Richness")
 
 data_estaccumR_plots
 ggsave("SpeciesRarefactionCurveAbundance.png",
@@ -679,7 +706,7 @@ p_CAG_shallow_plots <- p_CAG_shallow_plot %>%
   ylab("Mean Chao1 Species Richness") +
   labs(title ="Shallow Reef at Cagayancillo") +
   ylim(0,100) +
-  theme_classic()
+  theme_classic() 
 
 p_CAG_shallow_plots
 
@@ -1146,6 +1173,7 @@ p_groupings_plot <- ggarrange(p_Serranidae_plots,
                               p_Lethrinidae_plots,
                               p_Carangidae_plots,
                               p_Galeomorphii_plots,
+                              data_estaccumR_plots,
                                       ncol = 2,
                                       nrow = 3)
 ggsave("SpeciesRichnessRarefactionCurveGroupings.png", 

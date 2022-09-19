@@ -394,21 +394,25 @@ p_sr <-
                 position = position_dodge(width=0.9)) +
   guides(color = "none",
          shape = "none") +   #remove color legend
-  geom_text(aes(label=group),
-            position = position_dodge(width=0.9),
-            vjust = -0.5,
-            hjust = -0.15,
-            size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
+  # geom_text(aes(label=group),
+  #           position = position_dodge(width=0.9),
+  #           vjust = -0.5,
+  #           hjust = -0.15,
+  #           size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
   theme_classic() +
+  labs(x = "Study Locations",
+       y = "Species Richness (Chao1)") +
   # ylim(ymin, 
   #      ymax) +
-  labs(title = "Species Richness at TRNP vs. Cagayancillo",
-       subtitle = "Distribution Family = Gamma",
-        x = "Study Locations",
-       y = "EM Means of Chao Estimate of Species Richness") +
+  # labs(title = "Species Richness at TRNP vs. Cagayancillo",
+  #      subtitle = "Distribution Family = Gamma",
+  #       x = "Study Locations",
+  #      y = "EM Means of Chao Estimate of Species Richness") +
   theme(legend.position=c(0.45,0.8),  
         legend.title=element_blank()) +
-  scale_fill_manual(values = habitatcolors)
+  scale_fill_manual(values = habitatcolors,
+                    labels = c("Shallow",
+                               "Mesophotic"))
 
 p_sr
 save_plot("EMMeansofSpeciesRichnessGamma.png")
@@ -812,21 +816,26 @@ p_sr_Serranidae <-
                 position = position_dodge(width=0.9)) +
   guides(color = "none",
          shape = "none") +   #remove color legend
-  geom_text(aes(label=group),
-            position = position_dodge(width=0.9),
-            vjust = -0.5,
-            hjust = -0.15,
-            size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
+  # geom_text(aes(label=group),
+  #           position = position_dodge(width=0.9),
+  #           vjust = -0.5,
+  #           hjust = -0.15,
+  #           size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
   theme_classic() +
+  labs(x = "Study Locations",
+       y = "Species Richness (Chao1)",
+       title = "Serranidae") +
   # ylim(ymin, 
   #      ymax) +
-  labs(title = "Serranidae",
-       subtitle = "Distribution Family = Poisson",
-      x = "Study Locations",
-       y = "EM Means of Species Richness") +
+  # labs(title = "Serranidae",
+  #      subtitle = "Distribution Family = Poisson",
+  #     x = "Study Locations",
+  #      y = "EM Means of Species Richness") +
   theme(legend.position=c(0.33,0.8),  
         legend.title=element_blank()) +
-  scale_fill_manual(values = habitatcolors)
+  scale_fill_manual(values = habitatcolors,
+                    labels = c("Shallow",
+                               "Mesophotic"))
 
 p_sr_Serranidae
 
@@ -1058,21 +1067,26 @@ p_sr_Lutjanidae <-
                 position = position_dodge(width=0.9)) +
   guides(color = "none",
          shape = "none") +   #remove color legend
-  geom_text(aes(label=group),
-            position = position_dodge(width=0.9),
-            vjust = -0.5,
-            hjust = -0.15,
-            size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
+  # geom_text(aes(label=group),
+            # position = position_dodge(width=0.9),
+            # vjust = -0.5,
+            # hjust = -0.15,
+            # size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
   theme_classic() +
+  labs(x = "Study Locations",
+       y = "Species Richness (Chao1)",
+       title = "Lutjanidae") +
   # ylim(ymin, 
   #      ymax) +
-  labs(title = "Lutjanidae",
-       subtitle = "Distribution Family = Poisson",
-       x = "Study Locations",
-       y = "EM Means of Species Richness") +
+  # labs(title = "Lutjanidae",
+  #      subtitle = "Distribution Family = Poisson",
+  #      x = "Study Locations",
+  #      y = "EM Means of Species Richness") +
   theme(legend.position=c(0.33,0.8),  
         legend.title=element_blank()) +
-  scale_fill_manual(values = habitatcolors)
+  scale_fill_manual(values = habitatcolors,
+                    labels = c("Shallow",
+                               "Mesophotic"))
 
 p_sr_Lutjanidae
 #### mean_chao_s of Lethrinidae ####
@@ -1303,21 +1317,26 @@ p_sr_Lethrinidae <-
                 position = position_dodge(width=0.9)) +
   guides(color = "none",
          shape = "none") +   #remove color legend
-  geom_text(aes(label=group),
-            position = position_dodge(width=0.9),
-            vjust = -0.5,
-            hjust = -0.15,
-            size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
+  # geom_text(aes(label=group),
+  #           position = position_dodge(width=0.9),
+  #           vjust = -0.5,
+  #           hjust = -0.15,
+  #           size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
   theme_classic() +
+  labs(x = "Study Locations",
+       y = "Species Richness (Chao1)",
+       title = "Lethrinidae") +
   # ylim(ymin, 
   #      ymax) +
-  labs(title = "Lethrinidae",
-       subtitle = "Distribution Family = Poisson",
-       x = "Study Locations",
-       y = "EM Means of Species Richness") +
-  theme(legend.position=c(0.33,0.8),  
-        legend.title=element_blank()) +
-  scale_fill_manual(values = habitatcolors)
+  # labs(title = "Lethrinidae",
+  #      subtitle = "Distribution Family = Poisson",
+  #      x = "Study Locations",
+  #      y = "EM Means of Species Richness") +
+  theme(legend.position=c(0.33,0.8),
+  legend.title=element_blank()) +
+  scale_fill_manual(values = habitatcolors,
+                    labels = c("Shallow",
+                               "Mesophotic"))
 
 p_sr_Lethrinidae
 #### mean_chao_s of Carangidae ####
@@ -1548,21 +1567,26 @@ p_sr_Carangidae <-
                 position = position_dodge(width=0.9)) +
   guides(color = "none",
          shape = "none") +   #remove color legend
-  geom_text(aes(label=group),
-            position = position_dodge(width=0.9),
-            vjust = -0.5,
-            hjust = -0.15,
-            size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
+  # geom_text(aes(label=group),
+  #           position = position_dodge(width=0.9),
+  #           vjust = -0.5,
+  #           hjust = -0.15,
+  #           size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
   theme_classic() +
+  labs(x = "Study Locations",
+       y = "Species Richness (Chao1)",
+       title = "Carangidae") +
   # ylim(ymin, 
   #      ymax) +
-  labs(title = "Carangidae",
-       subtitle = "Distribution Family = Poisson",
-       x = "Study Locations",
-       y = "EM Means of Species Richness") +
+  # labs(title = "Carangidae",
+  #      subtitle = "Distribution Family = Poisson",
+  #      x = "Study Locations",
+  #      y = "EM Means of Species Richness") +
   theme(legend.position=c(0.33,0.8),  
         legend.title=element_blank()) +
-  scale_fill_manual(values = habitatcolors)
+  scale_fill_manual(values = habitatcolors,
+                    labels = c("Shallow",
+                               "Mesophotic"))
 
 p_sr_Carangidae
 
@@ -1794,21 +1818,26 @@ p_sr_Galeomorphii <-
                 position = position_dodge(width=0.9)) +
   guides(color = "none",
          shape = "none") +   #remove color legend
-  geom_text(aes(label=group),
-            position = position_dodge(width=0.9),
-            vjust = -0.5,
-            hjust = -0.15,
-            size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
+  # geom_text(aes(label=group),
+  #           position = position_dodge(width=0.9),
+  #           vjust = -0.5,
+  #           hjust = -0.15,
+  #           size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
   theme_classic() +
+  labs(x = "Study Locations",
+       y = "Species Richness (Chao1)",
+       title = "Galeomorphii") +
   # ylim(ymin, 
   #      ymax) +
-  labs(title = "Galeomorphii",
-       subtitle = "Distribution Family = Poisson",
-       x = "Study Locations",
-       y = "EM Means of Species Richness") +
+  # labs(title = "Galeomorphii",
+  #      subtitle = "Distribution Family = Poisson",
+  #      x = "Study Locations",
+  #      y = "EM Means of Species Richness") +
   theme(legend.position=c(0.33,0.8),  
         legend.title=element_blank()) +
-  scale_fill_manual(values = habitatcolors)
+  scale_fill_manual(values = habitatcolors,
+                    labels = c("Shallow",
+                               "Mesophotic"))
 
 p_sr_Galeomorphii
 
@@ -2065,4 +2094,6 @@ emmeans_sr <- ggarrange(p_sr_Serranidae,
                           ncol = 2,
                           nrow = 3)
 ggsave("FacetedEmMeansSpeciesRichness.pdf", 
+       emmeans_sr, height = 11, width = 8.5, units = "in")
+ggsave("FacetedEmMeansSpeciesRichness.png", 
        emmeans_sr, height = 11, width = 8.5, units = "in")
