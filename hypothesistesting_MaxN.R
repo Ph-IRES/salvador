@@ -29,6 +29,9 @@ library(ggpubr)
 library(sjPlot)
 library(stringr)
 
+# install.packages("gcookbook")
+library(gcookbook)
+
 #### USER DEFINED VARIABLES ####
 inFilePath2 = "./meso_euphotic_carniv_fish_videobaitstations_all.rds"
 functionPath = "./model_fitting_functions.R"
@@ -48,7 +51,7 @@ data_all <- data_all %>%
   mutate(taxon = str_c(groupings,
                        genus,
                        species,
-                       sep = "_")) %>% view()
+                       sep = "_"))
 
 view(data_all)
 
@@ -413,25 +416,32 @@ p <-
              size = 3,
              color = "black",
              inherit.aes = FALSE) +
-  geom_text(aes(label=group),
-            position = position_dodge(width=0.9),
-            vjust = -0.5,
-            hjust = -0.15,
-            size = 8 / (14/5)) +
+  ##gives labels for groupings
+  # geom_text(aes(label=group),
+  #           position = position_dodge(width=0.9),
+  #           vjust = -0.5,
+  #           hjust = -0.15,
+  #           size = 8 / (14/5)) +
   scale_y_continuous(trans='log10') +
   theme_classic() +
+  labs(x = "Study Locations",
+       y = "Abundance (MaxN)") +
   # ylim(ymin, 
   #      ymax) +
-  labs(title = "Abundance at TRNP vs. Cagayancillo",
-       subtitle = "Distribution Family = Poisson",
-       x = "Study Locations",
-       y = "Estimated Marginal Mean of Sum of MaxN") +
-  theme(legend.position=c(0.33,0.9),  
+  # labs(title = "Abundance at TRNP vs. Cagayancillo",
+  #      subtitle = "Distribution Family = Poisson",
+  #      x = "Study Locations",
+  #      y = "Estimated Marginal Mean of Sum of MaxN") +
+  theme(legend.position=c(0.33,0.9),
         legend.title=element_blank()) +
-  scale_fill_manual(values = habitatcolors)
+  scale_fill_manual(values = habitatcolors,
+                    labels = c("Shallow",
+                               "Mesophotic"))
 
 p
-save_plot("EstimatedMarginalMeansMaxN.png")
+ggsave("EstimatedMarginalMeansMaxN.png",
+       p)
+# save_plot("EstimatedMarginalMeansMaxN.png")
 p <- 
   groupings_model_fixed %>% 
   ggplot(aes(x=study_locations,
@@ -641,22 +651,33 @@ p_Serranidae <-
              size = 3,
              color = "black",
              inherit.aes = FALSE) +
-  geom_text(aes(label=group),
-            position = position_dodge(width=0.9),
-            vjust = -0.5,
-            hjust = -0.15,
-            size = 8 / (14/5)) +
+  # geom_text(aes(label=group),
+  #           position = position_dodge(width=0.9),
+  #           vjust = -0.5,
+  #           hjust = -0.15,
+  #           size = 8 / (14/5)) +
   # scale_y_continuous(trans='log10') +
   theme_classic() +
   # ylim(ymin, 
   #      ymax) +
   labs(title = "Serranidae",
-       subtitle = "Distribution Family = Poisson",
        x = "Study Locations",
-       y = "EM Means of Sum of MaxN") +
-  theme(legend.position=c(0.33,0.9),  
+       y = "Abundance (MaxN)") +
+  # ylim(ymin, 
+  #      ymax) +
+  # labs(title = "Abundance at TRNP vs. Cagayancillo",
+  #      subtitle = "Distribution Family = Poisson",
+  #      x = "Study Locations",
+  #      y = "Estimated Marginal Mean of Sum of MaxN") +
+  theme(legend.position=c(0.33,0.9),
         legend.title=element_blank()) +
-  scale_fill_manual(values = habitatcolors)
+  scale_fill_manual(values = habitatcolors,
+                    labels = c("Shallow",
+                               "Mesophotic"))
+  # labs(title = "Serranidae",
+  #      subtitle = "Distribution Family = Poisson",
+  #      x = "Study Locations",
+  #      y = "EM Means of Sum of MaxN") +
 
 p_Serranidae
 
@@ -820,22 +841,28 @@ p_Lutjanidae <-
              size = 3,
              color = "black",
              inherit.aes = FALSE) +
-  geom_text(aes(label=group),
-            position = position_dodge(width=0.9),
-            vjust = -0.5,
-            hjust = -0.15,
-            size = 8 / (14/5)) +
+  # geom_text(aes(label=group),
+  #           position = position_dodge(width=0.9),
+  #           vjust = -0.5,
+  #           hjust = -0.15,
+  #           size = 8 / (14/5)) +
   # scale_y_continuous(trans='log10') +
   theme_classic() +
+  labs(title = "Lutjanidae",
+       x = "Study Locations",
+       y = "Abundance (MaxN)") +
+  ylim(0,20) +
+  # labs(title = "Lutjanidae",
+  #      subtitle = "Distribution Family = Poisson",
+  #      x = "Study Locations",
+  #      y = "Estimated Marginal Mean of Sum of MaxN") +
+  theme(legend.position=c(0.33,0.9),
+        legend.title=element_blank()) +
+  scale_fill_manual(values = habitatcolors,
+                    labels = c("Shallow",
+                               "Mesophotic"))
   # ylim(ymin, 
   #      ymax) +
-  labs(title = "Lutjanidae",
-       subtitle = "Distribution Family = Poisson",
-       x = "Study Locations",
-       y = "EM Means of Sum of MaxN") +
-  theme(legend.position=c(0.33,0.9),  
-        legend.title=element_blank()) +
-  scale_fill_manual(values = habitatcolors)
 
 p_Lutjanidae
 
@@ -999,22 +1026,27 @@ p_Lethrinidae <-
              size = 3,
              color = "black",
              inherit.aes = FALSE) +
-  geom_text(aes(label=group),
-            position = position_dodge(width=0.9),
-            vjust = -0.5,
-            hjust = -0.15,
-            size = 8 / (14/5)) +
+  # geom_text(aes(label=group),
+  #           position = position_dodge(width=0.9),
+  #           vjust = -0.5,
+  #           hjust = -0.15,
+  #           size = 8 / (14/5)) +
   # scale_y_continuous(trans='log10') +
   theme_classic() +
+  labs(title = "Lethrinidae",
+       x = "Study Locations",
+       y = "Abundance (MaxN)") +
   # ylim(ymin, 
   #      ymax) +
-  labs(title = "Lethrinidae",
-       subtitle = "Distribution Family = Poisson",
-       x = "Study Locations",
-       y = "EM Means of Sum of MaxN") +
-  theme(legend.position=c(0.33,0.9),  
+  # labs(title = "Lethrinidae",
+  #      subtitle = "Distribution Family = Poisson",
+  #      x = "Study Locations",
+  #      y = "Estimated Marginal Mean of Sum of MaxN") +
+  theme(legend.position=c(0.33,0.9),
         legend.title=element_blank()) +
-  scale_fill_manual(values = habitatcolors)
+  scale_fill_manual(values = habitatcolors,
+                    labels = c("Shallow",
+                               "Mesophotic"))
 
 p_Lethrinidae
 
@@ -1177,22 +1209,28 @@ p_Carangidae <-
              size = 3,
              color = "black",
              inherit.aes = FALSE) +
-  geom_text(aes(label=group),
-            position = position_dodge(width=0.9),
-            vjust = -0.5,
-            hjust = -0.15,
-            size = 8 / (14/5)) +
+  # geom_text(aes(label=group),
+  #           position = position_dodge(width=0.9),
+  #           vjust = -0.5,
+  #           hjust = -0.15,
+  #           size = 8 / (14/5)) +
   # scale_y_continuous(trans='log10') +
   theme_classic() +
   # ylim(ymin, 
   #      ymax) +
   labs(title = "Carangidae",
-       subtitle = "Distribution Family = Poisson",
        x = "Study Locations",
-       y = "EM Means of Sum of MaxN") +
-  theme(legend.position=c(0.33,0.9),  
+       y = "Abundance (MaxN)") +
+  ylim(0,40) +
+  # labs(title = "Carangidae",
+  #      subtitle = "Distribution Family = Poisson",
+  #      x = "Study Locations",
+  #      y = "Estimated Marginal Mean of Sum of MaxN") +
+  theme(legend.position=c(0.33,0.9),
         legend.title=element_blank()) +
-  scale_fill_manual(values = habitatcolors)
+  scale_fill_manual(values = habitatcolors,
+                    labels = c("Shallow",
+                               "Mesophotic"))
 
 p_Carangidae
 
@@ -1360,23 +1398,27 @@ p_Galeomorphii <-
              size = 3,
              color = "black",
              inherit.aes = FALSE) +
-  geom_text(aes(label=group),
-            position = position_dodge(width=0.9),
-            vjust = -0.5,
-            hjust = -0.15,
-            size = 8 / (14/5)) +
+  # geom_text(aes(label=group),
+  #           position = position_dodge(width=0.9),
+  #           vjust = -0.5,
+  #           hjust = -0.15,
+  #           size = 8 / (14/5)) +
   # scale_y_continuous(trans='log10') +
   theme_classic() +
+  labs(title = "Galeomorphii",
+       x = "Study Locations",
+       y = "Abundance (MaxN)") +
   # ylim(ymin, 
   #      ymax) +
-  labs(title = "Galeomorphii",
-       subtitle = "Distribution Family = Poisson",
-       x = "Study Locations",
-       y = "EM Means of Sum of MaxN") +
-  theme(legend.position=c(0.33,0.9),  
+  # labs(title = "Abundance at TRNP vs. Cagayancillo",
+  #      subtitle = "Distribution Family = Poisson",
+  #      x = "Study Locations",
+  #      y = "Estimated Marginal Mean of Sum of MaxN") +
+  theme(legend.position=c(0.33,0.9),
         legend.title=element_blank()) +
-  scale_fill_manual(values = habitatcolors)
-
+  scale_fill_manual(values = habitatcolors,
+                    labels = c("Shallow",
+                               "Mesophotic"))
 p_Galeomorphii
 
 #### Cheilinus undulatus ####
@@ -1542,23 +1584,30 @@ p_Cheilinus_undulatus <-
              size = 3,
              color = "black",
              inherit.aes = FALSE) +
-  geom_text(aes(label=group),
-            position = position_dodge(width=0.9),
-            vjust = -0.5,
-            hjust = -0.15,
-            size = 8 / (14/5)) +
+  # geom_text(aes(label=group),
+  #           position = position_dodge(width=0.9),
+  #           vjust = -0.5,
+  #           hjust = -0.15,
+  #           size = 8 / (14/5)) +
   # scale_y_continuous(trans='log10') +
   theme_classic() +
   # ylim(ymin, 
   #      ymax) +
   labs(title = "Cheilinus undulatus",
-       subtitle = "Distribution Family = Poisson",
        x = "Study Locations",
-       y = "EM Means of Sum of MaxN") +
-  theme(legend.position=c(0.33,0.9),  
-        legend.title=element_blank()) +
-  scale_fill_manual(values = habitatcolors)
-
+       y = "Abundance (MaxN)") +
+  # ylim(ymin, 
+  #      ymax) +
+  # labs(title = "Cheilinus undulatus",
+  #      subtitle = "Distribution Family = Poisson",
+  #      x = "Study Locations",
+  #      y = "Estimated Marginal Mean of Sum of MaxN") +
+  theme(legend.position=c(0.33,0.9),
+        legend.title=element_blank(),
+        plot.title = element_text(face = "italic")) +
+  scale_fill_manual(values = habitatcolors,
+                    labels = c("Shallow",
+                               "Mesophotic"))
 p_Cheilinus_undulatus
 
 
@@ -1741,22 +1790,29 @@ p_Serranidae <-
              size = 3,
              color = "black",
              inherit.aes = FALSE) +
-  geom_text(aes(label=group),
-            position = position_dodge(width=0.9),
-            vjust = -0.5,
-            hjust = -0.15,
-            size = 8 / (14/5)) +
+  # geom_text(aes(label=group),
+  #           position = position_dodge(width=0.9),
+  #           vjust = -0.5,
+  #           hjust = -0.15,
+  #           size = 8 / (14/5)) +
   # scale_y_continuous(trans='log10') +
   theme_classic() +
+  labs(title = "Serranidae",
+       x = "Study Locations",
+       y = "Abundance (MaxN)") +
   # ylim(ymin, 
   #      ymax) +
-  labs(title = "Serranidae",
-       subtitle = "Distribution Family = Poisson",
-       x = "Study Locations",
-       y = "EM Means of Sum of MaxN") +
-  theme(legend.position=c(0.33,0.9),  
+  # labs(title = "Serranidae",
+  #      subtitle = "Distribution Family = Poisson",
+  #      x = "Study Locations",
+  #      y = "Estimated Marginal Mean of Sum of MaxN") +
+  theme(legend.position=c(0.33,0.9),
         legend.title=element_blank()) +
-  scale_fill_manual(values = habitatcolors)
+  scale_fill_manual(values = habitatcolors,
+                    labels = c("Shallow",
+                               "Mesophotic"))
+  # ylim(ymin, 
+  #      ymax) +
 
 p_Serranidae
 save_plot("Serranidae_MaxN.png")
@@ -1933,23 +1989,30 @@ p_Lutjanidae <-
              size = 3,
              color = "black",
              inherit.aes = FALSE) +
-  geom_text(aes(label=group),
-            position = position_dodge(width=0.9),
-            vjust = -0.5,
-            hjust = -0.15,
-            size = 8 / (14/5)) +
+  # geom_text(aes(label=group),
+  #           position = position_dodge(width=0.9),
+  #           vjust = -0.5,
+  #           hjust = -0.15,
+  #           size = 8 / (14/5)) +
   # scale_y_continuous(trans='log10') +
   theme_classic() +
+  labs(title = "Lutjanidae",
+       x = "Study Locations",
+       y = "Abundance (MaxN)") +
+  ylim(0,15) +
   # ylim(ymin, 
   #      ymax) +
-  labs(title = "Lutjanidae",
-       subtitle = "Distribution Family = Poisson",
-       x = "Study Locations",
-       y = "EM Means of Sum of MaxN") +
-  theme(legend.position=c(0.33,0.9),  
+  # labs(title = "Lutjanidae",
+  #      subtitle = "Distribution Family = Poisson",
+  #      x = "Study Locations",
+  #      y = "Estimated Marginal Mean of Sum of MaxN") +
+  theme(legend.position=c(0.33,0.9),
         legend.title=element_blank()) +
-  ylim(0,15) +
-  scale_fill_manual(values = habitatcolors)
+  scale_fill_manual(values = habitatcolors,
+                    labels = c("Shallow",
+                               "Mesophotic"))
+  # ylim(ymin, 
+  #      ymax) +
 
 p_Lutjanidae
 save_plot("Lutjanidae_Abundance.png")
@@ -2127,23 +2190,31 @@ p_Lethrinidae <-
              size = 3,
              color = "black",
              inherit.aes = FALSE) +
-  geom_text(aes(label=group),
-            position = position_dodge(width=0.9),
-            vjust = -0.5,
-            hjust = -0.15,
-            size = 8 / (14/5)) +
+  # geom_text(aes(label=group),
+  #           position = position_dodge(width=0.9),
+  #           vjust = -0.5,
+  #           hjust = -0.15,
+  #           size = 8 / (14/5)) +
   # scale_y_continuous(trans='log10') +
   theme_classic() +
+  labs(title = "Lethrinidae",
+       x = "Study Locations",
+       y = "Abundance (MaxN)") +
+  ylim(0,10) +
   # ylim(ymin, 
   #      ymax) +
-  labs(title = "Lethrinidae",
-       subtitle = "Distribution Family = Poisson",
-       x = "Study Locations",
-       y = "EM Means of Sum of MaxN") +
-  theme(legend.position=c(0.33,0.9),  
+  # labs(title = "Lethrinidae",
+  #      subtitle = "Distribution Family = Poisson",
+  #      x = "Study Locations",
+  #      y = "Estimated Marginal Mean of Sum of MaxN") +
+  theme(legend.position=c(0.33,0.9),
         legend.title=element_blank()) +
-  ylim(0,10) +
-  scale_fill_manual(values = habitatcolors)
+  scale_fill_manual(values = habitatcolors,
+                    labels = c("Shallow",
+                               "Mesophotic"))
+  # ylim(ymin, 
+  #      ymax) +
+
 
 p_Lethrinidae
 
@@ -2322,24 +2393,30 @@ p_Carangidae <-
              size = 3,
              color = "black",
              inherit.aes = FALSE) +
-  geom_text(aes(label=group),
-            position = position_dodge(width=0.9),
-            vjust = -0.5,
-            hjust = -0.15,
-            size = 8 / (14/5)) +
+  # geom_text(aes(label=group),
+  #           position = position_dodge(width=0.9),
+  #           vjust = -0.5,
+  #           hjust = -0.15,
+  #           size = 8 / (14/5)) +
   # scale_y_continuous(trans='log10') +
   theme_classic() +
+  labs(title = "Carangidae",
+       x = "Study Locations",
+       y = "Abundance (MaxN)") +
+  ylim(0,20) +
   # ylim(ymin, 
   #      ymax) +
-  labs(title = "Carangidae",
-       subtitle = "Distribution Family = Poisson",
-       x = "Study Locations",
-       y = "EM Means of Sum of MaxN") +
-  theme(legend.position=c(0.5,0.9),  
+  # labs(title = "Carangidae",
+  #      subtitle = "Distribution Family = Poisson",
+  #      x = "Study Locations",
+  #      y = "Estimated Marginal Mean of Sum of MaxN") +
+  theme(legend.position=c(0.33,0.9),
         legend.title=element_blank()) +
-  ylim(0,15)+
-  scale_fill_manual(values = habitatcolors)
-
+  scale_fill_manual(values = habitatcolors,
+                    labels = c("Shallow",
+                               "Mesophotic"))
+  # ylim(ymin, 
+  #      ymax) +
 p_Carangidae
 
 save_plot("Carangidae_Abundance.png")
@@ -2517,23 +2594,31 @@ p_Galeomorphii <-
              size = 3,
              color = "black",
              inherit.aes = FALSE) +
-  geom_text(aes(label=group),
-            position = position_dodge(width=0.9),
-            vjust = -0.5,
-            hjust = -0.15,
-            size = 8 / (14/5)) +
+  # geom_text(aes(label=group),
+  #           position = position_dodge(width=0.9),
+  #           vjust = -0.5,
+  #           hjust = -0.15,
+  #           size = 8 / (14/5)) +
   # scale_y_continuous(trans='log10') +
   theme_classic() +
+  labs(title = "Galeomorphii",
+       x = "Study Locations",
+       y = "Abundance (MaxN)") +
+  ylim(0,7) +
   # ylim(ymin, 
   #      ymax) +
-  labs(title = "Galeomorphii",
-       subtitle = "Distribution Family = Poisson",
-       x = "Study Locations",
-       y = "EM Means of Sum of MaxN") +
-  theme(legend.position=c(0.5,0.9),  
+  # labs(title = "Galeomorphii",
+  #      subtitle = "Distribution Family = Poisson",
+  #      x = "Study Locations",
+  #      y = "Estimated Marginal Mean of Sum of MaxN") +
+  theme(legend.position=c(0.33,0.9),
         legend.title=element_blank()) +
-  ylim(0,7) +
-  scale_fill_manual(values = habitatcolors)
+  scale_fill_manual(values = habitatcolors,
+                    labels = c("Shallow",
+                               "Mesophotic"))
+  # ylim(ymin, 
+  #      ymax) +
+ 
 
 p_Galeomorphii
 
@@ -2711,23 +2796,31 @@ p_Cheilinus_undulatus <-
              size = 3,
              color = "black",
              inherit.aes = FALSE) +
-  geom_text(aes(label=group),
-            position = position_dodge(width=0.9),
-            vjust = -0.5,
-            hjust = -0.15,
-            size = 8 / (14/5)) +
+  # geom_text(aes(label=group),
+  #           position = position_dodge(width=0.9),
+  #           vjust = -0.5,
+  #           hjust = -0.15,
+  #           size = 8 / (14/5)) +
   # scale_y_continuous(trans='log10') +
   theme_classic() +
+  labs(title = "Cheilinus undulatus",
+       x = "Study Locations",
+       y = "Abundance (MaxN)") +
   # ylim(ymin, 
   #      ymax) +
-  labs(title = "Cheilinus undulatus",
-       subtitle = "Distribution Family = Poisson",
-       x = "Study Locations",
-       y = "EM Means of Sum of MaxN") +
-  theme(legend.position=c(0.5,0.9),  
-        legend.title=element_blank()) +
-  # ylim(0,7) +
-  scale_fill_manual(values = habitatcolors)
+  # labs(title = "Cheilinus undulatus",
+  #      subtitle = "Distribution Family = Poisson",
+  #      x = "Study Locations",
+  #      y = "Estimated Marginal Mean of Sum of MaxN") +
+  theme(legend.position=c(0.33,0.9),
+        legend.title=element_blank(),
+        plot.title = element_text(face = "italic")) +
+  scale_fill_manual(values = habitatcolors,
+                    labels = c("Shallow",
+                               "Mesophotic"))
+  # ylim(ymin, 
+  #      ymax) +
+ 
 
 p_Cheilinus_undulatus
 
@@ -2737,6 +2830,9 @@ emmeans_maxn <- ggarrange(p_Serranidae, p_Lutjanidae, p_Lethrinidae, p_Carangida
                           ncol = 2,
                           nrow = 3)
 ggsave("FacetedEmMeansMaxN.png", 
+       emmeans_maxn, height = 11, width = 8.5, units = "in")
+
+ggsave("FacetedEmMeansMaxN.pdf", 
        emmeans_maxn, height = 11, width = 8.5, units = "in")
 #### Bait Type Model Testing ####
 data_all_summaxn <- 
