@@ -1,69 +1,25 @@
-Carangidae,Carangoides,coeruleopinnatus,Generalist Carnivore
-Carangidae,Carangoides,ferdau,Generalist Carnivore
-Carangidae,Carangoides,oblongus,Generalist Carnivore
-Carangidae,Carangoides,orthogrammus,Generalist Carnivore
-Carangidae,Carangoides,plagiotaenia,Generalist Carnivore
-Carangidae,Caranx,melampygus,Generalist Carnivore
-Carangidae,Caranx,papuensis,Generalist Carnivore
-Carangidae,Caranx,sexfasciatus,Generalist Carnivore
-Carangidae,Elagatis,bipinnulata,Generalist Carnivore
-Carangidae,Scomberoides,lysan,Generalist Carnivore
-Carangidae,Seriola,dumerili,Generalist Carnivore
-Carangidae,Seriola,rivoliana,Generalist Carnivore
-Carcharhinidae,Carcharhinus,amblyrhynchos,Generalist Carnivore
-Carcharhinidae,Galeocerdo,cuvier,Generalist Carnivore
-Carcharhinidae,Triaenodon,obesus,Generalist Carnivore
-Labridae,Cheilinus,undulatus,Generalist Carnivore
-Lethrinidae,Lethrinus,atkinsoni,Generalist Carnivore
-Lethrinidae,Lethrinus,erythracanthus,Generalist Carnivore
-Lethrinidae,Lethrinus,erythropterus,Generalist Carnivore
-Lethrinidae,Lethrinus,nebulosus,Generalist Carnivore
-Lethrinidae,Lethrinus,olivaceus,Generalist Carnivore
-Lethrinidae,Lethrinus,rubrioperculatus,Generalist Carnivore
-Lethrinidae,Lethrinus,semicinctus,Generalist Carnivore
-Lethrinidae,Lethrinus,xanthochilus,Generalist Carnivore
-Lutjanidae,Aphareus,furca,Generalist Carnivore
-Lutjanidae,Lutjanus,carponotatus,Generalist Carnivore
-Lutjanidae,Lutjanus,decussatus,Generalist Carnivore
-Lutjanidae,Lutjanus,ehrenbergii,Generalist Carnivore
-Lutjanidae,Lutjanus,fulviflamma,Generalist Carnivore
-Lutjanidae,Lutjanus,gibbus,Generalist Carnivore
-Lutjanidae,Lutjanus,rivulatus,Generalist Carnivore
-Lutjanidae,Symphorichthys,spilurus,Generalist Carnivore
-Serranidae,Aethaloperca,rogaa,Generalist Carnivore
-Serranidae,Cephalopholis,polleni,Generalist Carnivore
-Serranidae,Cephalopholis,sexmaculata,Generalist Carnivore
-Serranidae,Epinephelus,fasciatus,Generalist Carnivore
-Serranidae,Epinephelus,fuscoguttatus,Generalist Carnivore
-Serranidae,Epinephelus,lanceolatus,Generalist Carnivore
-Serranidae,Epinephelus,maculatus,Generalist Carnivore
-Serranidae,Epinephelus,malabaricus,Generalist Carnivore
-Serranidae,Plectropomus,laevis,Generalist Carnivore
-Serranidae,Plectropomus,leopardus,Generalist Carnivore
-Serranidae,Plectropomus,oligacanthus,Generalist Carnivore
-Serranidae,Pogonoperca,punctata,Generalist Carnivore
-Sphyrnidae,Sphyrna,lewini,Generalist Carnivore
-Lethrinidae,Gymnocranius,griseus,Invertivore
-Lethrinidae,Gymnocranius,microdon,Invertivore
-Lethrinidae,Monotaxis,grandoculis,Invertivore
-Lethrinidae,Monotaxis,heterodon,Invertivore
-Carangidae,Caranx,ignobilis,Piscivore
-Carangidae,Caranx,lugubris,Piscivore
-Lutjanidae,Aprion,virescens,Piscivore
-Lutjanidae,Lutjanus,bohar,Piscivore
-Serranidae,Cephalopholis,argus,Piscivore
-Serranidae,Cephalopholis,miniata,Piscivore
-Serranidae,Gracila,albomarginata,Piscivore
-Serranidae,Plectropomus,areolatus,Piscivore
-Serranidae,Variola,albimarginata,Piscivore
-Serranidae,Variola,louti,Piscivore
-Alopiidae,Alopias,sp,
-Carangidae,Carangoides,sp,
-Carangidae,Caranx,sp,
-Carcharhinidae,Carcharhinus,sp,
-Lethrinidae,Lethrinus,sp,
-Serranidae,Cephalopholis,sp,
-Serranidae,Epinephelus,sp,
-Serranidae,,,
-Serranidae,Variola,sp,
-Sphyrnidae,Sphyrna,sp,
+Class/Superorder,Family,Genus,Species,MaxN,Trophic Groups
+Class Actinopteri ,Serranidae,Cephalopholis,sp,1,Generalist Carnivore
+Class Actinopteri ,Serranidae,Plectropomus,sp,1,Piscivore
+Class Actinopteri ,Serranidae,Plectropomus,sp,1,Piscivore
+Class Actinopteri ,Serranidae,Variola,sp,2,Piscivore
+Class Actinopteri ,Serranidae,Variola,sp,1,Piscivore
+Class Actinopteri ,Serranidae,Variola,sp,2,Piscivore
+Class Actinopteri ,Serranidae,Variola,sp,1,Piscivore
+Class Actinopteri ,Serranidae,Variola,sp,1,Piscivore
+Class Actinopteri ,Serranidae,Variola,sp,1,Piscivore
+Class Actinopteri ,Serranidae,Variola,sp,1,Piscivore
+Class Actinopteri ,Serranidae,Variola,sp,1,Piscivore
+Class Actinopteri ,Lethrinidae,Lethrinus,sp,1,Generalist Carnivore
+Class Actinopteri ,Lethrinidae,Lethrinus,sp,1,Generalist Carnivore
+Class Actinopteri ,Carangidae,Carangoides,sp,1,Generalist Carnivore
+Class Actinopteri ,Carangidae,Caranx,sp,2,Generalist Carnivore
+Class Actinopteri ,Carangidae,Caranx,sp,1,Generalist Carnivore
+Class Actinopteri ,Carangidae,Caranx,sp,3,Generalist Carnivore
+Class Actinopteri ,Carangidae,Caranx,sp,2,Generalist Carnivore
+Galeomorphii,Alopiidae,Alopias,sp,1,Generalist Carnivore
+Galeomorphii,Carcharhinidae,Carcharhinus,sp,1,Generalist Carnivore
+Galeomorphii,Carcharhinidae,Carcharhinus,sp,1,Generalist Carnivore
+Galeomorphii,Carcharhinidae,Carcharhinus,sp,1,Generalist Carnivore
+Galeomorphii,Epinephelidae,Epinephelus,sp,1,Generalist Carnivore
+Galeomorphii,Sphyrnidae,Sphyrna,sp,13,Generalist Carnivore

@@ -74,7 +74,7 @@ metadata <-
                                      "Deep Reef")))
 
 #### SUBSET AND MODIFY DATA: remove taxa not identified to species level for maxN analysis ####
- 
+
 data_removed_sp <- 
   data %>%
   filter(species != "sp") %>% 
@@ -131,6 +131,12 @@ data_all <-
   mutate(study_locations = factor(study_locations,
                                   levels = c("TRNP", 
                                              "CAGAYANCILLO")))
+
+data_all_only_sp <- data_all %>%
+  filter(species == "sp")
+
+view(data_all_only_sp)
+
 data_all_removed_sp <- 
   data_removed_sp %>%
   left_join(metadata,
@@ -465,24 +471,37 @@ ggsave("NMDSfishassemblageversion3.png",
        width = 7,
        units = "in")
 
-ggord_plot_2_3 <- 
+ggord_plot_wellipses_wovectors <- 
   ggord %>%
   # filter(label != 17) %>%
-  ggplot(aes(x = nmds2,
-             y = nmds3,
+  ggplot(aes(x = nmds1,
+             y = nmds2,
              color = habitat,
              shape = study_locations)) +
+  scale_y_continuous(limits = c(NA,2)) +
+  coord_fixed() + ## need aspect ratio of 1!
   # scale_x_continuous(limits = c(-3,3)) +
   geom_point(size = 5) +
-  stat_ellipse(aes(group = studylocation_habitat)) +
-  theme_classic() +
-  xlab("NMDS 2") +
-  ylab("NMDS 3") +
-  labs(color = "Habitat", 
-       shape = "Study Locations", 
-       title = "NMDS Plots of Fish Assemblage") + 
   scale_color_manual(values = habitatcolors,
-                     labels = habitatlabels)
+                     labels = habitatlabels)+
+  scale_shape_manual(values = c(16,2)) +
+  stat_ellipse(aes(group = studylocation_habitat,
+                   lty=factor(study_locations))) +
+  scale_linetype_manual(values=c(1,2,1,2)) +
+  theme_classic() +
+  xlab("NMDS 1") +
+  ylab("NMDS 2") +
+  labs(color = "Depth", 
+       shape = "Study Locations", 
+       linetype = "Study Locations",
+       title = "NMDS Plots of Fish Assemblage") 
+
+ggord_plot_wellipses_wovectors
+ggsave("NMDSfishassemblagewellipses.png",
+       ggord_plot_wellipses_wovectors,
+       height = 5,
+       width = 7,
+       units = "in")
 
 
 # ggord %>%
