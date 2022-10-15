@@ -17,13 +17,17 @@ theme_set(
 # install.packages("vegan")
 library(vegan)
 library(devtools)
-#devtools::install_github("jfq3/ggordiplots", dependencies = TRUE)
+# devtools::install_github("jfq3/ggordiplots", dependencies = TRUE)
 library(ggordiplots)
+# devtools::install_github("vqv/ggbiplot")
 library(ggbiplot)
+# devtools::install_github("gavinsimpson/ggvegan")
 library(ggvegan)
 library(ggpubr)
 
 library(ggrepel)
+install.packages("indicspecies")
+library(indicspecies)
 
 #### USER DEFINED VARIABLES ####
 
@@ -558,6 +562,10 @@ data.simper.deep.reefs.study.locations <- data_vegan_deep %>%
   simper(group = study_locations)
 
 summary(data.simper.deep.reefs.study.locations)
+
+###indicspecies ####
+data.indicspecies <- multipatt(data_vegan, groups,
+                   control = permControl(nperm=999))
 
 #### Varpart ####
 varpart.p <- varpart(X = vegdist(data_vegan), 
