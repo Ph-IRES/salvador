@@ -1193,16 +1193,19 @@ p_Cheilinus_undulatus_plot <- plot(p_Cheilinus_undulatus,
                             main = "Cheilinus undulatus")
 
 p_Cheilinus_undulatus_plot
+
                             
 ## Species Rarefaction Curves for All Groupings ##
-p_groupings_plot <- ggarrange(p_Serranidae_plots,
+p_groupings_plot <- ggpubr::ggarrange(data_estaccumR_plots,
+                              p_Serranidae_plots,
                               p_Lutjanidae_plots,
                               p_Lethrinidae_plots,
                               p_Carangidae_plots,
                               p_Galeomorphii_plots,
-                              data_estaccumR_plots,
                                       ncol = 2,
                                       nrow = 3)
+
+
 ggsave("SpeciesRichnessRarefactionCurveGroupings.png", 
        p_groupings_plot, 
        height = 11,
