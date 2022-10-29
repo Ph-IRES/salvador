@@ -583,8 +583,15 @@ data.simper.deep.reefs.study.locations <- data_vegan_deep %>%
 summary(data.simper.deep.reefs.study.locations)
 
 ###indicspecies ####
+groups <- data_vegan.env$habitat_mpa 
+  
 data.indicspecies <- multipatt(data_vegan, groups,
-                   control = permControl(nperm=999))
+                               control = how(nperm=999))
+
+summary(data.indicspecies)
+
+indicspecies_output <- summary(data.indicspecies)
+
 
 #### Varpart ####
 varpart.p <- varpart(X = vegdist(data_vegan), 
