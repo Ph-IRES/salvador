@@ -26,7 +26,7 @@ library(ggvegan)
 library(ggpubr)
 
 library(ggrepel)
-install.packages("indicspecies")
+# install.packages("indicspecies")
 library(indicspecies)
 
 #### USER DEFINED VARIABLES ####
@@ -134,8 +134,6 @@ data_all <-
 
 data_all_only_sp <- data_all %>%
   filter(species == "sp")
-
-view(data_all_only_sp)
 
 data_all_removed_sp <- 
   data_removed_sp %>%
@@ -585,10 +583,17 @@ summary(data.simper.deep.reefs.study.locations)
 ###indicspecies ####
 groups <- data_vegan.env$habitat_mpa 
   
-data.indicspecies <- multipatt(data_vegan, groups,
+data.indicspecies <- multipatt(data_vegan, groups, func = "IndVal.g",
                                control = how(nperm=999))
 
 summary(data.indicspecies)
+avalues_indicspecies <- data.indicspecies$A 
+
+view(avalues_indicspecies)
+
+bvalues_indicspecies <-data.indicspecies$B 
+
+view(bvalues_indicspecies)
 
 indicspecies_output <- summary(data.indicspecies)
 
