@@ -2097,3 +2097,12 @@ ggsave("FacetedEmMeansSpeciesRichness.pdf",
        emmeans_sr, height = 11, width = 8.5, units = "in")
 ggsave("FacetedEmMeansSpeciesRichness.png", 
        emmeans_sr, height = 11, width = 8.5, units = "in")
+
+#### Testing for Bait Type on Species Richness ####
+
+##test effect of deph and bait type
+adonis2(formula = data_vegan ~ depth_m * bait_type, data = data_vegan.env, na.action = na.omit)
+
+##test for effect of study locations and bait type
+
+adonis2(formula = data_vegan ~ study_locations * bait_type, data = data_vegan.env, na.action = na.omit)

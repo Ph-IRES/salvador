@@ -5,6 +5,7 @@ library(tidyverse)
 library(janitor)
 library(magrittr)
 library(gridExtra)
+
 library(readxl)
 
 library(devtools)
@@ -2914,3 +2915,4 @@ contrast(regrid(emmeans_model_bait), # emmeans back transformed to the original 
          simple = 'each', 
          combine = FALSE, 
          adjust = "bh")
+
