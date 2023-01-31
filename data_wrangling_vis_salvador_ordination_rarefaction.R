@@ -454,8 +454,8 @@ ggord_plot <-
                   inherit.aes = FALSE) +
   
   theme_classic() +
-  xlab("NMDS 1") +
-  ylab("NMDS 2") +
+  xlab("nMDS 1") +
+  ylab("nMDS 2") +
   labs(color = "Depth", 
        shape = "Study Locations", 
        linetype = "Study Locations") 
@@ -468,6 +468,7 @@ ggsave("NMDSfishassemblageversion3.png",
        height = 5,
        width = 7,
        units = "in")
+
 
 ggord_plot_wellipses_wovectors <- 
   ggord %>%
@@ -487,8 +488,8 @@ ggord_plot_wellipses_wovectors <-
                    lty=factor(study_locations))) +
   scale_linetype_manual(values=c(1,2,1,2)) +
   theme_classic() +
-  xlab("NMDS 1") +
-  ylab("NMDS 2") +
+  xlab("nMDS 1") +
+  ylab("nMDS 2") +
   labs(color = "Depth", 
        shape = "Study Locations", 
        linetype = "Study Locations",
