@@ -1,0 +1,25 @@
+Class/Superorder,Family,Genus,Species,MaxN,Trophic Groups
+Class Actinopteri ,Serranidae,Cephalopholis,sp,1,Generalist Carnivore
+Class Actinopteri ,Serranidae,Plectropomus,sp,1,Piscivore
+Class Actinopteri ,Serranidae,Plectropomus,sp,1,Piscivore
+Class Actinopteri ,Serranidae,Variola,sp,2,Piscivore
+Class Actinopteri ,Serranidae,Variola,sp,1,Piscivore
+Class Actinopteri ,Serranidae,Variola,sp,2,Piscivore
+Class Actinopteri ,Serranidae,Variola,sp,1,Piscivore
+Class Actinopteri ,Serranidae,Variola,sp,1,Piscivore
+Class Actinopteri ,Serranidae,Variola,sp,1,Piscivore
+Class Actinopteri ,Serranidae,Variola,sp,1,Piscivore
+Class Actinopteri ,Serranidae,Variola,sp,1,Piscivore
+Class Actinopteri ,Lethrinidae,Lethrinus,sp,1,Generalist Carnivore
+Class Actinopteri ,Lethrinidae,Lethrinus,sp,1,Generalist Carnivore
+Class Actinopteri ,Carangidae,Carangoides,sp,1,Generalist Carnivore
+Class Actinopteri ,Carangidae,Caranx,sp,2,Generalist Carnivore
+Class Actinopteri ,Carangidae,Caranx,sp,1,Generalist Carnivore
+Class Actinopteri ,Carangidae,Caranx,sp,3,Generalist Carnivore
+Class Actinopteri ,Carangidae,Caranx,sp,2,Generalist Carnivore
+Galeomorphii,Alopiidae,Alopias,sp,1,Generalist Carnivore
+Galeomorphii,Carcharhinidae,Carcharhinus,sp,1,Generalist Carnivore
+Galeomorphii,Carcharhinidae,Carcharhinus,sp,1,Generalist Carnivore
+Galeomorphii,Carcharhinidae,Carcharhinus,sp,1,Generalist Carnivore
+Galeomorphii,Epinephelidae,Epinephelus,sp,1,Generalist Carnivore
+Galeomorphii,Sphyrnidae,Sphyrna,sp,13,Generalist Carnivore

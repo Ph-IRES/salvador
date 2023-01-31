@@ -401,7 +401,8 @@ p_sr <-
   #           size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
   theme_classic() +
   labs(x = "Study Locations",
-       y = "Species Richness (Chao1)") +
+       y = "Species Richness (Chao1)",
+       title = "Overall Species Richness") +
   # ylim(ymin, 
   #      ymax) +
   # labs(title = "Species Richness at TRNP vs. Cagayancillo",
@@ -825,8 +826,7 @@ p_sr_Serranidae <-
   labs(x = "Study Locations",
        y = "Species Richness (Chao1)",
        title = "Serranidae") +
-  # ylim(ymin, 
-  #      ymax) +
+  ylim(0, 5) +
   # labs(title = "Serranidae",
   #      subtitle = "Distribution Family = Poisson",
   #     x = "Study Locations",
@@ -1076,8 +1076,7 @@ p_sr_Lutjanidae <-
   labs(x = "Study Locations",
        y = "Species Richness (Chao1)",
        title = "Lutjanidae") +
-  # ylim(ymin, 
-  #      ymax) +
+   ylim(0,5) +
   # labs(title = "Lutjanidae",
   #      subtitle = "Distribution Family = Poisson",
   #      x = "Study Locations",
@@ -1326,8 +1325,7 @@ p_sr_Lethrinidae <-
   labs(x = "Study Locations",
        y = "Species Richness (Chao1)",
        title = "Lethrinidae") +
-  # ylim(ymin, 
-  #      ymax) +
+  ylim(0,5) +
   # labs(title = "Lethrinidae",
   #      subtitle = "Distribution Family = Poisson",
   #      x = "Study Locations",
@@ -1576,8 +1574,7 @@ p_sr_Carangidae <-
   labs(x = "Study Locations",
        y = "Species Richness (Chao1)",
        title = "Carangidae") +
-  # ylim(ymin, 
-  #      ymax) +
+  ylim(0,5) +
   # labs(title = "Carangidae",
   #      subtitle = "Distribution Family = Poisson",
   #      x = "Study Locations",
@@ -1827,8 +1824,7 @@ p_sr_Galeomorphii <-
   labs(x = "Study Locations",
        y = "Species Richness (Chao1)",
        title = "Galeomorphii") +
-  # ylim(ymin, 
-  #      ymax) +
+  ylim(0,5) +
   # labs(title = "Galeomorphii",
   #      subtitle = "Distribution Family = Poisson",
   #      x = "Study Locations",
@@ -2085,7 +2081,7 @@ p_sr_Cheilinus_undulatus <-
 
 p_sr_Cheilinus_undulatus
 
-
+#### Save Overall Species Richness Plot ####
 emmeans_sr <- ggarrange(p_sr_Serranidae,
                         p_sr_Lutjanidae,
                         p_sr_Lethrinidae, 
@@ -2097,6 +2093,20 @@ ggsave("FacetedEmMeansSpeciesRichness.pdf",
        emmeans_sr, height = 11, width = 8.5, units = "in")
 ggsave("FacetedEmMeansSpeciesRichness.png", 
        emmeans_sr, height = 11, width = 8.5, units = "in")
+
+emmeans_sr_reorganized <- ggarrange(p_sr,
+                                    p_sr_Serranidae,
+                                    p_sr_Lutjanidae,
+                                    p_sr_Lethrinidae, 
+                                    p_sr_Carangidae,
+                                    p_sr_Galeomorphii,
+                                    ncol = 2,
+                                    nrow = 3)
+ggsave("FacetedSpeciesRichnesswOverall.png",
+       emmeans_sr_reorganized,
+       height = 11,
+       width = 8.5,
+       units = "in")
 
 #### Testing for Bait Type on Species Richness ####
 
