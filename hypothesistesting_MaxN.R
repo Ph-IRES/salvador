@@ -52,9 +52,11 @@ data_all <- data_all %>%
   mutate(taxon = str_c(groupings,
                        genus,
                        species,
-                       sep = "_"))
+                       sep = "_")) %>% 
+  subset(groupings != "Galeomorphii") %>% ##remove shark data 
+  view()
 
-view(data_all)
+
 
 
 data <-
@@ -227,7 +229,7 @@ data_all_summaxn <-
            habitat,
            bait_type) %>%
   dplyr::summarize(sum_max_n = sum(max_n))
-View(data_all_summaxn)
+
 
 data_all %>%
   group_by(study_locations, 
@@ -425,7 +427,8 @@ p <-
   #           size = 8 / (14/5)) +
   scale_y_continuous(trans='log10') +
   theme_classic() +
-  labs(x = "Study Locations",
+  labs(title = "Overall Abundance",
+       x = "Study Locations",
        y = "Abundance (MaxN)") +
   # ylim(ymin, 
   #      ymax) +
@@ -443,53 +446,53 @@ p
 ggsave("EstimatedMarginalMeansMaxN.png",
        p)
 # save_plot("EstimatedMarginalMeansMaxN.png")
-p <- 
-  groupings_model_fixed %>% 
-  ggplot(aes(x=study_locations,
-             y=response,
-             fill = habitat)) +
-  geom_col(position = "dodge",
-           color = "black") +
-  # scale_fill_manual(values = c("lightgrey",
-  #                              "white"),
-  #                   labels = c('Pre-Screen', 
-  #                              'Post-Screen')) +
-  
-  geom_errorbar(aes(ymin=asymp.LCL,
-                    ymax=asymp.UCL),
-                width = 0.2,
-                color = "grey50",
-                # size = 1,
-                position = position_dodge(width=0.9)) +
-  guides(color = "none",
-         shape = "none") +   #remove color legend
-  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
-  geom_point(data = data_all_summaxn,
-             aes(x = study_locations,
-                 y = !!response_var,
-                 shape = habitat),
-             position=position_jitterdodge(),
-             size = 3,
-             color = "black",
-             inherit.aes = FALSE) +
-  geom_text(aes(label=group),
-            position = position_dodge(width=0.9),
-            vjust = -0.5,
-            hjust = -0.15,
-            size = 8 / (14/5)) +
-  scale_y_continuous(trans='log10') +
-  theme_classic() +
-  # ylim(ymin, 
-  #      ymax) +
-  labs(title = "Abundance at TRNP vs. Cagayancillo",
-       subtitle = "Distribution Family = Poisson",
-       x = "Study Locations",
-       y = "Estimated Marginal Mean of Sum of MaxN") +
-  theme(legend.position=c(0.33,0.9),  
-        legend.title=element_blank()) +
-  scale_fill_manual(values = habitatcolors)
-
-p
+# p <- 
+#   groupings_model_fixed %>% 
+#   ggplot(aes(x=study_locations,
+#              y=response,
+#              fill = habitat)) +
+#   geom_col(position = "dodge",
+#            color = "black") +
+#   # scale_fill_manual(values = c("lightgrey",
+#   #                              "white"),
+#   #                   labels = c('Pre-Screen', 
+#   #                              'Post-Screen')) +
+#   
+#   geom_errorbar(aes(ymin=asymp.LCL,
+#                     ymax=asymp.UCL),
+#                 width = 0.2,
+#                 color = "grey50",
+#                 # size = 1,
+#                 position = position_dodge(width=0.9)) +
+#   guides(color = "none",
+#          shape = "none") +   #remove color legend
+#   # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
+#   geom_point(data = data_all_summaxn,
+#              aes(x = study_locations,
+#                  y = !!response_var,
+#                  shape = habitat),
+#              position=position_jitterdodge(),
+#              size = 3,
+#              color = "black",
+#              inherit.aes = FALSE) +
+#   geom_text(aes(label=group),
+#             position = position_dodge(width=0.9),
+#             vjust = -0.5,
+#             hjust = -0.15,
+#             size = 8 / (14/5)) +
+#   scale_y_continuous(trans='log10') +
+#   theme_classic() +
+#   # ylim(ymin, 
+#   #      ymax) +
+#   labs(title = "Abundance at TRNP vs. Cagayancillo",
+#        subtitle = "Distribution Family = Poisson",
+#        x = "Study Locations",
+#        y = "Estimated Marginal Mean of Sum of MaxN") +
+#   theme(legend.position=c(0.33,0.9),  
+#         legend.title=element_blank()) +
+#   scale_fill_manual(values = habitatcolors)
+# 
+# p
 
 
 ####Serranidae ####
@@ -1222,7 +1225,7 @@ p_Carangidae <-
   labs(title = "Carangidae",
        x = "Study Locations",
        y = "Abundance (MaxN)") +
-  ylim(0,40) +
+  ylim(0,20) +
   # labs(title = "Carangidae",
   #      subtitle = "Distribution Family = Poisson",
   #      x = "Study Locations",
@@ -1801,19 +1804,12 @@ p_Serranidae <-
   labs(title = "Serranidae",
        x = "Study Locations",
        y = "Abundance (MaxN)") +
-  # ylim(ymin, 
-  #      ymax) +
-  # labs(title = "Serranidae",
-  #      subtitle = "Distribution Family = Poisson",
-  #      x = "Study Locations",
-  #      y = "Estimated Marginal Mean of Sum of MaxN") +
   theme(legend.position=c(0.33,0.9),
         legend.title=element_blank()) +
   scale_fill_manual(values = habitatcolors,
                     labels = c("Shallow",
-                               "Mesophotic"))
-  # ylim(ymin, 
-  #      ymax) +
+                               "Mesophotic")) +
+  ylim(0,20)
 
 p_Serranidae
 save_plot("Serranidae_MaxN.png")
@@ -2000,7 +1996,7 @@ p_Lutjanidae <-
   labs(title = "Lutjanidae",
        x = "Study Locations",
        y = "Abundance (MaxN)") +
-  ylim(0,15) +
+  ylim(0,20) +
   # ylim(ymin, 
   #      ymax) +
   # labs(title = "Lutjanidae",
@@ -2201,7 +2197,7 @@ p_Lethrinidae <-
   labs(title = "Lethrinidae",
        x = "Study Locations",
        y = "Abundance (MaxN)") +
-  ylim(0,10) +
+  ylim(0,20) +
   # ylim(ymin, 
   #      ymax) +
   # labs(title = "Lethrinidae",
@@ -2827,7 +2823,7 @@ p_Cheilinus_undulatus
 
 save_plot("Cheilinus_undulatus.png")
 
-emmeans_maxn <- ggarrange(p_Serranidae, p_Lutjanidae, p_Lethrinidae, p_Carangidae, p_Galeomorphii, p_Cheilinus_undulatus, 
+emmeans_maxn <- ggarrange(p, p_Serranidae, p_Lutjanidae, p_Lethrinidae, p_Carangidae, p_Cheilinus_undulatus, 
                           ncol = 2,
                           nrow = 3)
 ggsave("FacetedEmMeansMaxN.png", 

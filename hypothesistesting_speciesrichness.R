@@ -72,7 +72,7 @@ data <-
            .keep_all = TRUE)
 
 data_removed_sp <- data %>%
-  filter(species != "sp") %>% 
+  filter(species != "sp") %>%
   mutate(family = str_to_title(family),
          genus = str_to_title(genus),
          species = str_to_lower(species),

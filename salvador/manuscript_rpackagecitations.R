@@ -1,7 +1,0 @@
-citation(package = "ggplot2")
-citation(package = "tidyverse")
-citation(package = "vegan")
-citation("afex")
-citation(package = "emmeans")
-citation(package = "multcomp")
-citation(package = "indicspecies")
