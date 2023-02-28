@@ -69,7 +69,10 @@ data <-
   # remove duplicated rows
   distinct(op_code,
            taxon,
-           .keep_all = TRUE)
+           .keep_all = TRUE) %>% 
+  filter(family_clean !="Alopiidae",
+         family_clean != "Sphyrnidae",
+         family_clean != "Carcharhinidae")
 
 data_removed_sp <- data %>%
   filter(species != "sp") %>%
@@ -81,9 +84,6 @@ data_removed_sp <- data %>%
            TRUE ~ family)) %>%
          mutate(groupings = case_when(
            family == "Labridae" ~ "Cheilinus undulatus",
-           family == "Sphyrnidae" ~ "Galeomorphii",
-           family == "Carcharhinidae" ~ "Galeomorphii",
-           family == "Alopiidae" ~ "Galeomorphii",
            family == "Epinephelidae" ~ "Serranidae",
            TRUE ~ family))%>%
           mutate(taxon = str_c(groupings,
@@ -100,7 +100,7 @@ data_removed_sp <- data %>%
   # remove duplicated rows
   distinct(op_code,
            taxon,
-           .keep_all = TRUE) 
+           .keep_all = TRUE) %>% view()
 
 
 metadata <-
@@ -141,9 +141,6 @@ data_all_removed_sp <-
   )) %>%
   mutate(groupings = case_when(
     family == "Labridae" ~ "Cheilinus undulatus",
-    family == "Sphyrnidae" ~ "Galeomorphii",
-    family == "Carcharhinidae" ~ "Galeomorphii",
-    family == "Alopiidae" ~ "Galeomorphii",
     family == "Epinephelidae" ~ "Serranidae",
     TRUE ~ family))
 
@@ -206,9 +203,9 @@ pool <-
   t() %>%
   as_tibble()
 
-vis_dists(pool,
-          "S.chao1")
-par(mar = c(1,1,1,1))
+# vis_dists(pool,
+#           "S.chao1")
+# par(mar = c(1,1,1,1))
 
 pool %>%
   clean_names() %>%
@@ -417,6 +414,8 @@ p_sr <-
 
 p_sr
 save_plot("EMMeansofSpeciesRichnessGamma.png")
+ggsave("EMMeansofSpeciesRichnessGamma.png",
+       p_sr)
 
 #### Overall means_chao_s with Species Observations instead of Chao estimate ####
 pool <- 
@@ -824,7 +823,7 @@ p_sr_Serranidae <-
   #           size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
   theme_classic() +
   labs(x = "Study Locations",
-       y = "Species Richness (Chao1)",
+       y = "Observed Species Richness",
        title = "Serranidae") +
   ylim(0, 5) +
   # labs(title = "Serranidae",
@@ -1074,7 +1073,7 @@ p_sr_Lutjanidae <-
             # size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
   theme_classic() +
   labs(x = "Study Locations",
-       y = "Species Richness (Chao1)",
+       y = "Observed Species Richness",
        title = "Lutjanidae") +
    ylim(0,5) +
   # labs(title = "Lutjanidae",
@@ -1323,7 +1322,7 @@ p_sr_Lethrinidae <-
   #           size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
   theme_classic() +
   labs(x = "Study Locations",
-       y = "Species Richness (Chao1)",
+       y = "Observed Species Richness",
        title = "Lethrinidae") +
   ylim(0,5) +
   # labs(title = "Lethrinidae",
@@ -1572,7 +1571,7 @@ p_sr_Carangidae <-
   #           size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
   theme_classic() +
   labs(x = "Study Locations",
-       y = "Species Richness (Chao1)",
+       y = "Observed Species Richness",
        title = "Carangidae") +
   ylim(0,5) +
   # labs(title = "Carangidae",
@@ -2082,11 +2081,11 @@ p_sr_Cheilinus_undulatus <-
 p_sr_Cheilinus_undulatus
 
 #### Save Overall Species Richness Plot ####
-emmeans_sr <- ggarrange(p_sr_Serranidae,
+emmeans_sr <- ggarrange(p_sr,
+                        p_sr_Serranidae,
                         p_sr_Lutjanidae,
                         p_sr_Lethrinidae, 
                         p_sr_Carangidae,
-                        p_sr_Galeomorphii,
                           ncol = 2,
                           nrow = 3)
 ggsave("FacetedEmMeansSpeciesRichness.pdf", 
