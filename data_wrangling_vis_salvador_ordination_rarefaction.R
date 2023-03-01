@@ -9,11 +9,11 @@ library(readxl)
 library(sjPlot)
 # install.packages("maps")
 # install.packages("viridis")
-require(maps)
-require(viridis)
-theme_set(
-  theme_void()
-)
+# require(maps)
+# require(viridis)
+# theme_set(
+#   theme_void()
+# )
 # install.packages("vegan")
 library(vegan)
 library(devtools)
@@ -62,7 +62,10 @@ data <-
   # remove duplicated rows
   distinct(op_code,
            taxon,
-           .keep_all = TRUE)
+           .keep_all = TRUE) %>% 
+  filter(family_clean !="Alopiidae",
+         family_clean != "Sphyrnidae",
+         family_clean != "Carcharhinidae")
 
 metadata <-
   read_excel(inFilePath2,
@@ -1214,7 +1217,6 @@ p_groupings_plot <- ggpubr::ggarrange(data_estaccumR_plots,
                               p_Lutjanidae_plots,
                               p_Lethrinidae_plots,
                               p_Carangidae_plots,
-                              p_Galeomorphii_plots,
                                       ncol = 2,
                                       nrow = 3)
 
