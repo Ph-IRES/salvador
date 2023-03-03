@@ -32,7 +32,26 @@ data <-
          family = str_to_title(family),
          genus = str_to_title(genus),
          species = str_to_lower(species),
-         trophic_groups = str_to_title(trophic_groups))
+         trophic_groups = str_to_title(trophic_groups),
+         family_clean = case_when(
+           family == "Epinephelidae" ~ "Serranidae",
+           TRUE ~ family),
+          taxon = str_c(family_clean,
+              genus,
+              species,
+              sep = "_"))  %>%
+  # keep only max_n
+  group_by(op_code,
+           taxon) %>%
+  filter(max_n == max(max_n)) %>%
+  ungroup() %>%
+  # remove duplicated rows
+  distinct(op_code,
+           taxon,
+           .keep_all = TRUE) %>% 
+  filter(family_clean !="Alopiidae",
+         family_clean != "Sphyrnidae",
+         family_clean != "Carcharhinidae") %>% view()
 
 metadata <-
   read_excel(inFilePath2,
@@ -56,7 +75,38 @@ data_all <-
          site:long_e,
          depth_m,
          time_in:bait_weight_grams,
-         everything())
+         everything()) 
+
+data_all <- data %>%
+  left_join(metadata,
+                      by = c("op_code" = "opcode",
+                             "depth_m" = "depth_m")) %>%
+  # rearrange order of columns, metadata then data
+  # select(op_code,
+  #        site:long_e,
+  #        depth_m,
+  #        time_in:bait_weight_grams,
+  #        everything()) %>%
+  mutate(study_locations = case_when(
+    site == "Cawili" ~ "CAGAYANCILLO",
+    site == "Calusa" ~ "CAGAYANCILLO",
+    site == "Cagayancillo" ~ "CAGAYANCILLO",
+    site == "TUBBATAHA" ~ "TRNP")) %>%
+  mutate(study_locations = factor(study_locations,
+                                  levels = c("TRNP", 
+                                             "CAGAYANCILLO"))) %>%
+  mutate(habitat = factor(habitat,
+                          levels = c("Shallow Reef",
+                                     "Deep Reef"))) %>%
+  mutate(habitat = case_when(
+    habitat == "Shallow Reef" ~ "Shallow Reef",
+    habitat == "Deep Reef" ~ "Mesophotic Reef"
+  )) %>%
+  mutate(groupings = case_when(
+    family == "Labridae" ~ "Cheilinus undulatus",
+    family == "Epinephelidae" ~ "Serranidae",
+    TRUE ~ family))
+  
 
 #### PREP DATA FOR VEGAN ####
 
@@ -65,21 +115,35 @@ data_all <-
   # each column is a taxon
   # data are counts
 
-data_vegan <-
+# data_vegan <-
+#   data %>%
+#   # make unique taxa
+#   mutate(taxon = str_c(family,
+#                        genus,
+#                        species,
+#                        sep = "_")) %>%
+#   # sum all max_n counts for a taxon and op_code
+#   group_by(taxon,
+#            op_code) %>%
+#   summarize(sum_max_n = sum(max_n)) %>%
+#   ungroup() %>%
+#   # convert tibble from long to wide format
+#   pivot_wider(names_from = taxon,
+#               values_from = sum_max_n,
+#               values_fill = 0) %>%
+#   # sort by op_code
+#   arrange(op_code) %>%
+#   # remove the op_code column for vegan
+#   dplyr::select(-op_code)
+
+data_vegan <- 
   data %>%
-  # make unique taxa
-  mutate(taxon = str_c(family,
-                       genus,
-                       species,
-                       sep = "_")) %>%
-  # sum all max_n counts for a taxon and op_code
-  group_by(taxon,
-           op_code) %>%
-  summarize(sum_max_n = sum(max_n)) %>%
-  ungroup() %>%
+  dplyr::select(op_code,
+                taxon,
+                max_n) %>%
   # convert tibble from long to wide format
   pivot_wider(names_from = taxon,
-              values_from = sum_max_n,
+              values_from = max_n,
               values_fill = 0) %>%
   # sort by op_code
   arrange(op_code) %>%
@@ -90,40 +154,76 @@ data_vegan <-
 # each row is a site
 # each column is a dimension of site, such as depth, lat, long, region, etc
 
+# data_vegan.env <-
+#   data_all %>%
+#   # make unique taxa
+#   mutate(taxon = str_c(family,
+#                        genus,
+#                        species,
+#                        sep = "_")) %>%
+#   # sum all max_n counts for a taxon and op_code
+#   group_by(taxon,
+#            op_code,
+#            site,
+#            survey_area,
+#            habitat,
+#            lat_n,
+#            long_e,
+#            depth_m,
+#            bait_type) %>%
+#   summarize(sum_max_n = sum(max_n)) %>%
+#   ungroup() %>%
+#   # convert tibble from long to wide format
+#   pivot_wider(names_from = taxon,
+#               values_from = sum_max_n,
+#               values_fill = 0) %>%
+#   # sort by op_code
+#   arrange(op_code) %>%
+#   # remove the op_code column for vegan
+#   dplyr::select(op_code:bait_type) %>%
+#   mutate(site_code = str_remove(op_code,
+#                                 "_.*$"),
+#          site_code = factor(site_code),
+#          habitat = factor(habitat),
+#          bait_type = factor(bait_type),
+#          site = factor(site),
+#          survey_area = factor(survey_area))
+
 data_vegan.env <-
   data_all %>%
-  # make unique taxa
-  mutate(taxon = str_c(family,
-                       genus,
-                       species,
-                       sep = "_")) %>%
   # sum all max_n counts for a taxon and op_code
-  group_by(taxon,
-           op_code,
-           site,
-           survey_area,
-           habitat,
-           lat_n,
-           long_e,
-           depth_m,
-           bait_type) %>%
-  summarize(sum_max_n = sum(max_n)) %>%
-  ungroup() %>%
+  dplyr::select(taxon,
+                op_code,
+                site,
+                study_locations,
+                survey_area,
+                habitat,
+                lat_n,
+                long_e,
+                depth_m,
+                survey_length_hrs,
+                bait_type,
+                max_n) %>%
   # convert tibble from long to wide format
   pivot_wider(names_from = taxon,
-              values_from = sum_max_n,
+              values_from = max_n,
               values_fill = 0) %>%
   # sort by op_code
   arrange(op_code) %>%
-  # remove the op_code column for vegan
   dplyr::select(op_code:bait_type) %>%
   mutate(site_code = str_remove(op_code,
                                 "_.*$"),
          site_code = factor(site_code),
+         study_locations = factor(study_locations,
+                                  levels = c("TRNP",
+                                             "CAGAYANCILLO")),
          habitat = factor(habitat),
          bait_type = factor(bait_type),
          site = factor(site),
-         survey_area = factor(survey_area))
+         survey_area = factor(survey_area),
+         habitat_mpa = str_c(habitat,
+                             study_locations,
+                             sep = " "))
 
 # and now we "attach" the metadata to the data
 
@@ -139,6 +239,7 @@ attach(data_vegan.env)
 adonis2(data_vegan ~ depth_m*site,
         data = data_vegan.env,
         by = NULL)
+
 
 # test for differences in species composition with depth and site by each predictor, this is the default behavior, so `by` is not necessary
   # Once we have found the model to be significant, we can move on to testing whether each term in the statistical model is non-randomly related to the response variables.
@@ -178,4 +279,8 @@ adonis2(data_vegan ~ depth_m*site,
 adonis2(data_vegan ~ bait_type*habitat,
         data = data_vegan.env,
         strata = site)
+
+adonis2(data_vegan ~ site*habitat,
+        data = data_vegan.env,
+        na.action = na.exclude)
 

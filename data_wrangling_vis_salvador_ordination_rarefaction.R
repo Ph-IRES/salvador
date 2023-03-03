@@ -547,7 +547,6 @@ data.simper.TRNP.habitat <- data_vegan_TRNP %>%
 
 summary(data.simper.TRNP.habitat)
 
-
 ##Influential Species of CAG
 data.simper.CAG <- data_vegan_CAG %>%
   simper()
