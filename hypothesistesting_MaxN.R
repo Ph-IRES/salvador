@@ -209,6 +209,19 @@ data_vegan.env <-
                              sep = " "))
 
 attach(data_vegan.env)
+#### Unique Taxa ####
+data_unique_taxa <- unique(data_all_removed_sp$taxon) %>%
+  view()
+
+write.csv(data_unique_taxa, file = "data_unique_taxa_wsharks.csv")
+
+data_unique_taxa_withoutsharks <- data_unique_taxa %>%
+                  filter(!str_detect(x, 'Carcharhinidae'),
+                           !str_detect(x, 'Sphyrnidae')) %>% 
+                    view()
+
+write.csv(data_unique_taxa_withoutsharks, file = "data_unique_taxa_withoutsharks.csv")
+
 #### sum_max_n: Make Visualization of Hypothesis Test ####
 response_var = quo(sum_max_n)
 
