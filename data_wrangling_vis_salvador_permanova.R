@@ -214,16 +214,22 @@ data_vegan.env <-
   mutate(site_code = str_remove(op_code,
                                 "_.*$"),
          site_code = factor(site_code),
-         study_locations = factor(study_locations,
-                                  levels = c("TRNP",
-                                             "CAGAYANCILLO")),
          habitat = factor(habitat),
          bait_type = factor(bait_type),
          site = factor(site),
-         survey_area = factor(survey_area),
-         habitat_mpa = str_c(habitat,
-                             study_locations,
-                             sep = " "))
+         survey_area = factor(survey_area)) %>%
+  mutate(study_locations = case_when(
+    site == "Calusa" ~ "Cagayancillo",
+    site == "Cawili" ~ "Cagayancillo",
+    site == "Cagayancillo" ~ "Cagayancillo",
+    site == "Tubbataha" ~ "TRNP"
+  )) %>% 
+  mutate(study_locations = factor(study_locations,
+                                  levels = c("TRNP", 
+                                             "Cagayancillo"))) %>% 
+  mutate(habitat_mpa = str_c(habitat,
+                      study_locations,
+                      sep = " ")) %>% view()
 
 # and now we "attach" the metadata to the data
 
@@ -280,7 +286,12 @@ adonis2(data_vegan ~ bait_type*habitat,
         data = data_vegan.env,
         strata = site)
 
+##Effects of Study Location (site) and depth category 
 adonis2(data_vegan ~ site*habitat,
         data = data_vegan.env,
         na.action = na.exclude)
+
+adonis2(data_vegan ~ study_locations*habitat,
+        data = data_vegan.env,
+        permutations = 10000)
 

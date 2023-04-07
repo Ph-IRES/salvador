@@ -2108,10 +2108,41 @@ ggsave("FacetedSpeciesRichnesswOverall.png",
        units = "in")
 
 #### Testing for Bait Type on Species Richness ####
+pool <- 
+  estimateR(x = data_vegan) %>%
+  t() %>%
+  as_tibble()
 
-##test effect of deph and bait type
-adonis2(formula = data_vegan ~ depth_m * bait_type, data = data_vegan.env, na.action = na.omit)
+data_chao_s <- 
+  pool %>%
+  clean_names() %>%
+  bind_cols(data_vegan.env)
 
-##test for effect of study locations and bait type
 
-adonis2(formula = data_vegan ~ study_locations * bait_type, data = data_vegan.env, na.action = na.omit)
+
+## Enter Information About Your Data for A Hypothesis Test ##
+
+# define your response variable, here it is binomial
+response_var = quo(s_chao1) # quo() allows column names to be put into variables 
+
+# enter the distribution family for your response variable
+distribution_family = "Gamma"
+
+
+alpha_sig = 0.05
+
+
+sampling_design = "s_chao1 ~  habitat * bait_type + (1|study_locations)"
+
+
+# # fit mixed model
+model <<-
+  afex::mixed(formula = sampling_design,
+              family = distribution_family,
+              method = "LRT",
+              sig_symbols = rep("", 4),
+              # all_fit = TRUE,
+              data = data_chao_s)
+
+model
+anova(model)
