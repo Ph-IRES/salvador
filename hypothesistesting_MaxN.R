@@ -26,6 +26,7 @@ library(prediction)
 library(ggforce)
 library(readr)
 library(ggpubr)
+
 library(sjPlot)
 library(stringr)
 
@@ -2844,7 +2845,9 @@ ggsave("FacetedEmMeansMaxN.png",
 ggsave("FacetedEmMeansMaxN.pdf", 
        emmeans_maxn, height = 11, width = 8.5, units = "in")
 #### Bait Type Model Testing ####
-data_all_summaxn <- 
+
+## Bait Type Effect on TRNP
+data_all_summaxn_TRNP <- 
   data_all %>%
   mutate(study_locations = factor(study_locations,
                                   levels = c("TRNP", 
@@ -2860,7 +2863,8 @@ data_all_summaxn <-
            study_locations,
            habitat,
            bait_type) %>%
-  dplyr::summarize(sum_max_n = sum(max_n))
+  dplyr::summarize(sum_max_n = sum(max_n)) %>% 
+  filter(study_locations == "TRNP")
 ## Enter Information About Your Data for A Hypothesis Test ##
 
 # define your response variable, here it is binomial
@@ -2872,55 +2876,70 @@ distribution_family = "poisson"
 
 alpha_sig = 0.05
 
-sampling_design = "sum_max_n ~  habitat * bait_type + (1|study_locations)"
+sampling_design = "sum_max_n ~  bait_type"
+
+## sum_max_n ~ bait_type * habitat (only either on TRNP and Cagayancillo)
+
+##run it as a simple LM function rather than using LRT
 
 # # fit mixed model
-model_bait <<-
+model_bait_TRNP <<-
   afex::mixed(formula = sampling_design,
               family = distribution_family,
               method = "LRT",
               sig_symbols = rep("", 4),
               # all_fit = TRUE,
-              data = data_all_summaxn)
+              data = data_all_summaxn_TRNP)
 
-model_bait
-anova(model_bait)
+model_bait_TRNP
+anova(model_bait_TRNP)
 
-# visualize summary(model_bait)
-emmip(model_bait, 
-      habitat ~ bait_type,    # type = "response" for back transformed values
-      cov.reduce = range) +
-  # geom_vline(xintercept=mean(data_all_summaxn_$primer_x),
-  #            color = "grey",
-  #            linetype = "dashed") +
-  # geom_text(aes(x = mean(data_all_summaxn_$primer_x),
-  #               y = -2,
-  #               label = "mean primer_x"),
-  #           color = "grey") +
-  theme_classic() +
-  labs(title = "Visualization of `summary(model)`",
-       subtitle = "",
-       y = "Linear Prediciton",
-       x = "MPA")
+##Bait Type Effect on Cagayancillo
 
-## sum_max_n: Conduct A priori contrast tests for differences among sites ##
+data_all_summaxn_Cag <- 
+  data_all %>%
+  mutate(study_locations = factor(study_locations,
+                                  levels = c("TRNP", 
+                                             "CAGAYANCILLO"))) %>%
+  mutate(habitat = factor(habitat,
+                          levels = c("Shallow Reef",
+                                     "Deep Reef"))) %>%
+  mutate(habitat = case_when(
+    habitat == "Shallow Reef" ~ "Shallow Reef",
+    habitat == "Deep Reef" ~ "Mesophotic Reef"
+  )) %>%
+  group_by(op_code,
+           study_locations,
+           habitat,
+           bait_type) %>%
+  dplyr::summarize(sum_max_n = sum(max_n)) %>% 
+  filter(study_locations == "CAGAYANCILLO")
+## Enter Information About Your Data for A Hypothesis Test ##
 
-# now we move on to finish the hypothesis testing.  Are there differences between the sites?
-# estimated marginal means 
+# define your response variable, here it is binomial
+response_var = quo(sum_max_n) # quo() allows column names to be put into variables 
 
-emmeans_model_bait <<-
-  emmeans(model_bait,
-          ~ habitat * bait_type,
-          alpha = alpha_sig)
+# enter the distribution family for your response variable
+distribution_family = "poisson"
 
-# emmeans back transformed to the original units of response var
-summary(emmeans_model_bait,      
-        type="response")
 
-# contrasts between sites
-contrast(regrid(emmeans_model_bait), # emmeans back transformed to the original units of response var
-         method = 'pairwise', 
-         simple = 'each', 
-         combine = FALSE, 
-         adjust = "bh")
+alpha_sig = 0.05
+
+sampling_design = "sum_max_n ~  bait_type * habitat"
+
+## sum_max_n ~ bait_type * habitat (only either on TRNP and Cagayancillo)
+
+##run it as a simple LM function rather than using LRT
+
+# # fit mixed model
+model_bait_Cag <<-
+  afex::mixed(formula = sampling_design,
+              family = distribution_family,
+              method = "LRT",
+              sig_symbols = rep("", 4),
+              # all_fit = TRUE,
+              data = data_all_summaxn_Cag)
+
+model_bait_Cag
+anova(model_bait_Cag)
 

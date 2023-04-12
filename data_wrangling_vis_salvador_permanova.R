@@ -295,3 +295,5 @@ adonis2(data_vegan ~ study_locations*habitat,
         data = data_vegan.env,
         permutations = 10000)
 
+
+
