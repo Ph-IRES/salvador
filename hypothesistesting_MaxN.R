@@ -2883,6 +2883,7 @@ alpha_sig = 0.05
   geom_boxplot() 
 #set sampling design
   sampling_design = "sum_max_n ~ bait_type * habitat"
+  distribution_family = "poisson"
 #glm model (afex::mixed requires a random factor, which I'm not sure is appropriate here)
 model_bait_TRNP <<-
   glm(formula=sampling_design,
