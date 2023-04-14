@@ -2892,25 +2892,13 @@ model_bait_TRNP <<-
 
 summary(model_bait_TRNP)
 
+##question: Am I supposed to do an anova of model_bait_TRNP
+
+anova(model_bait_TRNP)
+
 #glm indicates the only thing that is significant is the interaction term between Frigate Tuna and shallow reef, which means that overall the effect of Frigate Tuna is nonsignificant
 #, but the relationship between Frigate Tuna and sum_max_n changes depending on the level of habitat.  That is borne out by the boxplot.  Include Sardine with caution as there is only 
 #one data point for shallow reef.
-
-
-
-
-model_bait_TRNP <<-
-  afex::mixed(formula = sum_max_n ~ bait_type,
-              family = distribution_family,
-              method = "LRT",
-              sig_symbols = rep("", 4),
-              # all_fit = TRUE,
-              data = data_all_summaxn_TRNP)
-
-display(model_bait_TRNP)
-aov.bait <- anova(model_bait_TRNP)
-summary(aov.bait)
-
 
 
 ##Bait Type Effect on Cagayancillo
@@ -2933,32 +2921,23 @@ data_all_summaxn_Cag <-
            bait_type) %>%
   dplyr::summarize(sum_max_n = sum(max_n)) %>% 
   filter(study_locations == "CAGAYANCILLO")
+
+##Visualize as a boxplot for Cagayancillo## 
+ggplot(data_all_summaxn_Cag, aes(bait_type, sum_max_n, fill=habitat)) +
+  geom_boxplot() 
+
 ## Enter Information About Your Data for A Hypothesis Test ##
 
-# define your response variable, here it is binomial
-response_var = quo(sum_max_n) # quo() allows column names to be put into variables 
+#set sampling design
+sampling_design = "sum_max_n ~ bait_type * habitat"
 
-# enter the distribution family for your response variable
 distribution_family = "poisson"
-
-
-alpha_sig = 0.05
-
-sampling_design = "sum_max_n ~  bait_type * habitat"
-
-## sum_max_n ~ bait_type * habitat (only either on TRNP and Cagayancillo)
-
-##run it as a simple LM function rather than using LRT
-
-# # fit mixed model
+#glm model (afex::mixed requires a random factor, which I'm not sure is appropriate here)
 model_bait_Cag <<-
-  afex::mixed(formula = sampling_design,
-              family = distribution_family,
-              method = "LRT",
-              sig_symbols = rep("", 4),
-              # all_fit = TRUE,
-              data = data_all_summaxn_Cag)
+  glm(formula=sampling_design,
+      family = distribution_family, 
+      data = data_all_summaxn_Cag)
 
-model_bait_Cag
-anova(model_bait_Cag)
+summary(model_bait_Cag)
+
 

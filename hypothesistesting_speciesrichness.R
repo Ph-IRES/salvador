@@ -2116,33 +2116,58 @@ pool <-
 data_chao_s <- 
   pool %>%
   clean_names() %>%
-  bind_cols(data_vegan.env)
+  bind_cols(data_vegan.env) 
 
+##Bait Type Effect on TRNP 
+data_chao_s_TRNP <- 
+  pool %>%
+  clean_names() %>%
+  bind_cols(data_vegan.env) %>%
+  filter(study_locations == "TRNP")
 
+##Visualize using boxplot##
+ggplot(data_chao_s_TRNP, aes(bait_type, s_chao1, fill=habitat)) +
+  geom_boxplot() 
 
 ## Enter Information About Your Data for A Hypothesis Test ##
 
-# define your response variable, here it is binomial
-response_var = quo(s_chao1) # quo() allows column names to be put into variables 
+#set sampling design
+sampling_design = "s_chao1 ~ bait_type * habitat"
 
-# enter the distribution family for your response variable
 distribution_family = "Gamma"
 
+#glm model (afex::mixed requires a random factor, which I'm not sure is appropriate here)
+model_bait_TRNP <<-
+  glm(formula=sampling_design,
+      family = distribution_family, 
+      data = data_chao_s_TRNP)
 
-alpha_sig = 0.05
+summary(model_bait_TRNP)
 
 
-sampling_design = "s_chao1 ~  habitat * bait_type + (1|study_locations)"
+##Bait Type Effect on Cag
+data_chao_s_Cag <- 
+  pool %>%
+  clean_names() %>%
+  bind_cols(data_vegan.env) %>%
+  filter(study_locations == "CAGAYANCILLO")
 
+##Visualize using boxplot##
+ggplot(data_chao_s_Cag, aes(bait_type, s_chao1, fill=habitat)) +
+  geom_boxplot() 
 
-# # fit mixed model
-model <<-
-  afex::mixed(formula = sampling_design,
-              family = distribution_family,
-              method = "LRT",
-              sig_symbols = rep("", 4),
-              # all_fit = TRUE,
-              data = data_chao_s)
+## Enter Information About Your Data for A Hypothesis Test ##
 
-model
-anova(model)
+#set sampling design
+sampling_design = "s_chao1 ~ bait_type * habitat"
+
+distribution_family = "Gamma"
+
+#glm model (afex::mixed requires a random factor, which I'm not sure is appropriate here)
+model_bait_Cag <<-
+  glm(formula=sampling_design,
+      family = distribution_family, 
+      data = data_chao_s_Cag)
+
+summary(model_bait_Cag)
+

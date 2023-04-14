@@ -284,7 +284,7 @@ adonis2(data_vegan ~ depth_m*site,
 # constrain permutations within sites, if site is a "block" factor, then this is correct and including site as a factor is incorrect
 adonis2(data_vegan ~ bait_type*habitat,
         data = data_vegan.env,
-        strata = site)
+        permutations = 10000)
 
 ##Effects of Study Location (site) and depth category 
 adonis2(data_vegan ~ site*habitat,
