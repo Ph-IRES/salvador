@@ -2865,6 +2865,7 @@ data_all_summaxn_TRNP <-
            bait_type) %>%
   dplyr::summarize(sum_max_n = sum(max_n)) %>% 
   filter(study_locations == "TRNP")
+         #bait_type != "Sardine")
 ## Enter Information About Your Data for A Hypothesis Test ##
 
 # define your response variable, here it is binomial
@@ -2876,23 +2877,40 @@ distribution_family = "poisson"
 
 alpha_sig = 0.05
 
-sampling_design = "sum_max_n ~  bait_type"
-
-## sum_max_n ~ bait_type * habitat (only either on TRNP and Cagayancillo)
-
-##run it as a simple LM function rather than using LRT
-
-# # fit mixed model
+###DG below
+#plotting data so we can look at it.
+  ggplot(data_all_summaxn_TRNP, aes(bait_type, sum_max_n, fill=habitat)) +
+  geom_boxplot() 
+#set sampling design
+  sampling_design = "sum_max_n ~ bait_type * habitat"
+#glm model (afex::mixed requires a random factor, which I'm not sure is appropriate here)
 model_bait_TRNP <<-
-  afex::mixed(formula = sampling_design,
+  glm(formula=sampling_design,
+      family = distribution_family, 
+      data = data_all_summaxn_TRNP)
+
+summary(model_bait_TRNP)
+
+#glm indicates the only thing that is significant is the interaction term between Frigate Tuna and shallow reef, which means that overall the effect of Frigate Tuna is nonsignificant
+#, but the relationship between Frigate Tuna and sum_max_n changes depending on the level of habitat.  That is borne out by the boxplot.  Include Sardine with caution as there is only 
+#one data point for shallow reef.
+
+
+
+
+model_bait_TRNP <<-
+  afex::mixed(formula = sum_max_n ~ bait_type,
               family = distribution_family,
               method = "LRT",
               sig_symbols = rep("", 4),
               # all_fit = TRUE,
               data = data_all_summaxn_TRNP)
 
-model_bait_TRNP
-anova(model_bait_TRNP)
+display(model_bait_TRNP)
+aov.bait <- anova(model_bait_TRNP)
+summary(aov.bait)
+
+
 
 ##Bait Type Effect on Cagayancillo
 
