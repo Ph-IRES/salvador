@@ -2920,7 +2920,8 @@ data_all_summaxn_Cag <-
            habitat,
            bait_type) %>%
   dplyr::summarize(sum_max_n = sum(max_n)) %>% 
-  filter(study_locations == "CAGAYANCILLO")
+  filter(study_locations == "CAGAYANCILLO") %>%
+  filter(bait_type != "Black Jack/Bluefin Trevally")
 
 ##Visualize as a boxplot for Cagayancillo## 
 ggplot(data_all_summaxn_Cag, aes(bait_type, sum_max_n, fill=habitat)) +
@@ -2940,4 +2941,5 @@ model_bait_Cag <<-
 
 summary(model_bait_Cag)
 
+##rerun model without bluefin/jack
 
