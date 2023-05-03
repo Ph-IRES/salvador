@@ -418,8 +418,8 @@ p <-
   geom_errorbar(aes(ymin=asymp.LCL,
                     ymax=asymp.UCL),
                 width = 0.2,
-                color = "grey50",
-                # size = 1,
+                color = "black",
+                size = 1,
                 position = position_dodge(width=0.9)) +
   guides(color = "none",
          shape = "none") +   #remove color legend
@@ -430,7 +430,7 @@ p <-
                  shape = habitat),
              position=position_jitterdodge(),
              size = 3,
-             color = "black",
+             color = "grey50",
              inherit.aes = FALSE) +
   ##gives labels for groupings
   # geom_text(aes(label=group),
@@ -438,7 +438,7 @@ p <-
   #           vjust = -0.5,
   #           hjust = -0.15,
   #           size = 8 / (14/5)) +
-  scale_y_continuous(trans='log10') +
+  # scale_y_continuous(trans='log10') +
   theme_classic() +
   labs(title = "Overall Abundance",
        x = "Study Locations",
@@ -1647,6 +1647,9 @@ data_all_summaxn_Serranidae <-
     habitat == "Shallow Reef" ~ "Shallow Reef",
     habitat == "Deep Reef" ~ "Mesophotic Reef"
   )) %>%
+  mutate(habitat = factor(habitat,
+                          levels = c("Shallow Reef",
+                                     "Mesophotic Reef"))) %>%
   dplyr::select(op_code,
                 study_locations,
                 habitat,
@@ -1789,24 +1792,24 @@ p_Serranidae <-
   #                              "white"),
   #                   labels = c('Pre-Screen', 
   #                              'Post-Screen')) +
-  
-  geom_errorbar(aes(ymin=asymp.LCL,
-                    ymax=asymp.UCL),
-                width = 0.2,
-                color = "grey50",
-                # size = 1,
-                position = position_dodge(width=0.9)) +
-  guides(color = "none",
-         shape = "none") +   #remove color legend
-  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
   geom_point(data = data_all_summaxn_Serranidae,
              aes(x = study_locations,
                  y = !!response_var,
                  shape = habitat),
              position=position_jitterdodge(),
              size = 3,
-             color = "black",
+             color = "grey50",
              inherit.aes = FALSE) +
+  
+  geom_errorbar(aes(ymin=asymp.LCL,
+                    ymax=asymp.UCL),
+                width = 0.2,
+                color = "black",
+                size = 1,
+                position = position_dodge(width=0.9)) +
+  guides(color = "none",
+         shape = "none") +   #remove color legend
+  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
   # geom_text(aes(label=group),
   #           position = position_dodge(width=0.9),
   #           vjust = -0.5,
@@ -1821,8 +1824,7 @@ p_Serranidae <-
         legend.title=element_blank()) +
   scale_fill_manual(values = habitatcolors,
                     labels = c("Shallow",
-                               "Mesophotic")) +
-  ylim(0,20)
+                               "Mesophotic")) 
 
 p_Serranidae
 save_plot("Serranidae_MaxN.png")
@@ -1839,6 +1841,9 @@ data_all_summaxn_Lutjanidae <-
     habitat == "Shallow Reef" ~ "Shallow Reef",
     habitat == "Deep Reef" ~ "Mesophotic Reef"
   )) %>%
+  mutate(habitat = factor(habitat,
+                          levels = c("Shallow Reef",
+                                     "Mesophotic Reef"))) %>%
   dplyr::select(op_code,
                 study_locations,
                 habitat,
@@ -1981,24 +1986,24 @@ p_Lutjanidae <-
   #                              "white"),
   #                   labels = c('Pre-Screen', 
   #                              'Post-Screen')) +
-  
-  geom_errorbar(aes(ymin=asymp.LCL,
-                    ymax=asymp.UCL),
-                width = 0.2,
-                color = "grey50",
-                # size = 1,
-                position = position_dodge(width=0.9)) +
-  guides(color = "none",
-         shape = "none") +   #remove color legend
-  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
   geom_point(data = data_all_summaxn_Lutjanidae,
              aes(x = study_locations,
                  y = !!response_var,
                  shape = habitat),
              position=position_jitterdodge(),
              size = 3,
-             color = "black",
+             color = "grey50",
              inherit.aes = FALSE) +
+  
+  geom_errorbar(aes(ymin=asymp.LCL,
+                    ymax=asymp.UCL),
+                width = 0.2,
+                color = "black",
+                size = 1,
+                position = position_dodge(width=0.9)) +
+  guides(color = "none",
+         shape = "none") +   #remove color legend
+  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
   # geom_text(aes(label=group),
   #           position = position_dodge(width=0.9),
   #           vjust = -0.5,
@@ -2009,7 +2014,7 @@ p_Lutjanidae <-
   labs(title = "Lutjanidae",
        x = "Study Locations",
        y = "Abundance (MaxN)") +
-  ylim(0,20) +
+  # ylim(0,20) +
   # ylim(ymin, 
   #      ymax) +
   # labs(title = "Lutjanidae",
@@ -2040,6 +2045,9 @@ data_all_summaxn_Lethrinidae <-
     habitat == "Shallow Reef" ~ "Shallow Reef",
     habitat == "Deep Reef" ~ "Mesophotic Reef"
   )) %>%
+  mutate(habitat = factor(habitat,
+                          levels = c("Shallow Reef",
+                                     "Mesophotic Reef"))) %>%
   dplyr::select(op_code,
                 study_locations,
                 habitat,
@@ -2182,24 +2190,24 @@ p_Lethrinidae <-
   #                              "white"),
   #                   labels = c('Pre-Screen', 
   #                              'Post-Screen')) +
-  
-  geom_errorbar(aes(ymin=asymp.LCL,
-                    ymax=asymp.UCL),
-                width = 0.2,
-                color = "grey50",
-                # size = 1,
-                position = position_dodge(width=0.9)) +
-  guides(color = "none",
-         shape = "none") +   #remove color legend
-  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
   geom_point(data = data_all_summaxn_Lethrinidae,
              aes(x = study_locations,
                  y = !!response_var,
                  shape = habitat),
              position=position_jitterdodge(),
              size = 3,
-             color = "black",
+             color = "grey50",
              inherit.aes = FALSE) +
+  
+  geom_errorbar(aes(ymin=asymp.LCL,
+                    ymax=asymp.UCL),
+                width = 0.2,
+                color = "black",
+                size = 1,
+                position = position_dodge(width=0.9)) +
+  guides(color = "none",
+         shape = "none") +   #remove color legend
+  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
   # geom_text(aes(label=group),
   #           position = position_dodge(width=0.9),
   #           vjust = -0.5,
@@ -2210,7 +2218,7 @@ p_Lethrinidae <-
   labs(title = "Lethrinidae",
        x = "Study Locations",
        y = "Abundance (MaxN)") +
-  ylim(0,20) +
+  # ylim(0,20) +
   # ylim(ymin, 
   #      ymax) +
   # labs(title = "Lethrinidae",
@@ -2243,6 +2251,9 @@ data_all_summaxn_Carangidae <-
     habitat == "Shallow Reef" ~ "Shallow Reef",
     habitat == "Deep Reef" ~ "Mesophotic Reef"
   )) %>%
+  mutate(habitat = factor(habitat,
+                          levels = c("Shallow Reef",
+                                     "Mesophotic Reef"))) %>%
   dplyr::select(op_code,
                 study_locations,
                 habitat,
@@ -2366,10 +2377,10 @@ groupings_model_fixed_Carangidae <<-
                    "study_locations")) %>%
   dplyr::rename(response = 3)
 
-groupings_model_fixed_Carangidae  <- groupings_model_fixed_Carangidae %>%
-  mutate(habitat = factor(habitat,
-                          levels = c("Shallow Reef",
-                                     "Mesophotic Reef")))     # cld messes up back transformation, this takes values from emmeans and groupings from cld
+groupings_model_fixed_Carangidae  <- groupings_model_fixed_Carangidae
+  # mutate(habitat = factor(habitat,
+  #                         levels = c("Shallow Reef",
+  #                                    "Mesophotic Reef")))     # cld messes up back transformation, this takes values from emmeans and groupings from cld
 
 
 ## sum_max_n: Visualize Estimated Marginal Means Output With Group Categories ##
@@ -2385,24 +2396,24 @@ p_Carangidae <-
   #                              "white"),
   #                   labels = c('Pre-Screen', 
   #                              'Post-Screen')) +
-  
-  geom_errorbar(aes(ymin=asymp.LCL,
-                    ymax=asymp.UCL),
-                width = 0.2,
-                color = "grey50",
-                # size = 1,
-                position = position_dodge(width=0.9)) +
-  guides(color = "none",
-         shape = "none") +   #remove color legend
-  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
   geom_point(data = data_all_summaxn_Carangidae,
              aes(x = study_locations,
                  y = !!response_var,
                  shape = habitat),
              position=position_jitterdodge(),
              size = 3,
-             color = "black",
+             color = "grey50",
              inherit.aes = FALSE) +
+  
+  geom_errorbar(aes(ymin=asymp.LCL,
+                    ymax=asymp.UCL),
+                width = 0.2,
+                color = "black",
+                size = 1,
+                position = position_dodge(width=0.9)) +
+  guides(color = "none",
+         shape = "none") +   #remove color legend
+  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
   # geom_text(aes(label=group),
   #           position = position_dodge(width=0.9),
   #           vjust = -0.5,
@@ -2413,7 +2424,7 @@ p_Carangidae <-
   labs(title = "Carangidae",
        x = "Study Locations",
        y = "Abundance (MaxN)") +
-  ylim(0,20) +
+  # ylim(0,20) +
   # ylim(ymin, 
   #      ymax) +
   # labs(title = "Carangidae",
@@ -2424,9 +2435,8 @@ p_Carangidae <-
         legend.title=element_blank()) +
   scale_fill_manual(values = habitatcolors,
                     labels = c("Shallow",
-                               "Mesophotic"))
-  # ylim(ymin, 
-  #      ymax) +
+                               "Mesophotic")) +
+ ylim(0,70) 
 p_Carangidae
 
 save_plot("Carangidae_Abundance.png")
@@ -2646,6 +2656,9 @@ data_all_summaxn_Cheilinus_undulatus <-
     habitat == "Shallow Reef" ~ "Shallow Reef",
     habitat == "Deep Reef" ~ "Mesophotic Reef"
   )) %>%
+  mutate(habitat = factor(habitat,
+                          levels = c("Shallow Reef",
+                                     "Mesophotic Reef"))) %>%
   dplyr::select(op_code,
                 study_locations,
                 habitat,
@@ -2788,24 +2801,24 @@ p_Cheilinus_undulatus <-
   #                              "white"),
   #                   labels = c('Pre-Screen', 
   #                              'Post-Screen')) +
-  
-  geom_errorbar(aes(ymin=asymp.LCL,
-                    ymax=asymp.UCL),
-                width = 0.2,
-                color = "grey50",
-                # size = 1,
-                position = position_dodge(width=0.9)) +
-  guides(color = "none",
-         shape = "none") +   #remove color legend
-  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
   geom_point(data = data_all_summaxn_Cheilinus_undulatus,
              aes(x = study_locations,
                  y = !!response_var,
                  shape = habitat),
              position=position_jitterdodge(),
              size = 3,
-             color = "black",
+             color = "grey50",
              inherit.aes = FALSE) +
+  
+  geom_errorbar(aes(ymin=asymp.LCL,
+                    ymax=asymp.UCL),
+                width = 0.2,
+                color = "black",
+                size = 1,
+                position = position_dodge(width=0.9)) +
+  guides(color = "none",
+         shape = "none") +   #remove color legend
+  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
   # geom_text(aes(label=group),
   #           position = position_dodge(width=0.9),
   #           vjust = -0.5,
@@ -2839,6 +2852,7 @@ save_plot("Cheilinus_undulatus.png")
 emmeans_maxn <- ggarrange(p, p_Serranidae, p_Lutjanidae, p_Lethrinidae, p_Carangidae, p_Cheilinus_undulatus, 
                           ncol = 2,
                           nrow = 3)
+
 ggsave("FacetedEmMeansMaxN.png", 
        emmeans_maxn, height = 11, width = 8.5, units = "in")
 

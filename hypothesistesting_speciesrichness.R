@@ -256,7 +256,10 @@ pool <-
 data_chao_s <- 
   pool %>%
   clean_names() %>%
-  bind_cols(data_vegan.env)
+  bind_cols(data_vegan.env) %>%
+  mutate(habitat = factor(habitat,
+                          levels = c("Shallow Reef",
+                                     "Mesophotic Reef")))
 
 
 
@@ -380,14 +383,14 @@ p_sr <-
                  shape = habitat
              ),
              position = position_jitterdodge(),
-             # color = "grey70",
+             color = "grey50",
              # shape = 1,
              size = 3) +
   geom_errorbar(aes(ymin=asymp.LCL,
                     ymax=asymp.UCL),
                 width = 0.2,
-                color = "grey50",
-                # size = 1,
+                color = "black",
+                size = 1,
                 position = position_dodge(width=0.9)) +
   guides(color = "none",
          shape = "none") +   #remove color legend
@@ -585,7 +588,7 @@ save_plot("EMMeansofSpeciesRichnessPoisson.png")
 #### mean_chao_s: Serranidae ####
 ## Make New Data Vegan for Serranidae
 data_vegan_Serranidae <-
-  data_removed_sp %>%
+  data_removed_sp %>% 
   dplyr::select(op_code,
                 taxon,
                 max_n) %>%
@@ -652,7 +655,10 @@ pool_Serranidae <-
 
 data_chao_s_Serranidae <- pool_Serranidae %>%
   clean_names() %>%
-  bind_cols(data_vegan.env)
+  bind_cols(data_vegan.env) %>%
+  mutate(habitat = factor(habitat,
+                          levels = c("Shallow Reef",
+                                     "Mesophotic Reef")))
 
 # data_chao_s_Serranidae %>%
 #   ggplot(aes(x = s_chao1)) +
@@ -805,14 +811,14 @@ p_sr_Serranidae <-
                  shape = habitat
              ),
              position = position_jitterdodge(),
-             # color = "grey70",
+             color = "grey50",
              # shape = 1,
              size = 3) +
   geom_errorbar(aes(ymin=asymp.LCL,
                     ymax=asymp.UCL),
                 width = 0.2,
-                color = "grey50",
-                # size = 1,
+                color = "black",
+                size = 1,
                 position = position_dodge(width=0.9)) +
   guides(color = "none",
          shape = "none") +   #remove color legend
@@ -902,7 +908,10 @@ pool_Lutjanidae <-
 
 data_chao_s_Lutjanidae <- pool_Lutjanidae %>%
   clean_names() %>%
-  bind_cols(data_vegan.env)
+  bind_cols(data_vegan.env) %>%
+  mutate(habitat = factor(habitat,
+                          levels = c("Shallow Reef",
+                                     "Mesophotic Reef")))
 
 # data_chao_s_Lutjanidae %>%
 #   ggplot(aes(x = s_chao1)) +
@@ -1055,14 +1064,14 @@ p_sr_Lutjanidae <-
                  shape = habitat
              ),
              position = position_jitterdodge(),
-             # color = "grey70",
+             color = "grey50",
              # shape = 1,
              size = 3) +
   geom_errorbar(aes(ymin=asymp.LCL,
                     ymax=asymp.UCL),
                 width = 0.2,
-                color = "grey50",
-                # size = 1,
+                color = "black",
+                size = 1,
                 position = position_dodge(width=0.9)) +
   guides(color = "none",
          shape = "none") +   #remove color legend
@@ -1151,7 +1160,10 @@ pool_Lethrinidae <-
 
 data_chao_s_Lethrinidae <- pool_Lethrinidae %>%
   clean_names() %>%
-  bind_cols(data_vegan.env)
+  bind_cols(data_vegan.env) %>%
+  mutate(habitat = factor(habitat,
+                          levels = c("Shallow Reef",
+                                     "Mesophotic Reef")))
 
 # data_chao_s_Lethrinidae %>%
 #   ggplot(aes(x = s_chao1)) +
@@ -1304,14 +1316,14 @@ p_sr_Lethrinidae <-
                  shape = habitat
              ),
              position = position_jitterdodge(),
-             # color = "grey70",
+             color = "grey50",
              # shape = 1,
              size = 3) +
   geom_errorbar(aes(ymin=asymp.LCL,
                     ymax=asymp.UCL),
                 width = 0.2,
-                color = "grey50",
-                # size = 1,
+                color = "black",
+                size = 1,
                 position = position_dodge(width=0.9)) +
   guides(color = "none",
          shape = "none") +   #remove color legend
@@ -1400,7 +1412,10 @@ pool_Carangidae <-
 
 data_chao_s_Carangidae <- pool_Carangidae %>%
   clean_names() %>%
-  bind_cols(data_vegan.env)
+  bind_cols(data_vegan.env) %>%
+  mutate(habitat = factor(habitat,
+                          levels = c("Shallow Reef",
+                                     "Mesophotic Reef")))
 
 # data_chao_s_Carangidae %>%
 #   ggplot(aes(x = s_chao1)) +
@@ -1553,14 +1568,14 @@ p_sr_Carangidae <-
                  shape = habitat
              ),
              position = position_jitterdodge(),
-             # color = "grey70",
+             color = "grey50",
              # shape = 1,
              size = 3) +
   geom_errorbar(aes(ymin=asymp.LCL,
                     ymax=asymp.UCL),
                 width = 0.2,
-                color = "grey50",
-                # size = 1,
+                color = "black",
+                 size = 1,
                 position = position_dodge(width=0.9)) +
   guides(color = "none",
          shape = "none") +   #remove color legend
@@ -2098,7 +2113,6 @@ emmeans_sr_reorganized <- ggarrange(p_sr,
                                     p_sr_Lutjanidae,
                                     p_sr_Lethrinidae, 
                                     p_sr_Carangidae,
-                                    p_sr_Galeomorphii,
                                     ncol = 2,
                                     nrow = 3)
 ggsave("FacetedSpeciesRichnesswOverall.png",
@@ -2150,7 +2164,8 @@ data_chao_s_Cag <-
   pool %>%
   clean_names() %>%
   bind_cols(data_vegan.env) %>%
-  filter(study_locations == "CAGAYANCILLO")
+  filter(study_locations == "CAGAYANCILLO") %>%
+  filter(bait_type != "Black Jack/Bluefin Trevally")
 
 ##Visualize using boxplot##
 ggplot(data_chao_s_Cag, aes(bait_type, s_chao1, fill=habitat)) +
