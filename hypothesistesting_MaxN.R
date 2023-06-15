@@ -26,6 +26,7 @@ library(prediction)
 library(ggforce)
 library(readr)
 library(ggpubr)
+library(scales)
 
 library(sjPlot)
 library(stringr)
@@ -443,13 +444,12 @@ p <-
   labs(title = "Overall Abundance",
        x = "Study Locations",
        y = "Abundance (MaxN)") +
-  # ylim(ymin, 
-  #      ymax) +
+  scale_y_continuous(breaks = seq(0,80, by = 10))+
   # labs(title = "Abundance at TRNP vs. Cagayancillo",
   #      subtitle = "Distribution Family = Poisson",
   #      x = "Study Locations",
   #      y = "Estimated Marginal Mean of Sum of MaxN") +
-  theme(legend.position=c(0.33,0.9),
+  theme(legend.position=c(0.5,0.8),
         legend.title=element_blank()) +
   scale_fill_manual(values = habitatcolors,
                     labels = c("Shallow",
@@ -1820,7 +1820,8 @@ p_Serranidae <-
   labs(title = "Serranidae",
        x = "Study Locations",
        y = "Abundance (MaxN)") +
-  theme(legend.position=c(0.33,0.9),
+  scale_y_continuous(breaks = seq(0, 8, by = 1)) +
+  theme(legend.position=c(0.5,0.8),
         legend.title=element_blank()) +
   scale_fill_manual(values = habitatcolors,
                     labels = c("Shallow",
@@ -2014,14 +2015,14 @@ p_Lutjanidae <-
   labs(title = "Lutjanidae",
        x = "Study Locations",
        y = "Abundance (MaxN)") +
-  # ylim(0,20) +
+  ylim(0,50) +
   # ylim(ymin, 
   #      ymax) +
   # labs(title = "Lutjanidae",
   #      subtitle = "Distribution Family = Poisson",
   #      x = "Study Locations",
   #      y = "Estimated Marginal Mean of Sum of MaxN") +
-  theme(legend.position=c(0.33,0.9),
+  theme(legend.position=c(0.5,0.8),
         legend.title=element_blank()) +
   scale_fill_manual(values = habitatcolors,
                     labels = c("Shallow",
@@ -2218,14 +2219,14 @@ p_Lethrinidae <-
   labs(title = "Lethrinidae",
        x = "Study Locations",
        y = "Abundance (MaxN)") +
-  # ylim(0,20) +
+  ylim(0,21) +
   # ylim(ymin, 
   #      ymax) +
   # labs(title = "Lethrinidae",
   #      subtitle = "Distribution Family = Poisson",
   #      x = "Study Locations",
   #      y = "Estimated Marginal Mean of Sum of MaxN") +
-  theme(legend.position=c(0.33,0.9),
+  theme(legend.position=c(0.5,0.8),
         legend.title=element_blank()) +
   scale_fill_manual(values = habitatcolors,
                     labels = c("Shallow",
@@ -2431,12 +2432,12 @@ p_Carangidae <-
   #      subtitle = "Distribution Family = Poisson",
   #      x = "Study Locations",
   #      y = "Estimated Marginal Mean of Sum of MaxN") +
-  theme(legend.position=c(0.33,0.9),
+  theme(legend.position=c(0.5,0.8),
         legend.title=element_blank()) +
   scale_fill_manual(values = habitatcolors,
                     labels = c("Shallow",
                                "Mesophotic")) +
- ylim(0,70) 
+ scale_y_continuous(breaks = seq(0,70, by = 10)) 
 p_Carangidae
 
 save_plot("Carangidae_Abundance.png")
@@ -2835,7 +2836,7 @@ p_Cheilinus_undulatus <-
   #      subtitle = "Distribution Family = Poisson",
   #      x = "Study Locations",
   #      y = "Estimated Marginal Mean of Sum of MaxN") +
-  theme(legend.position=c(0.33,0.9),
+  theme(legend.position=c(0.5,0.8),
         legend.title=element_blank(),
         plot.title = element_text(face = "italic")) +
   scale_fill_manual(values = habitatcolors,
@@ -2854,10 +2855,10 @@ emmeans_maxn <- ggarrange(p, p_Serranidae, p_Lutjanidae, p_Lethrinidae, p_Carang
                           nrow = 3)
 
 ggsave("FacetedEmMeansMaxN.png", 
-       emmeans_maxn, height = 11, width = 8.5, units = "in")
+       emmeans_maxn, height = 14, width = 12, units = "in")
 
 ggsave("FacetedEmMeansMaxN.pdf", 
-       emmeans_maxn, height = 11, width = 8.5, units = "in")
+       emmeans_maxn, height = 14, width = 12, units = "in")
 #### Bait Type Model Testing ####
 
 ## Bait Type Effect on TRNP

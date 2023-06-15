@@ -409,8 +409,9 @@ p_sr <-
   #      subtitle = "Distribution Family = Gamma",
   #       x = "Study Locations",
   #      y = "EM Means of Chao Estimate of Species Richness") +
-  theme(legend.position=c(0.45,0.8),  
+  theme(legend.position=c(0.5,0.8),  
         legend.title=element_blank()) +
+  ylim(0,40)+
   scale_fill_manual(values = habitatcolors,
                     labels = c("Shallow",
                                "Mesophotic"))
@@ -836,7 +837,7 @@ p_sr_Serranidae <-
   #      subtitle = "Distribution Family = Poisson",
   #     x = "Study Locations",
   #      y = "EM Means of Species Richness") +
-  theme(legend.position=c(0.33,0.8),  
+  theme(legend.position=c(0.5,0.8),  
         legend.title=element_blank()) +
   scale_fill_manual(values = habitatcolors,
                     labels = c("Shallow",
@@ -1089,7 +1090,7 @@ p_sr_Lutjanidae <-
   #      subtitle = "Distribution Family = Poisson",
   #      x = "Study Locations",
   #      y = "EM Means of Species Richness") +
-  theme(legend.position=c(0.33,0.8),  
+  theme(legend.position=c(0.5,0.8),  
         legend.title=element_blank()) +
   scale_fill_manual(values = habitatcolors,
                     labels = c("Shallow",
@@ -1341,7 +1342,7 @@ p_sr_Lethrinidae <-
   #      subtitle = "Distribution Family = Poisson",
   #      x = "Study Locations",
   #      y = "EM Means of Species Richness") +
-  theme(legend.position=c(0.33,0.8),
+  theme(legend.position=c(0.5,0.8),
   legend.title=element_blank()) +
   scale_fill_manual(values = habitatcolors,
                     labels = c("Shallow",
@@ -1593,7 +1594,7 @@ p_sr_Carangidae <-
   #      subtitle = "Distribution Family = Poisson",
   #      x = "Study Locations",
   #      y = "EM Means of Species Richness") +
-  theme(legend.position=c(0.33,0.8),  
+  theme(legend.position=c(0.5,0.8),  
         legend.title=element_blank()) +
   scale_fill_manual(values = habitatcolors,
                     labels = c("Shallow",
@@ -2104,9 +2105,9 @@ emmeans_sr <- ggarrange(p_sr,
                           ncol = 2,
                           nrow = 3)
 ggsave("FacetedEmMeansSpeciesRichness.pdf", 
-       emmeans_sr, height = 11, width = 8.5, units = "in")
+       emmeans_sr, height = 14, width = 12, units = "in")
 ggsave("FacetedEmMeansSpeciesRichness.png", 
-       emmeans_sr, height = 11, width = 8.5, units = "in")
+       emmeans_sr, height = 14, width = 12, units = "in")
 
 emmeans_sr_reorganized <- ggarrange(p_sr,
                                     p_sr_Serranidae,
