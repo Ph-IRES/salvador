@@ -495,8 +495,7 @@ ggord_plot_wellipses_wovectors <-
   ylab("nMDS 2") +
   labs(color = "Depth", 
        shape = "Study Locations", 
-       linetype = "Study Locations",
-       title = "NMDS Plots of Fish Assemblage") 
+       linetype = "Study Locations") 
 
 ggord_plot_wellipses_wovectors
 ggsave("NMDSfishassemblagewellipses.png",
@@ -673,7 +672,7 @@ p<- vegan::estaccumR(data_vegan, permutations = 999)
 # filter(estimator != "ace")
 
 data_estaccumR_plot <-
-  p$chao %>%
+  p$chao %>% 
   # t() %>%
   as_tibble() %>%
   dplyr::mutate(N = row_number()) %>%
@@ -941,17 +940,17 @@ p_Serranidae_plot <-
   dplyr::mutate(N = row_number()) %>%
   pivot_longer(cols = starts_with("V"),
                names_to = "permutation") %>%
-  group_by(N) %>%
-  dplyr::summarize(chao_mean = mean(value),
-                   chao_ci_lower = quantile(value,
+  group_by(N) %>% 
+  dplyr::summarize(S_mean = mean(value),
+                   S_ci_lower = quantile(value,
                                             probs = 0.025),
-                   chao_ci_upper = quantile(value,
+                   S_ci_upper = quantile(value,
                                             probs = 0.975))
 p_Serranidae_plots <- p_Serranidae_plot %>%
   ggplot(aes(x=N,
-             y=chao_mean)) +
-  geom_ribbon(aes(ymin=chao_ci_lower,
-                  ymax=chao_ci_upper),
+             y=S_mean)) +
+  geom_ribbon(aes(ymin=S_ci_lower,
+                  ymax=S_ci_upper),
               fill = "#ebe8f3") +
   geom_line() +
   xlab("Sample Size") +
@@ -996,16 +995,16 @@ p_Lutjanidae_plot <-
   pivot_longer(cols = starts_with("V"),
                names_to = "permutation") %>%
   group_by(N) %>%
-  dplyr::summarize(chao_mean = mean(value),
-                   chao_ci_lower = quantile(value,
+  dplyr::summarize(S_mean = mean(value),
+                   S_ci_lower = quantile(value,
                                             probs = 0.025),
-                   chao_ci_upper = quantile(value,
+                   S_ci_upper = quantile(value,
                                             probs = 0.975))
 p_Lutjanidae_plots <- p_Lutjanidae_plot %>%
   ggplot(aes(x=N,
-             y=chao_mean)) +
-  geom_ribbon(aes(ymin=chao_ci_lower,
-                  ymax=chao_ci_upper),
+             y=S_mean)) +
+  geom_ribbon(aes(ymin=S_ci_lower,
+                  ymax=S_ci_upper),
               fill = "#ebe8f3") +
   geom_line() +
   xlab("Sample Size") +
@@ -1048,16 +1047,16 @@ p_Lethrinidae_plot <-
   pivot_longer(cols = starts_with("V"),
                names_to = "permutation") %>%
   group_by(N) %>%
-  dplyr::summarize(chao_mean = mean(value),
-                   chao_ci_lower = quantile(value,
+  dplyr::summarize(S_mean = mean(value),
+                   S_ci_lower = quantile(value,
                                             probs = 0.025),
-                   chao_ci_upper = quantile(value,
+                   S_ci_upper = quantile(value,
                                             probs = 0.975))
 p_Lethrinidae_plots <- p_Lethrinidae_plot %>%
   ggplot(aes(x=N,
-             y=chao_mean)) +
-  geom_ribbon(aes(ymin=chao_ci_lower,
-                  ymax=chao_ci_upper),
+             y=S_mean)) +
+  geom_ribbon(aes(ymin=S_ci_lower,
+                  ymax=S_ci_upper),
               fill = "#ebe8f3") +
   geom_line() +
   xlab("Sample Size") +
@@ -1100,16 +1099,16 @@ p_Carangidae_plot <-
   pivot_longer(cols = starts_with("V"),
                names_to = "permutation") %>%
   group_by(N) %>%
-  dplyr::summarize(chao_mean = mean(value),
-                   chao_ci_lower = quantile(value,
+  dplyr::summarize(S_mean = mean(value),
+                   S_ci_lower = quantile(value,
                                             probs = 0.025),
-                   chao_ci_upper = quantile(value,
+                   S_ci_upper = quantile(value,
                                             probs = 0.975))
 p_Carangidae_plots <- p_Carangidae_plot %>%
   ggplot(aes(x=N,
-             y=chao_mean)) +
-  geom_ribbon(aes(ymin=chao_ci_lower,
-                  ymax=chao_ci_upper),
+             y=S_mean)) +
+  geom_ribbon(aes(ymin=S_ci_lower,
+                  ymax=S_ci_upper),
               fill = "#ebe8f3") +
   geom_line() +
   xlab("Sample Size") +
@@ -1499,7 +1498,7 @@ p_Serranidae_obs <-
   dplyr::mutate(N = row_number()) %>%
   pivot_longer(cols = starts_with("V"),
                names_to = "permutation") %>%
-  group_by(N) %>%
+  group_by(N) %>% 
   dplyr::summarize(S_mean = mean(value),
                    S_ci_lower = quantile(value,
                                             probs = 0.025),
