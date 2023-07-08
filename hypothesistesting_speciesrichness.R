@@ -417,7 +417,6 @@ p_sr <-
                                "Mesophotic"))
 
 p_sr
-save_plot("EMMeansofSpeciesRichnessGamma.png")
 ggsave("EMMeansofSpeciesRichnessGamma.png",
        p_sr)
 
