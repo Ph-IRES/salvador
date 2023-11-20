@@ -1,34 +1,80 @@
 #### INITIALIZATION ####
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
-library(tidyverse)
-library(janitor)
-library(magrittr)
-library(gridExtra)
-library(readxl)
+# library(tidyverse)
+# library(janitor)
+# library(magrittr)
+# library(gridExtra)
+# library(readxl)
+# 
+# library(devtools)
+# 
+# library(vegan)
+# 
+# library(fitdistrplus)
+# library(emmeans)
+# library(multcomp)
+# library(multcompView)
+# library(ggeffects)
+# 
+# library(rlang)
+# library(afex)
+# library(ggbeeswarm)
+# library(performance)
+# library(optimx)
+# library(effects)
+# library(prediction)
+# library(ggforce)
+# 
+# library(readr)
+# library(ggpubr)
+# library(sjPlot)
 
-library(devtools)
+#### PACKAGES ####
+packages_used <- 
+  c("tidyverse", # have to install from github, messes up tidyverse code, have to add dplyr:: to several commands
+    "janitor",
+    "magrittr",
+    "gridExtra",
+    "readxl",
+    "devtools",
+    "vegan",
+    "fitdistrplus",
+    "emmeans",
+    "multcomp",
+    "multcompView",
+    "rlang",
+    "afex",
+    "ggbeeswarm",
+    "performance",
+    "optimx",
+    "effects",
+    "prediction",
+    "ggforce",
+    "readr",
+    "ggpubr",
+    "sjPlot")
 
-library(vegan)
+# NOTE: after loading these packages, you may find that tidyverse commands are affected 
+#       the solution is to add the appropriate package name before commands that break code
+#       such as `dplyr::select` if `select` doesn't work correctly anymore
+#       this happens when multiple packages have the same command names. 
+#       The last package loaded takes precidence, and your tidyverse commands break.
+#       you could load tidyverse last, but invariably, you will load a package after tidyverse
+#       so it's impossible to avoid this
 
-library(fitdistrplus)
-library(emmeans)
-library(multcomp)
-library(multcompView)
-library(ggeffects)
+packages_to_install <- 
+  packages_used[!packages_used %in% installed.packages()[,1]]
 
-library(rlang)
-library(afex)
-library(ggbeeswarm)
-library(performance)
-library(optimx)
-library(effects)
-library(prediction)
-library(ggforce)
+if (length(packages_to_install) > 0) {
+  install.packages(packages_to_install, 
+                   Ncpus = Sys.getenv("NUMBER_OF_PROCESSORS") - 1)
+}
 
-library(readr)
-library(ggpubr)
-library(sjPlot)
+lapply(packages_used, 
+       require, 
+       character.only = TRUE)
+
 
 #### USER DEFINED VARIABLES ####
 inFilePath2 = "./meso_euphotic_carniv_fish_videobaitstations_all.rds"
@@ -82,11 +128,11 @@ data_removed_sp <- data %>%
          family_clean = case_when(
            family == "Epinephelidae" ~ "Serranidae",
            TRUE ~ family)) %>%
-         mutate(groupings = case_when(
-           family == "Labridae" ~ "Cheilinus undulatus",
-           family == "Epinephelidae" ~ "Serranidae",
-           TRUE ~ family))%>%
-          mutate(taxon = str_c(groupings,
+  mutate(groupings = case_when(
+    family == "Labridae" ~ "Cheilinus undulatus",
+    family == "Epinephelidae" ~ "Serranidae",
+    TRUE ~ family))%>%
+  mutate(taxon = str_c(groupings,
                        genus,
                        species,
                        sep = "_")) %>%
@@ -357,11 +403,11 @@ groupings_model_fixed_sr <<-
   dplyr::rename(response = 3)
 
 groupings_model_fixed_sr <- groupings_model_fixed_sr %>%
-                            mutate(habitat = factor(habitat,
-                                                    levels = c(
-                                                      "Shallow Reef",
-                                                      "Mesophotic Reef")))
-                                   
+  mutate(habitat = factor(habitat,
+                          levels = c(
+                            "Shallow Reef",
+                            "Mesophotic Reef")))
+
 habitatcolors <- c("#F08080","#6FAFC6")
 habitat(habitatcolors) <- c("Shallow Reef", "Mesophotic Reef")
 
@@ -577,7 +623,7 @@ p_sr <-
   #      ymax) +
   labs(title = "Species Observations at TRNP vs. Cagayancillo",
        subtitle = "Distribution Family = Poisson",
-        x = "Study Locations",
+       x = "Study Locations",
        y = "Estimated Marginal Means of Species Richness") +
   theme(legend.position=c(0.6,0.8),  
         legend.title=element_blank()) +
@@ -585,6 +631,8 @@ p_sr <-
 
 p_sr
 save_plot("EMMeansofSpeciesRichnessPoisson.png")
+
+
 #### mean_chao_s: Serranidae ####
 ## Make New Data Vegan for Serranidae
 data_vegan_Serranidae <-
@@ -775,7 +823,7 @@ groupings_model_fixed_sr_Serranidae <<-
           type="response") %>%
   tibble() %>%
   left_join(groupings_model_sr_Serranidae %>%
-            dplyr::select(-rate:-asymp.UCL),
+              dplyr::select(-rate:-asymp.UCL),
             # by = c(str_replace(fixed_vars,
             #                    "[\\+\\*]",
             #                    '" , "'))) %>%
@@ -810,10 +858,41 @@ p_sr_Serranidae <-
                  y = !!response_var,
                  shape = habitat
              ),
-             position = position_jitterdodge(),
+             position = position_jitterdodge(
+               jitter.width = 0.3,
+               dodge.width = 0.9
+               # jitter.height = 0.05
+             ),
              color = "grey50",
              # shape = 1,
              size = 3) +
+  # geom_beeswarm(data = data_chao_s_Serranidae,
+  #            aes(x = study_locations,
+  #                y = !!response_var,
+  #                shape = habitat
+  #            ),
+  #            # position = position_jitterdodge(
+  #            #   jitter.width = 0.3,
+  #            #   dodge.width = 0.9
+  #            #   # jitter.height = 0.05
+  #            # ),
+  #            color = "grey50",
+  #            # shape = 1,
+  #            size = 3) +
+# geom_quasirandom(data = data_chao_s_Serranidae,
+#            aes(x = study_locations,
+#                y = !!response_var,
+#                shape = habitat
+#            ),
+#            position = position_jitterdodge(
+#              jitter.width = 0.3,
+#              dodge.width = 0.9
+#              # jitter.height = 0.05
+#            ),
+#            color = "grey50",
+#            # shape = 1,
+#            size = 3) +
+  
   geom_errorbar(aes(ymin=asymp.LCL,
                     ymax=asymp.UCL),
                 width = 0.2,
@@ -843,6 +922,34 @@ p_sr_Serranidae <-
                                "Mesophotic"))
 
 p_sr_Serranidae
+
+# histogram
+
+data_chao_s %>%
+  bind_cols()
+  filter()
+  ggplot() +
+  aes(x = !!response_var,
+      fill = habitat) +
+  geom_histogram(alpha = 0.5,
+                 position = "dodge",
+                 binwidth = 1) +
+  theme_classic() +
+  facet_wrap(~study_locations)
+  facet_grid(habitat~study_locations)
+  
+geom_point(aes(x = study_locations,
+               y = !!response_var,
+               shape = habitat
+           ),
+           position = position_jitterdodge(
+             jitter.width = 0.3,
+             dodge.width = 0.9
+             # jitter.height = 0.05
+           ),
+           color = "grey50",
+           # shape = 1,
+           size = 3) +
 
 #### mean_chao_s of Lutjanidae ####
 ## Make New Data Vegan for Lutjanidae
@@ -1076,15 +1183,15 @@ p_sr_Lutjanidae <-
   guides(color = "none",
          shape = "none") +   #remove color legend
   # geom_text(aes(label=group),
-            # position = position_dodge(width=0.9),
-            # vjust = -0.5,
-            # hjust = -0.15,
-            # size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
+  # position = position_dodge(width=0.9),
+  # vjust = -0.5,
+  # hjust = -0.15,
+  # size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
   theme_classic() +
   labs(x = "Study Locations",
        y = "Observed Species Richness",
        title = "Lutjanidae") +
-   ylim(0,5) +
+  ylim(0,5) +
   # labs(title = "Lutjanidae",
   #      subtitle = "Distribution Family = Poisson",
   #      x = "Study Locations",
@@ -1342,7 +1449,7 @@ p_sr_Lethrinidae <-
   #      x = "Study Locations",
   #      y = "EM Means of Species Richness") +
   theme(legend.position=c(0.5,0.8),
-  legend.title=element_blank()) +
+        legend.title=element_blank()) +
   scale_fill_manual(values = habitatcolors,
                     labels = c("Shallow",
                                "Mesophotic"))
@@ -1575,7 +1682,7 @@ p_sr_Carangidae <-
                     ymax=asymp.UCL),
                 width = 0.2,
                 color = "black",
-                 size = 1,
+                size = 1,
                 position = position_dodge(width=0.9)) +
   guides(color = "none",
          shape = "none") +   #remove color legend
@@ -2101,8 +2208,8 @@ emmeans_sr <- ggarrange(p_sr,
                         p_sr_Lutjanidae,
                         p_sr_Lethrinidae, 
                         p_sr_Carangidae,
-                          ncol = 2,
-                          nrow = 3)
+                        ncol = 2,
+                        nrow = 3)
 ggsave("FacetedEmMeansSpeciesRichness.pdf", 
        emmeans_sr, height = 14, width = 12, units = "in")
 ggsave("FacetedEmMeansSpeciesRichness.png", 
