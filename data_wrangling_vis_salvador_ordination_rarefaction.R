@@ -1,7 +1,7 @@
 #### INITIALIZATION ####
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 #install.packages("remotes")
-#remotes::install_github("gavinsimpson/ggvegan")
+remotes::install_github("gavinsimpson/ggvegan")
 library(ggvegan)
 library(tidyverse)
 library(janitor)
@@ -21,7 +21,7 @@ library(devtools)
 library(ggordiplots)
 # devtools::install_github("vqv/ggbiplot")
 library(ggbiplot)
-# devtools::install_github("gavinsimpson/ggvegan")
+#devtools::install_github("gavinsimpson/ggvegan")
 library(ggvegan)
 library(ggpubr)
 
@@ -314,6 +314,14 @@ ord <-
           trymax = 500) 
 # View(ord)
 ord
+
+
+dbrda <- 
+  dbrda(data_vegan %>%
+          filter(row_number() != 17), # CAG_017 very different from all other bruvs
+        formula = 
+   
+  )
 
 # use envfit to generate species loading vectors
 # https://stackoverflow.com/questions/14711470/plotting-envfit-vectors-vegan-package-in-ggplot2
