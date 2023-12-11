@@ -1,34 +1,34 @@
 #### INITIALIZATION ####
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
-# library(tidyverse)
-# library(janitor)
-# library(magrittr)
-# library(gridExtra)
-# library(readxl)
-# 
-# library(devtools)
-# 
-# library(vegan)
-# 
-# library(fitdistrplus)
-# library(emmeans)
-# library(multcomp)
-# library(multcompView)
-# library(ggeffects)
-# 
-# library(rlang)
-# library(afex)
-# library(ggbeeswarm)
-# library(performance)
-# library(optimx)
-# library(effects)
-# library(prediction)
-# library(ggforce)
-# 
-# library(readr)
-# library(ggpubr)
-# library(sjPlot)
+library(tidyverse)
+library(janitor)
+library(magrittr)
+library(gridExtra)
+library(readxl)
+
+library(devtools)
+
+library(vegan)
+
+library(fitdistrplus)
+library(emmeans)
+library(multcomp)
+library(multcompView)
+library(ggeffects)
+
+library(rlang)
+library(afex)
+library(ggbeeswarm)
+library(performance)
+library(optimx)
+library(effects)
+library(prediction)
+library(ggforce)
+
+library(readr)
+library(ggpubr)
+library(sjPlot)
 
 #### PACKAGES ####
 packages_used <- 
@@ -423,15 +423,28 @@ p_sr <-
   #                              "white"),
   #                   labels = c('Pre-Screen', 
   #                              'Post-Screen')) +
-  geom_point(data = data_chao_s,
-             aes(x = study_locations,
-                 y = !!response_var,
-                 shape = habitat
-             ),
-             position = position_jitterdodge(),
-             color = "grey50",
-             # shape = 1,
-             size = 3) +
+  # geom_point(data = data_chao_s,
+  #            aes(x = study_locations,
+  #                y = !!response_var,
+  #                shape = habitat
+  #            ),
+  #            position = position_jitterdodge(),
+  #            color = "grey50",
+  #            # shape = 1,
+  #            size = 3) +
+geom_point(data = data_chao_s,
+           aes(x = study_locations,
+               y = !!response_var,
+               shape = habitat
+           ),
+           position = position_jitterdodge(
+             jitter.width = 0.6,
+             dodge.width = 0.7
+             # jitter.height = 0.05
+           ),
+           color = "grey50",
+           # shape = 1,
+           size = 3) +
   geom_errorbar(aes(ymin=asymp.LCL,
                     ymax=asymp.UCL),
                 width = 0.2,
@@ -465,6 +478,7 @@ p_sr <-
 p_sr
 ggsave("EMMeansofSpeciesRichnessGamma.png",
        p_sr)
+
 
 #### Overall means_chao_s with Species Observations instead of Chao estimate ####
 pool <- 
@@ -859,8 +873,8 @@ p_sr_Serranidae <-
                  shape = habitat
              ),
              position = position_jitterdodge(
-               jitter.width = 0.3,
-               dodge.width = 0.9
+               jitter.width = 0.651,
+               dodge.width = 0.7
                # jitter.height = 0.05
              ),
              color = "grey50",
@@ -898,7 +912,7 @@ p_sr_Serranidae <-
                 width = 0.2,
                 color = "black",
                 size = 1,
-                position = position_dodge(width=0.9)) +
+                position = position_dodge(width=.9)) +
   guides(color = "none",
          shape = "none") +   #remove color legend
   # geom_text(aes(label=group),
@@ -922,34 +936,7 @@ p_sr_Serranidae <-
                                "Mesophotic"))
 
 p_sr_Serranidae
-
-# histogram
-
-data_chao_s %>%
-  bind_cols()
-  filter()
-  ggplot() +
-  aes(x = !!response_var,
-      fill = habitat) +
-  geom_histogram(alpha = 0.5,
-                 position = "dodge",
-                 binwidth = 1) +
-  theme_classic() +
-  facet_wrap(~study_locations)
-  facet_grid(habitat~study_locations)
   
-geom_point(aes(x = study_locations,
-               y = !!response_var,
-               shape = habitat
-           ),
-           position = position_jitterdodge(
-             jitter.width = 0.3,
-             dodge.width = 0.9
-             # jitter.height = 0.05
-           ),
-           color = "grey50",
-           # shape = 1,
-           size = 3) +
 
 #### mean_chao_s of Lutjanidae ####
 ## Make New Data Vegan for Lutjanidae
@@ -1165,12 +1152,25 @@ p_sr_Lutjanidae <-
   #                              "white"),
   #                   labels = c('Pre-Screen', 
   #                              'Post-Screen')) +
+  # geom_point(data = data_chao_s_Lutjanidae,
+  #            aes(x = study_locations,
+  #                y = !!response_var,
+  #                shape = habitat
+  #            ),
+  #            position = position_jitterdodge(),
+  #            color = "grey50",
+  #            # shape = 1,
+  #            size = 3) +
   geom_point(data = data_chao_s_Lutjanidae,
              aes(x = study_locations,
                  y = !!response_var,
                  shape = habitat
              ),
-             position = position_jitterdodge(),
+             position = position_jitterdodge(
+               jitter.width = 0.65,
+               dodge.width = 0.7
+               # jitter.height = 0.05
+             ),
              color = "grey50",
              # shape = 1,
              size = 3) +
@@ -1417,15 +1417,28 @@ p_sr_Lethrinidae <-
   #                              "white"),
   #                   labels = c('Pre-Screen', 
   #                              'Post-Screen')) +
-  geom_point(data = data_chao_s_Lethrinidae,
-             aes(x = study_locations,
-                 y = !!response_var,
-                 shape = habitat
-             ),
-             position = position_jitterdodge(),
-             color = "grey50",
-             # shape = 1,
-             size = 3) +
+  # geom_point(data = data_chao_s_Lethrinidae,
+  #            aes(x = study_locations,
+  #                y = !!response_var,
+  #                shape = habitat
+  #            ),
+  #            position = position_jitterdodge(),
+  #            color = "grey50",
+  #            # shape = 1,
+  #            size = 3) +
+geom_point(data = data_chao_s_Lethrinidae,
+           aes(x = study_locations,
+               y = !!response_var,
+               shape = habitat
+           ),
+           position = position_jitterdodge(
+             jitter.width = 0.6,
+             dodge.width = 0.7
+             # jitter.height = 0.05
+           ),
+           color = "grey50",
+           # shape = 1,
+           size = 3) +
   geom_errorbar(aes(ymin=asymp.LCL,
                     ymax=asymp.UCL),
                 width = 0.2,
@@ -1669,15 +1682,28 @@ p_sr_Carangidae <-
   #                              "white"),
   #                   labels = c('Pre-Screen', 
   #                              'Post-Screen')) +
-  geom_point(data = data_chao_s_Carangidae,
-             aes(x = study_locations,
-                 y = !!response_var,
-                 shape = habitat
-             ),
-             position = position_jitterdodge(),
-             color = "grey50",
-             # shape = 1,
-             size = 3) +
+  # geom_point(data = data_chao_s_Carangidae,
+  #            aes(x = study_locations,
+  #                y = !!response_var,
+  #                shape = habitat
+  #            ),
+  #            position = position_jitterdodge(),
+  #            color = "grey50",
+  #            # shape = 1,
+  #            size = 3) +
+geom_point(data = data_chao_s_Carangidae,
+           aes(x = study_locations,
+               y = !!response_var,
+               shape = habitat
+           ),
+           position = position_jitterdodge(
+             jitter.width = 0.648,
+             dodge.width = 0.7
+             # jitter.height = 0.05
+           ),
+           color = "grey50",
+           # shape = 1,
+           size = 3) +
   geom_errorbar(aes(ymin=asymp.LCL,
                     ymax=asymp.UCL),
                 width = 0.2,
@@ -2169,14 +2195,27 @@ p_sr_Cheilinus_undulatus <-
   #                              "white"),
   #                   labels = c('Pre-Screen', 
   #                              'Post-Screen')) +
-  geom_point(data = data_chao_s_Cheilinus_undulatus,
-             aes(x = study_locations,
-                 y = !!response_var
-             ),
-             position = position_jitterdodge(),
-             # color = "grey70",
-             # shape = 1,
-             size = 1) +
+  # geom_point(data = data_chao_s_Cheilinus_undulatus,
+  #            aes(x = study_locations,
+  #                y = !!response_var
+  #            ),
+  #            position = position_jitterdodge(),
+  #            # color = "grey70",
+  #            # shape = 1,
+  #            size = 1) +
+geom_point(data = data_chao_s_Cheilinus_undulatus,
+           aes(x = study_locations,
+               y = !!response_var,
+               shape = habitat
+           ),
+           position = position_jitterdodge(
+             jitter.width = 0.6,
+             dodge.width = 0.7
+             # jitter.height = 0.05
+           ),
+           color = "grey50",
+           # shape = 1,
+           size = 3) +
   geom_errorbar(aes(ymin=asymp.LCL,
                     ymax=asymp.UCL),
                 width = 0.2,
@@ -2201,6 +2240,128 @@ p_sr_Cheilinus_undulatus <-
   scale_fill_manual(values = habitatcolors)
 
 p_sr_Cheilinus_undulatus
+
+#### Histograms ####
+## For Overall Species Richness
+histogram_overall <- 
+  data_chao_s %>%
+  ggplot() +
+  aes(x = s_chao1,
+      fill = habitat) +
+  geom_histogram(alpha = 0.5,
+                 position = "dodge",
+                 binwidth = 10) +
+  theme_classic() +
+  facet_wrap(~study_locations) +
+labs(subtitle = "Overall Species Richness",
+     x = "Chao1 Species Richness",
+     y = "Count",
+     fill = "Depth Category") +
+  scale_fill_manual(values = habitatcolors)
+# facet_grid(habitat~study_locations)
+
+histogram_overall
+
+histogram_Serranidae <- 
+  data_chao_s_Serranidae %>%
+  bind_cols() %>%
+  filter() %>%
+  ggplot() +
+  aes(x = s_obs,
+      fill = habitat) +
+  geom_histogram(alpha = 0.5,
+                 position = "dodge",
+                 binwidth = 1) +
+  theme_classic() +
+  facet_wrap(~study_locations) +
+  guides(fill = "none") +
+  labs(subtitle = "Serranidae",
+       x = "Observed Species Richness",
+       y = "Count") +
+  scale_fill_manual(values = habitatcolors)
+# facet_grid(habitat~study_locations)
+
+histogram_Serranidae
+
+histogram_Lutjanidae <- 
+  data_chao_s_Lutjanidae %>%
+  bind_cols() %>%
+  filter() %>%
+  ggplot() +
+  aes(x = s_obs,
+      fill = habitat) +
+  geom_histogram(alpha = 0.5,
+                 position = "dodge",
+                 binwidth = .75) +
+  theme_classic() +
+  facet_wrap(~study_locations) +
+  guides(fill = "none") +
+  labs(subtitle = "Lutjanidae",
+       x = "Observed Species Richness",
+       y = "Count") +
+  scale_fill_manual(values = habitatcolors)
+# facet_grid(habitat~study_locations)
+
+histogram_Lutjanidae
+
+histogram_Lethrinidae <- 
+  data_chao_s_Lethrinidae %>%
+  bind_cols() %>%
+  filter() %>%
+  ggplot() +
+  aes(x = s_obs,
+      fill = habitat) +
+  geom_histogram(alpha = 0.5,
+                 position = "dodge",
+                 binwidth = .75) +
+  theme_classic() +
+  facet_wrap(~study_locations) +
+  guides(fill = "none") +
+  labs(subtitle = "Lethrinidae",
+       x = "Observed Species Richness",
+       y = "Count") +
+  scale_fill_manual(values = habitatcolors)
+# facet_grid(habitat~study_locations)
+
+histogram_Lethrinidae
+
+histogram_Carangidae <- 
+  data_chao_s_Carangidae %>%
+  bind_cols() %>%
+  filter() %>%
+  ggplot() +
+  aes(x = s_obs,
+      fill = habitat) +
+  geom_histogram(alpha = 0.5,
+                 position = "dodge",
+                 binwidth = 1) +
+  theme_classic() +
+  facet_wrap(~study_locations) +
+  guides (fill = "none") +
+  labs(subtitle = "Carangidae",
+       x = "Observed Species Richness",
+       y = "Count") +
+  scale_fill_manual(values = habitatcolors)
+# facet_grid(habitat~study_locations)
+
+histogram_Carangidae
+
+## Compile and save all histograms into one plot
+
+histograms_sr <- ggarrange(histogram_overall,
+                           histogram_Serranidae,
+                           histogram_Lutjanidae,
+                           histogram_Lethrinidae,
+                           histogram_Carangidae,
+                           ncol = 2,
+                           nrow = 3)
+
+ggsave("FacetedHistogram_SR.png",
+       histograms_sr, 
+       height = 14,
+       width = 12,
+       units = "in")
+
 
 #### Save Overall Species Richness Plot ####
 emmeans_sr <- ggarrange(p_sr,
