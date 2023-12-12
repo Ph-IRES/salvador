@@ -13,6 +13,9 @@ theme_set(
 )
 # install.packages("vegan")
 library(vegan)
+library(devtools)
+# install_github("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")
+library(pairwiseAdonis)
 
 #### USER DEFINED VARIABLES ####
 
@@ -299,7 +302,6 @@ adonis2(data_vegan ~ study_locations * habitat,
 
 # post hoc test
 # installed pairwiseAdonis from instructions on https://github.com/pmartinezarbizu/pairwiseAdonis
-library(pairwiseAdonis)
 pairwise_results <- 
   pairwise.adonis(data_vegan, 
                   interaction(data_vegan.env$study_locations,

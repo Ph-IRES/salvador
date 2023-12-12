@@ -432,7 +432,11 @@ p <-
              aes(x = study_locations,
                  y = !!response_var,
                  shape = habitat),
-             position=position_jitterdodge(),
+             position=position_jitterdodge(
+               jitter.width = 0.9,
+               dodge.width = 0.9
+               # jitter.height = 0.05
+             ),
              size = 3,
              color = "grey50",
              inherit.aes = FALSE) +
@@ -673,7 +677,11 @@ p_Serranidae <-
              aes(x = study_locations,
                  y = !!response_var,
                  shape = habitat),
-             position=position_jitterdodge(),
+             position=position_jitterdodge(
+               jitter.width = 0.85,
+               dodge.width = .9
+               # jitter.height = 0.05
+             ),
              size = 3,
              color = "grey50",
              inherit.aes = FALSE) +
@@ -868,7 +876,11 @@ p_Lutjanidae <-
              aes(x = study_locations,
                  y = !!response_var,
                  shape = habitat),
-             position=position_jitterdodge(),
+             position=position_jitterdodge(
+               jitter.width = 0.88,
+               dodge.width = .9
+               # jitter.height = 0.05
+             ),
              size = 3,
              color = "grey50",
              inherit.aes = FALSE) +
@@ -1072,7 +1084,11 @@ p_Lethrinidae <-
              aes(x = study_locations,
                  y = !!response_var,
                  shape = habitat),
-             position=position_jitterdodge(),
+             position=position_jitterdodge(
+               jitter.width = 0.88,
+               dodge.width = .9
+               # jitter.height = 0.05
+             ),
              size = 3,
              color = "grey50",
              inherit.aes = FALSE) +
@@ -1276,7 +1292,11 @@ p_Carangidae <-
              aes(x = study_locations,
                  y = !!response_var,
                  shape = habitat),
-             position=position_jitterdodge(),
+             position=position_jitterdodge(
+               jitter.width = 0.85,
+               dodge.width = .9
+               # jitter.height = 0.05
+             ),
              size = 3,
              color = "grey50",
              inherit.aes = FALSE) +
@@ -1679,7 +1699,11 @@ p_Cheilinus_undulatus <-
              aes(x = study_locations,
                  y = !!response_var,
                  shape = habitat),
-             position=position_jitterdodge(),
+             position=position_jitterdodge(
+               jitter.width = 0.80,
+               dodge.width = .95
+               # jitter.height = 0.05
+             ),
              size = 3,
              color = "grey50",
              inherit.aes = FALSE) +
@@ -1723,7 +1747,12 @@ p_Cheilinus_undulatus
 
 save_plot("Cheilinus_undulatus.png")
 
-emmeans_maxn <- ggarrange(p, p_Serranidae, p_Lutjanidae, p_Lethrinidae, p_Carangidae, p_Cheilinus_undulatus, 
+emmeans_maxn <- ggarrange(p, 
+                          p_Serranidae,
+                          p_Lutjanidae,
+                          p_Lethrinidae, 
+                          p_Carangidae,
+                          p_Cheilinus_undulatus, 
                           ncol = 2,
                           nrow = 3)
 
@@ -1732,6 +1761,149 @@ ggsave("FacetedEmMeansMaxN.png",
 
 ggsave("FacetedEmMeansMaxN.pdf", 
        emmeans_maxn, height = 14, width = 12, units = "in")
+
+#### Histograms for Abundance ####
+histogram_overall <- 
+  data_all_summaxn %>%
+  ggplot() +
+  aes(x = sum_max_n,
+      fill = habitat) +
+  geom_histogram(alpha = 0.5,
+                 position = "dodge",
+                 binwidth = 20) +
+  theme_classic() +
+  facet_wrap(~study_locations) +
+  labs(subtitle = "Overall Abundance",
+       x = "Abundance (MaxN)",
+       y = "Count",
+       fill = "Depth Category") +
+  scale_fill_manual(values = habitatcolors)
+
+# facet_grid(habitat~study_locations)
+
+histogram_overall
+
+histogram_Serranidae <- 
+  data_all_summaxn_Serranidae %>%
+  bind_cols() %>%
+  filter() %>%
+  ggplot() +
+  aes(x = sum_max_n,
+      fill = habitat) +
+  geom_histogram(alpha = 0.5,
+                 position = "dodge",
+                 binwidth = 1) +
+  theme_classic() +
+  facet_wrap(~study_locations) +
+  guides(fill = "none") +
+  labs(subtitle = "Serranidae",
+       x = "Abundance (MaxN)",
+       y = "Count") +
+  scale_fill_manual(values = habitatcolors)
+# facet_grid(habitat~study_locations)
+
+histogram_Serranidae
+
+histogram_Lutjanidae <- 
+  data_all_summaxn_Lutjanidae %>%
+  bind_cols() %>%
+  filter() %>%
+  ggplot() +
+  aes(x = sum_max_n,
+      fill = habitat) +
+  geom_histogram(alpha = 0.5,
+                 position = "dodge",
+                 binwidth = 5) +
+  theme_classic() +
+  facet_wrap(~study_locations) +
+  guides(fill = "none") +
+  labs(subtitle = "Lutjanidae",
+       x = "Abundance (MaxN)",
+       y = "Count") +
+  scale_fill_manual(values = habitatcolors)
+# facet_grid(habitat~study_locations)
+
+histogram_Lutjanidae
+
+histogram_Lethrinidae <- 
+  data_all_summaxn_Lethrinidae %>%
+  bind_cols() %>%
+  filter() %>%
+  ggplot() +
+  aes(x = sum_max_n,
+      fill = habitat) +
+  geom_histogram(alpha = 0.5,
+                 position = "dodge",
+                 binwidth = 2) +
+  theme_classic() +
+  facet_wrap(~study_locations) +
+  guides(fill = "none") +
+  labs(subtitle = "Lethrinidae",
+       x = "Abundance (MaxN)",
+       y = "Count") +
+  scale_fill_manual(values = habitatcolors)
+# facet_grid(habitat~study_locations)
+
+histogram_Lethrinidae
+
+histogram_Carangidae <- 
+  data_all_summaxn_Carangidae %>%
+  bind_cols() %>%
+  filter() %>%
+  ggplot() +
+  aes(x = sum_max_n,
+      fill = habitat) +
+  geom_histogram(alpha = 0.5,
+                 position = "dodge",
+                 binwidth = 10) +
+  theme_classic() +
+  facet_wrap(~study_locations) +
+  guides (fill = "none") +
+  labs(subtitle = "Carangidae",
+       x = "Abundance (MaxN)",
+       y = "Count") +
+  scale_fill_manual(values = habitatcolors)
+# facet_grid(habitat~study_locations)
+
+histogram_Carangidae
+
+histogram_Cheilinus_undulatus <- 
+  data_all_summaxn_Cheilinus_undulatus %>%
+  bind_cols() %>%
+  filter() %>%
+  ggplot() +
+  aes(x = sum_max_n,
+      fill = habitat) +
+  geom_histogram(alpha = 0.5,
+                 position = "dodge",
+                 binwidth = .5) +
+  theme_classic() +
+  facet_wrap(~study_locations) +
+  guides (fill = "none") +
+  labs(subtitle = "Cheilinus undulatus",
+       x = "Abundance (MaxN)",
+       y = "Count") +
+  scale_fill_manual(values = habitatcolors)
+# facet_grid(habitat~study_locations)
+
+histogram_Cheilinus_undulatus
+
+## Compile and save all histograms into one plot
+
+histograms_abundance <- ggarrange(histogram_overall,
+                           histogram_Serranidae,
+                           histogram_Lutjanidae,
+                           histogram_Lethrinidae,
+                           histogram_Carangidae,
+                           histogram_Cheilinus_undulatus,
+                           ncol = 2,
+                           nrow = 3)
+
+ggsave("FacetedHistogram_abundance.png",
+       histograms_abundance, 
+       height = 14,
+       width = 12,
+       units = "in")
 #### Bait Type Model Testing ####
 
 ## Bait Type Effect on TRNP
