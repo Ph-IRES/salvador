@@ -891,242 +891,242 @@ ggsave("SpeciesRichnessRarefactionCurveGroupings.png",
 ## Species 
 # to make plot w ggplot, see https://stackoverflow.com/questions/52652195/convert-rarefaction-plots-from-vegan-to-ggplot2-in-r
 
-#### iNEXT::iNEXT Extrapolated Species Richness Curve in a Species Pool Based on Abundance ####
-
-# note, iNext can only provide one curve per video using abundance data.
-# it has no equivalent function to estaccumR
-# the iNEXT abundance-based rarefaction curves have number of fish on the x axis, whereas
-# estaccumR has number of videos. They are fundamentally different.
-# where the vegan functions do overlap with iNEXT is the chao1 ests by video
-
-inext_output <-
-  t(data_vegan) %>%
-  iNEXT(
-    q=0, 
-    datatype="abundance",
-    endpoint = 100
-  )
-
-# ggiNEXT(inext_output, type=1)
-
-inext_output$AsyEst %>%
-  clean_names() %>%
-  filter(diversity == "Species richness") %>%
-  mutate(
-    # zero pad the assemblage names so they can be sorted to match data_vegan.env
-    assemblage = str_replace(
-      assemblage, "\\d+", 
-      str_pad(
-        as.numeric(
-          str_extract(
-            assemblage, 
-            "\\d+"
-          )
-        ), 
-        width = 2, 
-        pad = "0"
-      )
-    ) 
-  ) %>%
-  arrange(assemblage) %>%
-  bind_cols(data_vegan.env) %>% #pull("depth_m")
-  ggplot() +
-  aes(
-    x=depth_m,
-    y=estimator,
-    color = site_code
-  ) +
-  geom_point() +
-  
-  geom_errorbar(aes(ymin = lcl,
-                    ymax = ucl)) +
-  theme_classic() 
-
-
-# plot size_based rarefaction and extrapolation
-# http://chao.stat.nthu.edu.tw/wordpress/wp-content/uploads/software/iNEXT_Introduction.pdf
-
-# Sample-size-based R/E sampling curves: iNEXT computes diversity estimates for
-# rarefied and extrapolated samples up to double the reference sample size (by
-# default) or a user-specified size. This type of sampling curve plots the diversity
-# estimates with respect to sample size. Sample size refers to the number of
-# individuals in a sample for abundance data, whereas it refers to the number of
-# sampling units for incidence data.
-
-inext_output$iNextEst$size_based %>%
-  clean_names() %>%
-  mutate(
-    # zero pad the assemblage names so they can be sorted to match data_vegan.env
-    assemblage = str_replace(
-      assemblage, "\\d+", 
-      str_pad(
-        as.numeric(
-          str_extract(
-            assemblage, 
-            "\\d+"
-          )
-        ), 
-        width = 2, 
-        pad = "0"
-      )
-    ),
-    method = factor(
-      method,
-      levels = c(
-        "Rarefaction",
-        "Extrapolation",
-        "Observed"
-      )
-    )
-  ) %>%
-  filter(
-    order_q == 0,
-    method != "Observed") %>%
-  left_join(
-    data_vegan.env %>%
-      mutate(
-        assemblage = sprintf(
-          "assemblage%02d", 
-          1:n()
-        )
-      ) 
-  ) %>% #filter(method == "Rarefaction") %>% pull(m) %>% max()
-  ggplot() +
-  aes(
-    x=m,
-    y=q_d,
-    color = site_code,
-    linetype = method,
-    group = interaction(assemblage,method)
-  ) +
-  geom_ribbon(aes(ymin = q_d_lcl,
-                  ymax = q_d_ucl),
-              color = "grey90",
-              alpha = 0.2) +
-  geom_line(size = 1) +
-  theme_classic() +
-  facet_grid(site_code ~ habitat)  
-
-
-# plot coverage_based rarefaction and extrapolation
-# http://chao.stat.nthu.edu.tw/wordpress/wp-content/uploads/software/iNEXT_Introduction.pdf
-
-# Coverage-based R/E sampling curves: iNEXT computes diversity estimates for
-# rarefied and extrapolated samples with sample completeness (as measured by
-# sample coverage) up to the coverage value of double the reference sample size (by
-# default) or a user-specified coverage. This type of sampling curve plots the
-# diversity estimates with respect to sample coverage.
-
-inext_output$iNextEst$size_based %>%
-  clean_names() %>%
-  mutate(
-    # zero pad the assemblage names so they can be sorted to match data_vegan.env
-    assemblage = str_replace(
-      assemblage, "\\d+", 
-      str_pad(
-        as.numeric(
-          str_extract(
-            assemblage, 
-            "\\d+"
-          )
-        ), 
-        width = 2, 
-        pad = "0"
-      )
-    ),
-    method = factor(
-      method,
-      levels = c(
-        "Rarefaction",
-        "Extrapolation",
-        "Observed"
-      )
-    )
-  ) %>%
-  filter(
-    order_q == 0,
-    method != "Observed") %>%
-  left_join(
-    data_vegan.env %>%
-      mutate(
-        assemblage = sprintf(
-          "assemblage%02d", 
-          1:n()
-        )
-      ) 
-  ) %>%
-  ggplot() +
-  aes(
-    x=m,
-    y=sc,
-    color = site_code,
-    linetype = method,
-    group = interaction(assemblage,method)
-  ) +
-  geom_ribbon(aes(ymin = sc_lcl,
-                  ymax = sc_ucl),
-              color = "grey90",
-              alpha = 0.5) +
-  geom_line(size = 1) +
-  theme_classic() +
-  facet_grid(site_code ~ habitat) 
-
-inext_output$iNextEst$coverage_based %>%
-  clean_names() %>%
-  mutate(
-    # zero pad the assemblage names so they can be sorted to match data_vegan.env
-    assemblage = str_replace(
-      assemblage, "\\d+", 
-      str_pad(
-        as.numeric(
-          str_extract(
-            assemblage, 
-            "\\d+"
-          )
-        ), 
-        width = 2, 
-        pad = "0"
-      )
-    ),
-    method = factor(
-      method,
-      levels = c(
-        "Rarefaction",
-        "Extrapolation",
-        "Observed"
-      )
-    )
-  ) %>%
-  filter(
-    order_q == 0,
-    method != "Observed") %>%
-  left_join(
-    data_vegan.env %>%
-      mutate(
-        assemblage = sprintf(
-          "assemblage%02d", 
-          1:n()
-        )
-      ) 
-  ) %>%
-  ggplot() +
-  aes(
-    x=sc,
-    y=q_d,
-    color = site_code,
-    linetype = method,
-    group = interaction(assemblage,method)
-  ) +
-  geom_ribbon(aes(ymin = q_d_lcl,
-                  ymax = q_d_ucl),
-              color = "grey90",
-              alpha = 0.5) +
-  geom_line(size = 1) +
-  theme_classic() +
-  facet_grid(site_code ~ habitat) 
-
-
-
+# #### iNEXT::iNEXT Extrapolated Species Richness Curve in a Species Pool Based on Abundance ####
+# 
+# # note, iNext can only provide one curve per video using abundance data.
+# # it has no equivalent function to estaccumR
+# # the iNEXT abundance-based rarefaction curves have number of fish on the x axis, whereas
+# # estaccumR has number of videos. They are fundamentally different.
+# # where the vegan functions do overlap with iNEXT is the chao1 ests by video
+# 
+# inext_output <-
+#   t(data_vegan) %>%
+#   iNEXT(
+#     q=0, 
+#     datatype="abundance",
+#     endpoint = 100
+#   )
+# 
+# # ggiNEXT(inext_output, type=1)
+# 
+# inext_output$AsyEst %>%
+#   clean_names() %>%
+#   filter(diversity == "Species richness") %>%
+#   mutate(
+#     # zero pad the assemblage names so they can be sorted to match data_vegan.env
+#     assemblage = str_replace(
+#       assemblage, "\\d+", 
+#       str_pad(
+#         as.numeric(
+#           str_extract(
+#             assemblage, 
+#             "\\d+"
+#           )
+#         ), 
+#         width = 2, 
+#         pad = "0"
+#       )
+#     ) 
+#   ) %>%
+#   arrange(assemblage) %>%
+#   bind_cols(data_vegan.env) %>% #pull("depth_m")
+#   ggplot() +
+#   aes(
+#     x=depth_m,
+#     y=estimator,
+#     color = site_code
+#   ) +
+#   geom_point() +
+#   
+#   geom_errorbar(aes(ymin = lcl,
+#                     ymax = ucl)) +
+#   theme_classic() 
+# 
+# 
+# # plot size_based rarefaction and extrapolation
+# # http://chao.stat.nthu.edu.tw/wordpress/wp-content/uploads/software/iNEXT_Introduction.pdf
+# 
+# # Sample-size-based R/E sampling curves: iNEXT computes diversity estimates for
+# # rarefied and extrapolated samples up to double the reference sample size (by
+# # default) or a user-specified size. This type of sampling curve plots the diversity
+# # estimates with respect to sample size. Sample size refers to the number of
+# # individuals in a sample for abundance data, whereas it refers to the number of
+# # sampling units for incidence data.
+# 
+# inext_output$iNextEst$size_based %>%
+#   clean_names() %>%
+#   mutate(
+#     # zero pad the assemblage names so they can be sorted to match data_vegan.env
+#     assemblage = str_replace(
+#       assemblage, "\\d+", 
+#       str_pad(
+#         as.numeric(
+#           str_extract(
+#             assemblage, 
+#             "\\d+"
+#           )
+#         ), 
+#         width = 2, 
+#         pad = "0"
+#       )
+#     ),
+#     method = factor(
+#       method,
+#       levels = c(
+#         "Rarefaction",
+#         "Extrapolation",
+#         "Observed"
+#       )
+#     )
+#   ) %>%
+#   filter(
+#     order_q == 0,
+#     method != "Observed") %>%
+#   left_join(
+#     data_vegan.env %>%
+#       mutate(
+#         assemblage = sprintf(
+#           "assemblage%02d", 
+#           1:n()
+#         )
+#       ) 
+#   ) %>% #filter(method == "Rarefaction") %>% pull(m) %>% max()
+#   ggplot() +
+#   aes(
+#     x=m,
+#     y=q_d,
+#     color = site_code,
+#     linetype = method,
+#     group = interaction(assemblage,method)
+#   ) +
+#   geom_ribbon(aes(ymin = q_d_lcl,
+#                   ymax = q_d_ucl),
+#               color = "grey90",
+#               alpha = 0.2) +
+#   geom_line(size = 1) +
+#   theme_classic() +
+#   facet_grid(site_code ~ habitat)  
+# 
+# 
+# # plot coverage_based rarefaction and extrapolation
+# # http://chao.stat.nthu.edu.tw/wordpress/wp-content/uploads/software/iNEXT_Introduction.pdf
+# 
+# # Coverage-based R/E sampling curves: iNEXT computes diversity estimates for
+# # rarefied and extrapolated samples with sample completeness (as measured by
+# # sample coverage) up to the coverage value of double the reference sample size (by
+# # default) or a user-specified coverage. This type of sampling curve plots the
+# # diversity estimates with respect to sample coverage.
+# 
+# inext_output$iNextEst$size_based %>%
+#   clean_names() %>%
+#   mutate(
+#     # zero pad the assemblage names so they can be sorted to match data_vegan.env
+#     assemblage = str_replace(
+#       assemblage, "\\d+", 
+#       str_pad(
+#         as.numeric(
+#           str_extract(
+#             assemblage, 
+#             "\\d+"
+#           )
+#         ), 
+#         width = 2, 
+#         pad = "0"
+#       )
+#     ),
+#     method = factor(
+#       method,
+#       levels = c(
+#         "Rarefaction",
+#         "Extrapolation",
+#         "Observed"
+#       )
+#     )
+#   ) %>%
+#   filter(
+#     order_q == 0,
+#     method != "Observed") %>%
+#   left_join(
+#     data_vegan.env %>%
+#       mutate(
+#         assemblage = sprintf(
+#           "assemblage%02d", 
+#           1:n()
+#         )
+#       ) 
+#   ) %>%
+#   ggplot() +
+#   aes(
+#     x=m,
+#     y=sc,
+#     color = site_code,
+#     linetype = method,
+#     group = interaction(assemblage,method)
+#   ) +
+#   geom_ribbon(aes(ymin = sc_lcl,
+#                   ymax = sc_ucl),
+#               color = "grey90",
+#               alpha = 0.5) +
+#   geom_line(size = 1) +
+#   theme_classic() +
+#   facet_grid(site_code ~ habitat) 
+# 
+# inext_output$iNextEst$coverage_based %>%
+#   clean_names() %>%
+#   mutate(
+#     # zero pad the assemblage names so they can be sorted to match data_vegan.env
+#     assemblage = str_replace(
+#       assemblage, "\\d+", 
+#       str_pad(
+#         as.numeric(
+#           str_extract(
+#             assemblage, 
+#             "\\d+"
+#           )
+#         ), 
+#         width = 2, 
+#         pad = "0"
+#       )
+#     ),
+#     method = factor(
+#       method,
+#       levels = c(
+#         "Rarefaction",
+#         "Extrapolation",
+#         "Observed"
+#       )
+#     )
+#   ) %>%
+#   filter(
+#     order_q == 0,
+#     method != "Observed") %>%
+#   left_join(
+#     data_vegan.env %>%
+#       mutate(
+#         assemblage = sprintf(
+#           "assemblage%02d", 
+#           1:n()
+#         )
+#       ) 
+#   ) %>%
+#   ggplot() +
+#   aes(
+#     x=sc,
+#     y=q_d,
+#     color = site_code,
+#     linetype = method,
+#     group = interaction(assemblage,method)
+#   ) +
+#   geom_ribbon(aes(ymin = q_d_lcl,
+#                   ymax = q_d_ucl),
+#               color = "grey90",
+#               alpha = 0.5) +
+#   geom_line(size = 1) +
+#   theme_classic() +
+#   facet_grid(site_code ~ habitat) 
+# 
+# 
+# 
 #### iNEXT::iNEXT Extrapolated Species Richness Curve in a Species Pool Based on Incidence ####
 # https://chat.openai.com/share/1573861d-142f-4e7f-ba40-dc34bbd3e2d1
 
@@ -1237,7 +1237,7 @@ inext_output$iNextEst$size_based %>%
   theme_classic() +
   theme(legend.position = "none") +
   labs(y = "Species Richness",
-       x = "Number of Individuals")
+       x = "Number of BRUVs")
 # facet_grid(site_code ~ habitat)  
 
 
@@ -1409,7 +1409,8 @@ inext_output <-
   ) %>%
   iNEXT(
     q=0, 
-    datatype="incidence_raw"
+    datatype="incidence_raw",
+    endpoint = 40
   )
 
 ggiNEXT(
@@ -1530,7 +1531,7 @@ inext_output$iNextEst$size_based %>%
   theme_classic() +
   theme(legend.position = "none") +
   labs(y = "Species Richness",
-       x = "Number of Individuals") +
+       x = "Number of BRUVs") +
   facet_grid(location ~ depth_cat)
 
 
@@ -1769,7 +1770,7 @@ inext_output$iNextEst$size_based %>%
   theme_classic() +
   # theme(legend.position = "none") +
   labs(y = "Species Richness",
-       x = "Number of Individuals") +
+       x = "Number of BRUVs") +
   facet_wrap(~taxon)
 
 
@@ -2506,31 +2507,31 @@ p_Carangidae_plot_pa <- plot(p_Carangidae_pa,
 p_Carangidae_plot_pa
 
 
-## Species Rarefaction Curve for Galeomorphii ##
-data_vegan_Galeomorphii <- 
-  data_removed_sp %>%
-  dplyr::select(op_code,
-                taxon,
-                max_n) %>%
-  # convert tibble from long to wide format
-  pivot_wider(names_from = taxon,
-              values_from = max_n,
-              values_fill = 0) %>%
-  # sort by op_code
-  arrange(op_code) %>%
-  # remove the op_code column for vegan
-  dplyr::select(-op_code) %>%
-  dplyr::select(contains("Galeomorphii"))
+# ## Species Rarefaction Curve for Galeomorphii ##
+# data_vegan_Galeomorphii <- 
+#   data_removed_sp %>%
+#   dplyr::select(op_code,
+#                 taxon,
+#                 max_n) %>%
+#   # convert tibble from long to wide format
+#   pivot_wider(names_from = taxon,
+#               values_from = max_n,
+#               values_fill = 0) %>%
+#   # sort by op_code
+#   arrange(op_code) %>%
+#   # remove the op_code column for vegan
+#   dplyr::select(-op_code) %>%
+#   dplyr::select(contains("Galeomorphii"))
 
-view(data_vegan_Galeomorphii)
+# view(data_vegan_Galeomorphii)
 
-p_Galeomorphii_pa <- poolaccum(data_vegan_Galeomorphii, permutations = 999)
-
-p_Galeomorphii_plot_pa <- plot(p_Galeomorphii_pa,
-                               display = c("chao"),
-                               main = "Galeomorphii")
-
-p_Galeomorphii_plot_pa
+# p_Galeomorphii_pa <- poolaccum(data_vegan_Galeomorphii, permutations = 999)
+# 
+# p_Galeomorphii_plot_pa <- plot(p_Galeomorphii_pa,
+#                                display = c("chao"),
+#                                main = "Galeomorphii")
+# 
+# p_Galeomorphii_plot_pa
 
 ##Species Rarefaction Curve for Cheilinus undulatus ##
 data_vegan_Cheilinus_undulatus <- 
