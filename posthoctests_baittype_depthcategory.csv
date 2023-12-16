@@ -1,0 +1,67 @@
+,pairs,Df,SumsOfSqs,F.Model,R2,p.value,p.adjusted,sig
+1,Bluefin Trevally.Shallow Reef vs Bluefin Trevally.Mesophotic Reef,1,0.970459488,2.672063237,0.112878341,0.00049995,0.005416125,*
+9,Bluefin Trevally.Shallow Reef vs Sardine.Mesophotic Reef,1,1.023235074,2.992313683,0.142543301,1.00E-04,0.00216645,*
+11,Bluefin Trevally.Shallow Reef vs Frigate Tuna.Mesophotic Reef,1,1.093378571,3.138978375,0.14178515,1.00E-04,0.00216645,*
+19,Bluefin Trevally.Mesophotic Reef vs Sardine.Mesophotic Reef,1,0.915028938,2.732749411,0.173698146,0.00049995,0.005416125,*
+20,Bluefin Trevally.Mesophotic Reef vs Frigate Tuna.Shallow Reef,1,1.127784561,3.693888439,0.187565216,1.00E-04,0.00216645,*
+64,Sardine.Mesophotic Reef vs Frigate Tuna.Shallow Reef,1,1.298575846,4.945909156,0.275600925,0.00019998,0.003249675,*
+3,Bluefin Trevally.Shallow Reef vs Black Jack.Mesophotic Reef,1,0.812781251,2.192544309,0.127528786,0.00579942,0.026925879,.
+7,Bluefin Trevally.Shallow Reef vs Barracuda.Mesophotic Reef,1,0.788986854,2.263948906,0.111722987,0.00219978,0.0158873,.
+10,Bluefin Trevally.Shallow Reef vs Frigate Tuna.Shallow Reef,1,0.864041816,2.713350611,0.114422911,0.00189981,0.015435956,.
+34,Black Jack.Mesophotic Reef vs Barracuda.Mesophotic Reef,1,0.744340466,2.167090116,0.23639891,0.01159884,0.047526497,.
+36,Black Jack.Mesophotic Reef vs Sardine.Mesophotic Reef,1,0.683272641,2.091805423,0.230075912,0.01169883,0.047526497,.
+37,Black Jack.Mesophotic Reef vs Frigate Tuna.Shallow Reef,1,0.951055474,3.374240933,0.252294014,0.00529947,0.02649735,.
+44,Black Jack.Shallow Reef vs Frigate Tuna.Shallow Reef,1,0.737431471,2.543891384,0.20279922,0.00409959,0.022206113,.
+59,Barracuda.Mesophotic Reef vs Frigate Tuna.Shallow Reef,1,0.773487516,2.847693294,0.179691343,0.00119988,0.011141743,.
+65,Sardine.Mesophotic Reef vs Frigate Tuna.Mesophotic Reef,1,0.956383299,3.145902379,0.222389657,0.00359964,0.0212706,.
+66,Frigate Tuna.Shallow Reef vs Frigate Tuna.Mesophotic Reef,1,0.797699114,2.881132657,0.170671762,0.00269973,0.017548245,.
+2,Bluefin Trevally.Shallow Reef vs Skipjack Tuna.Shallow Reef,1,0.486699697,1.306674389,0.085366315,0.159084092,0.224792738,
+4,Bluefin Trevally.Shallow Reef vs Black Jack.Shallow Reef,1,0.395229587,1.050995112,0.065478502,0.395560444,0.462366044,
+5,Bluefin Trevally.Shallow Reef vs Black Jack/Bluefin Trevally.Shallow Reef,1,0.45712873,1.260480719,0.088389778,0.267273273,0.354546178,
+6,Bluefin Trevally.Shallow Reef vs Barracuda.Shallow Reef,1,0.408927451,1.190220628,0.06923824,0.279172083,0.357142857,
+8,Bluefin Trevally.Shallow Reef vs Sardine.Shallow Reef,1,0.3646334,1.005435319,0.071788937,0.405459454,0.462366044,
+12,Bluefin Trevally.Mesophotic Reef vs Skipjack Tuna.Shallow Reef,1,0.592140393,1.561769067,0.147870026,0.089091091,0.165454883,
+13,Bluefin Trevally.Mesophotic Reef vs Black Jack.Mesophotic Reef,1,0.628551745,1.672458194,0.143282432,0.058194181,0.126087391,
+14,Bluefin Trevally.Mesophotic Reef vs Black Jack.Shallow Reef,1,0.599437954,1.561643436,0.13507106,0.057194281,0.126087391,
+15,Bluefin Trevally.Mesophotic Reef vs Black Jack/Bluefin Trevally.Shallow Reef,1,0.552778882,1.518453862,0.159527365,0.096590341,0.171206564,
+16,Bluefin Trevally.Mesophotic Reef vs Barracuda.Shallow Reef,1,0.734875294,2.187791122,0.165895191,0.0169983,0.057194281,
+17,Bluefin Trevally.Mesophotic Reef vs Barracuda.Mesophotic Reef,1,0.663008558,1.927901675,0.129147533,0.02739726,0.077450588,
+18,Bluefin Trevally.Mesophotic Reef vs Sardine.Shallow Reef,1,0.417246563,1.14615387,0.125315393,0.402959704,0.462366044,
+21,Bluefin Trevally.Mesophotic Reef vs Frigate Tuna.Mesophotic Reef,1,0.541809321,1.575074719,0.101127908,0.098590141,0.171206564,
+22,Skipjack Tuna.Shallow Reef vs Black Jack.Mesophotic Reef,1,0.51475463,1.147361723,0.276648578,0.4,0.462366044,
+23,Skipjack Tuna.Shallow Reef vs Black Jack.Shallow Reef,1,0.452996493,0.952886274,0.241060888,0.7,0.745901639,
+24,Skipjack Tuna.Shallow Reef vs Black Jack/Bluefin Trevally.Shallow Reef,1,0.466688582,0.933377164,0.482770347,1,1,
+25,Skipjack Tuna.Shallow Reef vs Barracuda.Shallow Reef,1,0.645580272,2.013417432,0.334820833,0.066666667,0.139637551,
+26,Skipjack Tuna.Shallow Reef vs Barracuda.Mesophotic Reef,1,0.526612687,1.535018253,0.203717921,0.070892911,0.139637551,
+27,Skipjack Tuna.Shallow Reef vs Sardine.Shallow Reef,1,0.5,1,0.5,1,1,
+28,Skipjack Tuna.Shallow Reef vs Sardine.Mesophotic Reef,1,0.651781057,2.015223658,0.251424507,0.03139686,0.081631837,
+29,Skipjack Tuna.Shallow Reef vs Frigate Tuna.Shallow Reef,1,0.553284186,2.013854523,0.182847387,0.03829617,0.095740426,
+30,Skipjack Tuna.Shallow Reef vs Frigate Tuna.Mesophotic Reef,1,0.56006101,1.63111256,0.188980569,0.056694331,0.126087391,
+31,Black Jack.Mesophotic Reef vs Black Jack.Shallow Reef,1,0.574883418,1.297626025,0.244944815,0.3,0.367924528,
+32,Black Jack.Mesophotic Reef vs Black Jack/Bluefin Trevally.Shallow Reef,1,0.538518519,1.273204904,0.388978063,0.5,0.550847458,
+33,Black Jack.Mesophotic Reef vs Barracuda.Shallow Reef,1,0.803561437,2.467209819,0.330405852,0.028571429,0.077450588,
+35,Black Jack.Mesophotic Reef vs Sardine.Shallow Reef,1,0.491018519,1.160901926,0.367269201,0.5,0.550847458,
+38,Black Jack.Mesophotic Reef vs Frigate Tuna.Mesophotic Reef,1,0.712593017,2.073408498,0.205829884,0.01639836,0.057194281,
+39,Black Jack.Shallow Reef vs Black Jack/Bluefin Trevally.Shallow Reef,1,0.281517309,0.607909108,0.233102107,0.75,0.786290323,
+40,Black Jack.Shallow Reef vs Barracuda.Shallow Reef,1,0.535182438,1.566016233,0.238503253,0.114285714,0.19047619,
+41,Black Jack.Shallow Reef vs Barracuda.Mesophotic Reef,1,0.562300757,1.584214386,0.184549723,0.070092991,0.139637551,
+42,Black Jack.Shallow Reef vs Sardine.Shallow Reef,1,0.435809813,0.941088686,0.319979704,1,1,
+43,Black Jack.Shallow Reef vs Sardine.Mesophotic Reef,1,0.757607244,2.24072737,0.242483874,0.01359864,0.051994801,
+45,Black Jack.Shallow Reef vs Frigate Tuna.Mesophotic Reef,1,0.678848154,1.919200907,0.193483419,0.02719728,0.077450588,
+46,Black Jack/Bluefin Trevally.Shallow Reef vs Barracuda.Shallow Reef,1,0.619270003,2.374027474,0.44175946,0.2,0.272160284,
+47,Black Jack/Bluefin Trevally.Shallow Reef vs Barracuda.Mesophotic Reef,1,0.601981669,1.931413757,0.278646439,0.142857143,0.211038961,
+48,Black Jack/Bluefin Trevally.Shallow Reef vs Sardine.Shallow Reef,1,0.5,NA,1,NA,NA,
+49,Black Jack/Bluefin Trevally.Shallow Reef vs Sardine.Mesophotic Reef,1,0.620559704,2.153865826,0.301077191,0.142857143,0.211038961,
+50,Black Jack/Bluefin Trevally.Shallow Reef vs Frigate Tuna.Shallow Reef,1,0.641152927,2.600168833,0.24529504,0.100089991,0.171206564,
+51,Black Jack/Bluefin Trevally.Shallow Reef vs Frigate Tuna.Mesophotic Reef,1,0.637058819,2.008034557,0.250752484,0.128687131,0.199932388,
+52,Barracuda.Shallow Reef vs Barracuda.Mesophotic Reef,1,0.462651307,1.581070166,0.165020205,0.129187081,0.199932388,
+53,Barracuda.Shallow Reef vs Sardine.Shallow Reef,1,0.259366304,0.994304145,0.248930504,0.6,0.65,
+54,Barracuda.Shallow Reef vs Sardine.Mesophotic Reef,1,0.717347129,2.581397364,0.243956188,0.01759824,0.057194281,
+55,Barracuda.Shallow Reef vs Frigate Tuna.Shallow Reef,1,0.44333283,1.769980343,0.138604782,0.04459554,0.107359634,
+56,Barracuda.Shallow Reef vs Frigate Tuna.Mesophotic Reef,1,0.630329218,2.111981385,0.190063438,0.02859714,0.077450588,
+57,Barracuda.Mesophotic Reef vs Sardine.Shallow Reef,1,0.378991952,1.215967706,0.195620017,0.285714286,0.357142857,
+58,Barracuda.Mesophotic Reef vs Sardine.Mesophotic Reef,1,0.45131853,1.504912628,0.130806089,0.085991401,0.164395325,
+60,Barracuda.Mesophotic Reef vs Frigate Tuna.Mesophotic Reef,1,0.432609923,1.374584348,0.111081254,0.148485151,0.214478552,
+61,Sardine.Shallow Reef vs Sardine.Mesophotic Reef,1,0.32003535,1.110792722,0.181775552,0.285714286,0.357142857,
+62,Sardine.Shallow Reef vs Frigate Tuna.Shallow Reef,1,0.385810651,1.56463893,0.163585781,0.200979902,0.272160284,
+63,Sardine.Shallow Reef vs Frigate Tuna.Mesophotic Reef,1,0.48891576,1.541081784,0.204358185,0.122387761,0.198880112,

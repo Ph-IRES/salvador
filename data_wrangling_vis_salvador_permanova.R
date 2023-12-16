@@ -336,3 +336,5 @@ pairwise_results <-
                   p.adjust.m = "BH",
                   perm = 10000)
 print(pairwise_results)
+
+write.csv(pairwise_results, file = "posthoctests_baittype_depthcategory.csv")

@@ -33,11 +33,17 @@ library(indicspecies)
 ## install iNEXT from github
 # install.packages('devtools')
 # library(devtools)
-# install_github('AnneChao/iNEXT')
+# devtools::install_github('AnneChao/iNEXT')
 
 ## import packages
 library(iNEXT)
 
+# install.packages("patchwork")
+library(patchwork)
+
+# remove.packages("gtable")
+# install.packages("gtable")
+library(gtable)
 
 #### USER DEFINED VARIABLES ####
 
@@ -330,6 +336,11 @@ pool %>%
 # creates 1 curve per data frame, so if you want multiple curves, have to make them separately then combine into 1 tibble to plot
 # increase permutations to 999 if you use this for your project
 
+#Check the run time
+# system.time({
+#   p <- vegan::estaccumR(data_vegan, permutations = 9999)
+#   })
+
 p <- vegan::estaccumR(data_vegan, permutations = 9999)
 # filter(estimator != "ace")
 
@@ -384,7 +395,7 @@ data_vegan_CAG_shallow <-
 #   filter(habitat_mpa == "Shallow Reef CAGAYANCILLO") %>%
 #   dplyr::select(-colnames(data_vegan))
 
-p_CAG_shallow <- estaccumR(data_vegan_CAG_shallow, permutations = 999)
+p_CAG_shallow <- estaccumR(data_vegan_CAG_shallow, permutations = 9999)
 
 p_CAG_shallow_plot <-
   p_CAG_shallow$chao %>%
@@ -426,7 +437,7 @@ data_vegan_CAG_deep <-
   filter(habitat_mpa == "Deep Reef CAGAYANCILLO") %>%
   dplyr::select(colnames(data_vegan))
 
-p_CAG_deep <- estaccumR(data_vegan_CAG_deep, permutations = 999)
+p_CAG_deep <- estaccumR(data_vegan_CAG_deep, permutations = 9999)
 
 p_CAG_deep_plot <-
   p_CAG_deep$chao %>%
@@ -469,7 +480,7 @@ data_vegan_TUB_shallow <-
   filter(habitat_mpa == "Shallow Reef TRNP") %>%
   dplyr::select(colnames(data_vegan))
 
-p_TUB_shallow <- estaccumR(data_vegan_TUB_shallow, permutations = 999)
+p_TUB_shallow <- estaccumR(data_vegan_TUB_shallow, permutations = 9999)
 
 p_TUB_shallow_plot <-
   p_TUB_shallow$chao %>%
@@ -512,7 +523,7 @@ data_vegan_TUB_deep <-
   filter(habitat_mpa == "Deep Reef TRNP") %>%
   dplyr::select(colnames(data_vegan))
 
-p_TUB_deep <- estaccumR(data_vegan_TUB_deep, permutations = 999)
+p_TUB_deep <- estaccumR(data_vegan_TUB_deep, permutations = 9999)
 p_TUB_deep_plot <-
   p_TUB_deep$chao %>%
   # t() %>%
@@ -593,7 +604,7 @@ data_vegan_Serranidae <-
 
 
 
-p_Serranidae <- estaccumR(data_vegan_Serranidae, permutations = 999)
+p_Serranidae <- estaccumR(data_vegan_Serranidae, permutations = 9999)
 View(p_Serranidae)
 
 p_Serranidae_plot <-
@@ -648,7 +659,7 @@ data_vegan_Lutjanidae <-
   dplyr::select(-op_code) %>%
   dplyr::select(contains("Lutjanidae"))
 
-p_Lutjanidae <- estaccumR(data_vegan_Lutjanidae, permutations = 999)
+p_Lutjanidae <- estaccumR(data_vegan_Lutjanidae, permutations = 9999)
 
 p_Lutjanidae_plot <-
   p_Lutjanidae$S %>%
@@ -701,7 +712,7 @@ data_vegan_Lethrinidae <-
   dplyr::select(-op_code) %>%
   dplyr::select(contains("Lethrinidae"))
 
-p_Lethrinidae <- estaccumR(data_vegan_Lethrinidae, permutations = 999)
+p_Lethrinidae <- estaccumR(data_vegan_Lethrinidae, permutations = 9999)
 p_Lethrinidae_plot <-
   p_Lethrinidae$S %>%
   # t() %>%
@@ -753,7 +764,7 @@ data_vegan_Carangidae <-
   dplyr::select(-op_code) %>%
   dplyr::select(contains("Carangidae"))
 
-p_Carangidae <- estaccumR(data_vegan_Carangidae, permutations = 999)
+p_Carangidae <- estaccumR(data_vegan_Carangidae, permutations = 9999)
 p_Carangidae_plot <-
   p_Carangidae$S %>%
   # t() %>%
@@ -1176,7 +1187,7 @@ ggiNEXT(inext_output,
 # individuals in a sample for abundance data, whereas it refers to the number of
 # sampling units for incidence data.
 
-inext_output$iNextEst$size_based %>%
+inextoutput_overall <- inext_output$iNextEst$size_based %>%
   clean_names() %>%
   mutate(
     # zero pad the assemblage names so they can be sorted to match data_vegan.env
@@ -1224,8 +1235,9 @@ inext_output$iNextEst$size_based %>%
     group = interaction(assemblage,method)
   ) +
   geom_ribbon(aes(ymin = q_d_lcl,
-                  ymax = q_d_ucl),
-              # color = "grey90",
+                  ymax = q_d_ucl,
+                  fill = method),
+               # color = "black",
               alpha = 0.2) +
   geom_line(size = 1) +
   geom_point(
@@ -1234,11 +1246,20 @@ inext_output$iNextEst$size_based %>%
       filter(method == "Observed"),
     size = 3
   ) +
+  scale_fill_manual(values = c("#9C8EC4", "#9C8EC4"))+
   theme_classic() +
   theme(legend.position = "none") +
   labs(y = "Species Richness",
        x = "Number of BRUVs")
 # facet_grid(site_code ~ habitat)  
+
+inextoutput_overall
+
+ggsave("iNEXT Incidence Overall Species Richness Curves.png",
+       inextoutput_overall,
+       height = 6,
+       width = 8,
+       units = "in")
 
 
 # plot coverage_based rarefaction and extrapolation
@@ -1495,7 +1516,8 @@ ggiNEXT(
 # individuals in a sample for abundance data, whereas it refers to the number of
 # sampling units for incidence data.
 
-inext_output$iNextEst$size_based %>%
+inextoutput_studylocation_depth <- 
+  inext_output$iNextEst$size_based %>%
   clean_names() %>%
   mutate(
     method = factor(
@@ -1528,12 +1550,29 @@ inext_output$iNextEst$size_based %>%
       filter(method == "Observed"),
     size = 3
   ) +
+  scale_fill_manual(values = c("#F8BAC4",
+                              "#C5D8EA",
+                              "#F8BAC4",
+                              "#C5D8EA"
+                              )) +
   theme_classic() +
   theme(legend.position = "none") +
   labs(y = "Species Richness",
        x = "Number of BRUVs") +
-  facet_grid(location ~ depth_cat)
+  # facet_grid(location ~ depth_cat,
+  #            scales = "free")
+  facet_wrap(
+    location ~ depth_cat,
+    scales = "free"  # Set scales to "free" for both x and y axes
+  )
 
+inextoutput_studylocation_depth
+
+ggsave("iNEXTrarefactioncurves_location_depth.png",
+       inextoutput_studylocation_depth,
+       height = 8,
+       width = 8,
+       units = "in")
 
 # plot coverage_based rarefaction and extrapolation
 # http://chao.stat.nthu.edu.tw/wordpress/wp-content/uploads/software/iNEXT_Introduction.pdf
@@ -1642,13 +1681,13 @@ abundance2incidence <-
 
 inext_output <- 
   list(
-    data_vegan_Carangidae %>%
-      abundance2incidence(),
-    data_vegan_Lethrinidae %>%
+    data_vegan_Serranidae %>%
       abundance2incidence(),
     data_vegan_Lutjanidae %>%
       abundance2incidence(),
-    data_vegan_Serranidae %>%
+    data_vegan_Lethrinidae %>%
+      abundance2incidence(),
+    data_vegan_Carangidae %>%
       abundance2incidence()
   ) %>%
   iNEXT(
@@ -1679,16 +1718,16 @@ add_taxon <-
     data %>%
       mutate(taxon = case_when(str_detect(Assemblage,
                                           "[1]") ~
-                                 "Carangidae",
+                                 "Serranidae",
                                str_detect(Assemblage,
                                           "[2]") ~
-                                 "Lethrinidae",
-                               str_detect(Assemblage,
-                                          "[3]") ~
                                  "Lutjanidae",
                                str_detect(Assemblage,
+                                          "[3]") ~
+                                 "Lethrinidae",
+                               str_detect(Assemblage,
                                           "[4]") ~
-                                 "Serranidae",
+                                 "Carangidae",
                                TRUE ~ NA_character_))
   }
 
@@ -1731,7 +1770,9 @@ ggiNEXT(
 # individuals in a sample for abundance data, whereas it refers to the number of
 # sampling units for incidence data.
 
-inext_output$iNextEst$size_based %>%
+
+inext_taxon <- 
+  inext_output$iNextEst$size_based %>%
   clean_names() %>%
   mutate(
     method = factor(
@@ -1757,7 +1798,7 @@ inext_output$iNextEst$size_based %>%
     aes(ymin = q_d_lcl,
         ymax = q_d_ucl),
     alpha = 0.5,
-    fill = "grey75"
+    fill = "#DBD6EA"
   ) +
   geom_line(size = 1,
             aes(linetype = method)) +
@@ -1771,8 +1812,20 @@ inext_output$iNextEst$size_based %>%
   # theme(legend.position = "none") +
   labs(y = "Species Richness",
        x = "Number of BRUVs") +
-  facet_wrap(~taxon)
+  # facet_wrap(~factor(taxon, levels = c("Serranidae", "Lutjanidae", "Lethrinidae", "Carangidae")))
+  facet_wrap(
+    ~factor(taxon, levels = c("Serranidae", "Lutjanidae", "Lethrinidae", "Carangidae")),
+    scales = "free", # Set scales to "free" to have individual x and y-axes
+    ncol = 2 # Adjust the number of columns as needed
+  )
 
+inext_taxon
+
+ggsave("inext_RarefactionCurves_taxonGroupings.png", 
+       inext_taxon,
+       height = 8,
+       width = 11.5,
+       units = "in")
 
 # plot coverage_based rarefaction and extrapolation
 # http://chao.stat.nthu.edu.tw/wordpress/wp-content/uploads/software/iNEXT_Introduction.pdf
