@@ -1564,7 +1564,8 @@ inextoutput_studylocation_depth <-
   facet_wrap(
     location ~ depth_cat,
     scales = "free"  # Set scales to "free" for both x and y axes
-  )
+  ) +
+  ylim(0, 80)
 
 inextoutput_studylocation_depth
 
