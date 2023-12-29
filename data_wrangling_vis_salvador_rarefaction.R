@@ -1187,6 +1187,8 @@ ggiNEXT(inext_output,
 # individuals in a sample for abundance data, whereas it refers to the number of
 # sampling units for incidence data.
 
+##Chris's Original Code
+
 inextoutput_overall <- inext_output$iNextEst$size_based %>%
   clean_names() %>%
   mutate(
@@ -1254,6 +1256,69 @@ inextoutput_overall <- inext_output$iNextEst$size_based %>%
 # facet_grid(site_code ~ habitat)  
 
 inextoutput_overall
+##Code I took from Later in Taxon but applied here bc the fill is missing around the Observed Point in Chris's original code
+
+inext_overall_u <- 
+  inext_output$iNextEst$size_based %>%
+  clean_names() %>%
+  mutate(
+    method = factor(
+      method,
+      levels = c(
+        "Rarefaction",
+        "Extrapolation",
+        "Observed"
+      )
+    )
+  ) %>%
+  filter(
+    order_q == 0,
+    method != "Observed"
+  ) %>% 
+  ggplot() +
+  aes(
+    x=t,
+    y=q_d,
+    # fill = taxon,
+  ) +
+  geom_ribbon(
+    aes(ymin = q_d_lcl,
+        ymax = q_d_ucl),
+    alpha = 0.5,
+    fill = "#DBD6EA"
+  ) +
+  geom_line(size = 1,
+            aes(linetype = method)) +
+  geom_point(
+    data = inext_output$iNextEst$size_based %>%
+      clean_names() %>%
+      filter(method == "Observed"),
+    size = 3
+  ) +
+  theme_classic() +
+  theme(legend.position = "none") +
+  labs(y = "Species Richness",
+       x = "Number of BRUVs")
+
+inext_overall_u
+
+# # Check data for observed
+# Print data for the "Observed" method
+# observed_data <- inext_output$iNextEst$size_based %>%
+#   clean_names() %>%
+#   filter(method == "Observed")
+# print(observed_data)
+# 
+# summary_stats <- inext_output$iNextEst$size_based %>%
+#   clean_names() %>%
+#   filter(method == "Observed") %>%
+#   summarise(
+#     min_q_d_lcl = min(q_d_lcl),
+#     max_q_d_lcl = max(q_d_lcl),
+#     min_q_d_ucl = min(q_d_ucl),
+#     max_q_d_ucl = max(q_d_ucl)
+#   )
+# print(summary_stats)
 
 ggsave("iNEXT Incidence Overall Species Richness Curves.png",
        inextoutput_overall,
