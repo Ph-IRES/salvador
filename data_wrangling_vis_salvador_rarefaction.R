@@ -1321,7 +1321,7 @@ inext_overall_u
 # print(summary_stats)
 
 ggsave("iNEXT Incidence Overall Species Richness Curves.png",
-       inextoutput_overall,
+       inext_overall_u,
        height = 6,
        width = 8,
        units = "in")
