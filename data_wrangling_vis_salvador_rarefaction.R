@@ -1296,9 +1296,11 @@ inext_overall_u <-
     size = 3
   ) +
   theme_classic() +
-  theme(legend.position = "none") +
+  theme(legend.position = "none",
+        axis.line = element_line(color = "black", size = .75)) +
   labs(y = "Species Richness",
-       x = "Number of BRUVs")
+       x = "Number of BRUVs") +
+  xlim(0,100)
 
 inext_overall_u
 
@@ -1878,12 +1880,13 @@ inext_taxon <-
   # theme(legend.position = "none") +
   labs(y = "Species Richness",
        x = "Number of BRUVs") +
-  # facet_wrap(~factor(taxon, levels = c("Serranidae", "Lutjanidae", "Lethrinidae", "Carangidae")))
   facet_wrap(
     ~factor(taxon, levels = c("Serranidae", "Lutjanidae", "Lethrinidae", "Carangidae")),
     scales = "free", # Set scales to "free" to have individual x and y-axes
     ncol = 2 # Adjust the number of columns as needed
-  )
+  ) +
+  ylim(0,25) +
+  xlim(0,100)
 
 inext_taxon
 
