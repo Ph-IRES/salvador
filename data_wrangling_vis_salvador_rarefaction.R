@@ -1297,7 +1297,7 @@ inext_overall_u <-
   ) +
   theme_classic() +
   theme(legend.position = "none",
-        axis.line = element_line(color = "black", size = .75)) +
+        axis.line = element_line(color = "black", size = 1)) +
   labs(y = "Species Richness",
        x = "Number of BRUVs") +
   xlim(0,100)
