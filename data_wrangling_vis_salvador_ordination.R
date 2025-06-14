@@ -749,7 +749,7 @@ data.simper.deep.reefs.study.locations <- data_vegan_deep %>%
 
 summary(data.simper.deep.reefs.study.locations)
 
-###indicspecies ####
+### indicspecies ####
 groups <- data_vegan.env$habitat_mpa 
   
 data.indicspecies <- multipatt(data_vegan, groups, func = "IndVal.g",

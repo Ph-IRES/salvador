@@ -223,7 +223,7 @@ data_unique_taxa_withoutsharks <- data_unique_taxa %>%
 
 write.csv(data_unique_taxa_withoutsharks, file = "data_unique_taxa_withoutsharks.csv")
 
-#### sum_max_n: Make Visualization of Hypothesis Test ####
+#### Overall MaxN Model Test and Barplot ####
 response_var = quo(sum_max_n)
 
 data_all_summaxn <- 
@@ -279,7 +279,7 @@ data_all %>%
   scale_y_continuous(trans='log10') 
 
 
-#### sum_max_n: Mixed Effects Hypothesis Test ####
+## sum_max_n: Mixed Effects Hypothesis Test ##
 
 data_all_summaxn <- 
   data_all %>%
@@ -345,7 +345,7 @@ emmip(model,
        y = "Linear Prediciton",
        x = "MPA")
 
-# sum_max_n: Conduct A priori contrast tests for differences among sites ####
+# sum_max_n: Conduct A priori contrast tests for differences among sites
 
 # now we move on to finish the hypothesis testing.  Are there differences between the sites?
 # estimated marginal means 
@@ -367,7 +367,7 @@ contrast(regrid(emmeans_model), # emmeans back transformed to the original units
          adjust = "bh")
 
 
-#### sum_max_n: Group Sites Based on Model Results ####
+## sum_max_n: Group Sites Based on Model Results ##
 
 groupings_model <<-
   multcomp::cld(emmeans_model, 
@@ -405,7 +405,7 @@ groupings_model_fixed  <- groupings_model_fixed %>%
                                      "Mesophotic Reef"))) %>% view()    # cld messes up back transformation, this takes values from emmeans and groupings from cld
 
 
-#### sum_max_n: Visualize Estimated Marginal Means Output With Group Categories ####
+## sum_max_n: Visualize Estimated Marginal Means Output With Group Categories ##
 
 p <- 
   groupings_model_fixed %>%
@@ -515,7 +515,7 @@ ggsave("EstimatedMarginalMeansMaxN.png",
 # p
 
 
-#### Serranidae including Zeroes ####
+#### MaxN: Serranidae including Zeroes ####
 data_all_summaxn_Serranidae <-
   data_all %>%
   mutate(study_locations = factor(study_locations,
@@ -714,7 +714,8 @@ p_Serranidae <-
 
 p_Serranidae
 save_plot("Serranidae_MaxN.png")
-##### Lutjanidae with Zeroes ####
+
+#### MaxN: Lutjanidae with Zeroes ####
 data_all_summaxn_Lutjanidae <-
   data_all %>%
   mutate(study_locations = factor(study_locations,
@@ -922,7 +923,7 @@ p_Lutjanidae <-
 p_Lutjanidae
 save_plot("Lutjanidae_Abundance.png")
 
-#### Lethrinidae with Zeroes ####
+#### MaxN: Lethrinidae with Zeroes ####
 data_all_summaxn_Lethrinidae <-
   data_all %>%
   mutate(study_locations = factor(study_locations,
@@ -1130,7 +1131,7 @@ p_Lethrinidae <-
 
 p_Lethrinidae
 
-#### Carangidae with Zeroes ####
+#### MaxN: Carangidae with Zeroes ####
 data_all_summaxn_Carangidae <-
   data_all %>%
   mutate(study_locations = factor(study_locations,
@@ -1335,7 +1336,7 @@ p_Carangidae <-
  scale_y_continuous(breaks = seq(0,70, by = 10)) 
 p_Carangidae
 
-#### Galeomorphii with Zeroes ####
+#### MaxN: Galeomorphii with Zeroes ####
 data_all_summaxn_Galeomorphii <-
   data_all %>%
   mutate(study_locations = factor(study_locations,
@@ -1537,7 +1538,8 @@ p_Galeomorphii <-
 p_Galeomorphii
 
 save_plot("Galeomorphii_Abundance.png")
-#### Cheilinus undulatus with Zeroes ####
+
+#### MaxN: Cheilinus undulatus with Zeroes ####
 data_all_summaxn_Cheilinus_undulatus <-
   data_all %>%
   mutate(study_locations = factor(study_locations,
@@ -1747,6 +1749,7 @@ p_Cheilinus_undulatus
 
 save_plot("Cheilinus_undulatus.png")
 
+#### Save Faceted MaxN Plot ####
 emmeans_maxn <- ggarrange(p, 
                           p_Serranidae,
                           p_Lutjanidae,
@@ -1904,7 +1907,8 @@ ggsave("FacetedHistogram_abundance.png",
        height = 14,
        width = 12,
        units = "in")
-#### Bait Type Model Testing ####
+
+#### Testing for Bait Type on MaxN ####
 
 ## Bait Type Effect on TRNP
 data_all_summaxn_TRNP <- 

@@ -243,7 +243,7 @@ data_vegan.env <-
                              sep = " "))
 
 attach(data_vegan.env)
-#### Overall mean_chao_s: Make Visualization of Data ####
+#### Overall Species Richness with Chao Estimate Model Test and Barplot ####
 pool <- 
   estimateR(x = data_vegan) %>%
   t() %>%
@@ -293,7 +293,8 @@ pool %>%
   labs(title = "Species Richness at Cagayancillo vs. Tubbataha", fill = "Habitat") +
   xlab("Study Locations") +
   ylab("Mean Chao Estimate of Species Richness")
-#### Overall mean_chao_s: Mixed Effects Hypothesis Test ####
+
+## Overall mean_chao_s: Mixed Effects Hypothesis Test ##
 pool <- 
   estimateR(x = data_vegan) %>%
   t() %>%
@@ -335,194 +336,6 @@ model <<-
               sig_symbols = rep("", 4),
               # all_fit = TRUE,
               data = data_chao_s)
-
-model
-anova(model)
-
-# visualize summary(model)
-emmip(model, 
-      study_locations ~ habitat,    # type = "response" for back transformed values
-      cov.reduce = range) +
-  # geom_vline(xintercept=mean(data_all_summaxn_$primer_x),
-  #            color = "grey",
-  #            linetype = "dashed") +
-  # geom_text(aes(x = mean(data_all_summaxn_$primer_x),
-  #               y = -2,
-  #               label = "mean primer_x"),
-  #           color = "grey") +
-  theme_classic() +
-  labs(title = "Visualization of `summary(model)`",
-       subtitle = "",
-       y = "Linear Prediciton",
-       x = "MPA")
-### mean_chao_s: Conduct A priori contrast tests for differences among sites ####
-emmeans_model_sr <<-
-  emmeans(model,
-          ~ habitat * study_locations,
-          alpha = alpha_sig)
-
-# emmeans back transformed to the original units of response var
-summary(emmeans_model_sr,      
-        type="response")
-
-# contrasts between sites
-contrast(regrid(emmeans_model_sr), # emmeans back transformed to the original units of response var
-         method = 'pairwise', 
-         simple = 'each', 
-         combine = FALSE, 
-         adjust = "bh")
-#### mean_chao_s: Group Sites Based on Model Results ####
-groupings_model_sr <<-
-  multcomp::cld(emmeans_model_sr, 
-                alpha = alpha_sig,
-                Letters = letters,
-                type="response",
-                adjust = "bh") %>%
-  as.data.frame %>%
-  mutate(group = str_remove_all(.group," "),
-         group = str_replace_all(group,
-                                 "(.)(.)",
-                                 "\\1,\\2")) 
-
-groupings_model_sr             # these values are back transformed, groupings based on transformed
-
-
-# i noticed that the emmeans from groupings don't match those from emmeans so this is the table to use for making the figure
-# the emmeans means and conf intervals match those produced by afex_plot, so I think those are what we want
-groupings_model_fixed_sr <<-
-  summary(emmeans_model_sr,      # emmeans back transformed to the original units of response var
-          type="response") %>%
-  tibble() %>%
-  left_join(groupings_model_sr %>%
-              dplyr::select(-response:-asymp.UCL),
-            # by = c(str_replace(fixed_vars,
-            #                    "[\\+\\*]",
-            #                    '" , "'))) %>%
-            by = c("habitat",
-                   "study_locations")) %>%
-  dplyr::rename(response = 3)
-
-groupings_model_fixed_sr <- groupings_model_fixed_sr %>%
-  mutate(habitat = factor(habitat,
-                          levels = c(
-                            "Shallow Reef",
-                            "Mesophotic Reef")))
-
-habitatcolors <- c("#F08080","#6FAFC6")
-habitat(habitatcolors) <- c("Shallow Reef", "Mesophotic Reef")
-
-#### mean_chao_s: Visualize Estimated Marginal Means Output with Group Categories ####
-p_sr <- 
-  groupings_model_fixed_sr %>%
-  ggplot(aes(x=study_locations,
-             y=response,
-             fill = habitat)) +
-  geom_col(position = "dodge",
-           color = "black") +
-  # scale_fill_manual(values = c("lightgrey",
-  #                              "white"),
-  #                   labels = c('Pre-Screen', 
-  #                              'Post-Screen')) +
-  # geom_point(data = data_chao_s,
-  #            aes(x = study_locations,
-  #                y = !!response_var,
-  #                shape = habitat
-  #            ),
-  #            position = position_jitterdodge(),
-  #            color = "grey50",
-  #            # shape = 1,
-  #            size = 3) +
-geom_point(data = data_chao_s,
-           aes(x = study_locations,
-               y = !!response_var,
-               shape = habitat
-           ),
-           position = position_jitterdodge(
-             jitter.width = 0.6,
-             dodge.width = 0.7
-             # jitter.height = 0.05
-           ),
-           color = "grey50",
-           # shape = 1,
-           size = 3) +
-  geom_errorbar(aes(ymin=asymp.LCL,
-                    ymax=asymp.UCL),
-                width = 0.2,
-                color = "black",
-                size = 1,
-                position = position_dodge(width=0.9)) +
-  guides(color = "none",
-         shape = "none") +   #remove color legend
-  # geom_text(aes(label=group),
-  #           position = position_dodge(width=0.9),
-  #           vjust = -0.5,
-  #           hjust = -0.15,
-  #           size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
-  theme_classic() +
-  labs(x = "Study Locations",
-       y = "Species Richness (Chao1)",
-       title = "Overall Species Richness") +
-  # ylim(ymin, 
-  #      ymax) +
-  # labs(title = "Species Richness at TRNP vs. Cagayancillo",
-  #      subtitle = "Distribution Family = Gamma",
-  #       x = "Study Locations",
-  #      y = "EM Means of Chao Estimate of Species Richness") +
-  theme(legend.position=c(0.5,0.8),  
-        legend.title=element_blank()) +
-  ylim(0,40)+
-  scale_fill_manual(values = habitatcolors,
-                    labels = c("Shallow",
-                               "Mesophotic"))
-
-p_sr
-ggsave("EMMeansofSpeciesRichnessGamma.png",
-       p_sr)
-
-
-#### Overall means_chao_s with Species Observations instead of Chao estimate ####
-pool <- 
-  estimateR(x = data_vegan) %>%
-  t() %>%
-  as_tibble()
-
-data_chao_s <- 
-  pool %>%
-  clean_names() %>%
-  bind_cols(data_vegan.env)
-
-
-## Enter Information About Your Data for A Hypothesis Test ##
-
-# define your response variable, here it is binomial
-response_var = quo(s_obs) # quo() allows column names to be put into variables 
-
-# enter the distribution family for your response variable
-distribution_family = "poisson"
-
-
-alpha_sig = 0.05
-
-
-# we start with the loci subjected to 11 primer concentrations (we removed loci with no sum_max_n to simplify)
-
-sampling_design = "s_obs ~  habitat * study_locations"
-#fit glm model
-model <<- 
-  glm(formula = sampling_design, 
-      family = distribution_family,
-      data = data_chao_s)
-# sampling_design = "s_chao1 ~  habitat * study_locations + (1|study_locations:bait_type)"
-
-
-# # fit mixed model
-# model <<-
-#   afex::mixed(formula = sampling_design,
-#               family = distribution_family,
-#               method = "LRT",
-#               sig_symbols = rep("", 4),
-#               # all_fit = TRUE,
-#               data = data_chao_s)
 
 model
 anova(model)
@@ -611,43 +424,231 @@ p_sr <-
   #                              "white"),
   #                   labels = c('Pre-Screen', 
   #                              'Post-Screen')) +
-  geom_point(data = data_chao_s,
-             aes(x = study_locations,
-                 y = !!response_var
-             ),
-             position = position_jitterdodge(),
-             # color = "grey70",
-             # shape = 1,
-             size = 1) +
+  # geom_point(data = data_chao_s,
+  #            aes(x = study_locations,
+  #                y = !!response_var,
+  #                shape = habitat
+  #            ),
+  #            position = position_jitterdodge(),
+  #            color = "grey50",
+  #            # shape = 1,
+  #            size = 3) +
+geom_point(data = data_chao_s,
+           aes(x = study_locations,
+               y = !!response_var,
+               shape = habitat
+           ),
+           position = position_jitterdodge(
+             jitter.width = 0.6,
+             dodge.width = 0.7
+             # jitter.height = 0.05
+           ),
+           color = "grey50",
+           # shape = 1,
+           size = 3) +
   geom_errorbar(aes(ymin=asymp.LCL,
                     ymax=asymp.UCL),
                 width = 0.2,
-                color = "grey50",
-                # size = 1,
+                color = "black",
+                size = 1,
                 position = position_dodge(width=0.9)) +
   guides(color = "none",
          shape = "none") +   #remove color legend
-  geom_text(aes(label=group),
-            position = position_dodge(width=0.9),
-            vjust = -0.5,
-            hjust = -0.15,
-            size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
+  # geom_text(aes(label=group),
+  #           position = position_dodge(width=0.9),
+  #           vjust = -0.5,
+  #           hjust = -0.15,
+  #           size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
   theme_classic() +
+  labs(x = "Study Locations",
+       y = "Species Richness (Chao1)",
+       title = "Overall Species Richness") +
   # ylim(ymin, 
   #      ymax) +
-  labs(title = "Species Observations at TRNP vs. Cagayancillo",
-       subtitle = "Distribution Family = Poisson",
-       x = "Study Locations",
-       y = "Estimated Marginal Means of Species Richness") +
-  theme(legend.position=c(0.6,0.8),  
+  # labs(title = "Species Richness at TRNP vs. Cagayancillo",
+  #      subtitle = "Distribution Family = Gamma",
+  #       x = "Study Locations",
+  #      y = "EM Means of Chao Estimate of Species Richness") +
+  theme(legend.position=c(0.5,0.8),  
         legend.title=element_blank()) +
-  scale_fill_manual(values = habitatcolors)
+  ylim(0,40)+
+  scale_fill_manual(values = habitatcolors,
+                    labels = c("Shallow",
+                               "Mesophotic"))
 
 p_sr
-save_plot("EMMeansofSpeciesRichnessPoisson.png")
+ggsave("EMMeansofSpeciesRichnessGamma.png",
+       p_sr)
 
 
-#### mean_chao_s: Serranidae ####
+#### Overall Species Richness with Species Observations instead of Chao estimate ####
+# pool <- 
+#   estimateR(x = data_vegan) %>%
+#   t() %>%
+#   as_tibble()
+# 
+# data_chao_s <- 
+#   pool %>%
+#   clean_names() %>%
+#   bind_cols(data_vegan.env)
+# 
+# 
+# ## Enter Information About Your Data for A Hypothesis Test ##
+# 
+# # define your response variable, here it is binomial
+# response_var = quo(s_obs) # quo() allows column names to be put into variables 
+# 
+# # enter the distribution family for your response variable
+# distribution_family = "poisson"
+# 
+# 
+# alpha_sig = 0.05
+# 
+# 
+# # we start with the loci subjected to 11 primer concentrations (we removed loci with no sum_max_n to simplify)
+# 
+# sampling_design = "s_obs ~  habitat * study_locations"
+# #fit glm model
+# model <<- 
+#   glm(formula = sampling_design, 
+#       family = distribution_family,
+#       data = data_chao_s)
+# # sampling_design = "s_chao1 ~  habitat * study_locations + (1|study_locations:bait_type)"
+# 
+# 
+# # # fit mixed model
+# # model <<-
+# #   afex::mixed(formula = sampling_design,
+# #               family = distribution_family,
+# #               method = "LRT",
+# #               sig_symbols = rep("", 4),
+# #               # all_fit = TRUE,
+# #               data = data_chao_s)
+# 
+# model
+# anova(model)
+# 
+# # visualize summary(model)
+# emmip(model, 
+#       study_locations ~ habitat,    # type = "response" for back transformed values
+#       cov.reduce = range) +
+#   # geom_vline(xintercept=mean(data_all_summaxn_$primer_x),
+#   #            color = "grey",
+#   #            linetype = "dashed") +
+#   # geom_text(aes(x = mean(data_all_summaxn_$primer_x),
+#   #               y = -2,
+#   #               label = "mean primer_x"),
+#   #           color = "grey") +
+#   theme_classic() +
+#   labs(title = "Visualization of `summary(model)`",
+#        subtitle = "",
+#        y = "Linear Prediciton",
+#        x = "MPA")
+# ## mean_chao_s: Conduct A priori contrast tests for differences among sites ##
+# emmeans_model_sr <<-
+#   emmeans(model,
+#           ~ habitat * study_locations,
+#           alpha = alpha_sig)
+# 
+# # emmeans back transformed to the original units of response var
+# summary(emmeans_model_sr,      
+#         type="response")
+# 
+# # contrasts between sites
+# contrast(regrid(emmeans_model_sr), # emmeans back transformed to the original units of response var
+#          method = 'pairwise', 
+#          simple = 'each', 
+#          combine = FALSE, 
+#          adjust = "bh")
+# ## mean_chao_s: Group Sites Based on Model Results ##
+# groupings_model_sr <<-
+#   multcomp::cld(emmeans_model_sr, 
+#                 alpha = alpha_sig,
+#                 Letters = letters,
+#                 type="response",
+#                 adjust = "bh") %>%
+#   as.data.frame %>%
+#   mutate(group = str_remove_all(.group," "),
+#          group = str_replace_all(group,
+#                                  "(.)(.)",
+#                                  "\\1,\\2")) 
+# 
+# groupings_model_sr             # these values are back transformed, groupings based on transformed
+# 
+# 
+# # i noticed that the emmeans from groupings don't match those from emmeans so this is the table to use for making the figure
+# # the emmeans means and conf intervals match those produced by afex_plot, so I think those are what we want
+# groupings_model_fixed_sr <<-
+#   summary(emmeans_model_sr,      # emmeans back transformed to the original units of response var
+#           type="response") %>%
+#   tibble() %>%
+#   left_join(groupings_model_sr %>%
+#               dplyr::select(-response:-asymp.UCL),
+#             # by = c(str_replace(fixed_vars,
+#             #                    "[\\+\\*]",
+#             #                    '" , "'))) %>%
+#             by = c("habitat",
+#                    "study_locations")) %>%
+#   dplyr::rename(response = 3)
+# 
+# groupings_model_fixed_sr <- groupings_model_fixed_sr %>%
+#   mutate(habitat = factor(habitat,
+#                           levels = c(
+#                             "Shallow Reef",
+#                             "Mesophotic Reef")))
+# 
+# habitatcolors <- c("#F08080","#6FAFC6")
+# habitat(habitatcolors) <- c("Shallow Reef", "Mesophotic Reef")
+# 
+# ## mean_chao_s: Visualize Estimated Marginal Means Output with Group Categories ##
+# p_sr <- 
+#   groupings_model_fixed_sr %>%
+#   ggplot(aes(x=study_locations,
+#              y=response,
+#              fill = habitat)) +
+#   geom_col(position = "dodge",
+#            color = "black") +
+#   # scale_fill_manual(values = c("lightgrey",
+#   #                              "white"),
+#   #                   labels = c('Pre-Screen', 
+#   #                              'Post-Screen')) +
+#   geom_point(data = data_chao_s,
+#              aes(x = study_locations,
+#                  y = !!response_var
+#              ),
+#              position = position_jitterdodge(),
+#              # color = "grey70",
+#              # shape = 1,
+#              size = 1) +
+#   geom_errorbar(aes(ymin=asymp.LCL,
+#                     ymax=asymp.UCL),
+#                 width = 0.2,
+#                 color = "grey50",
+#                 # size = 1,
+#                 position = position_dodge(width=0.9)) +
+#   guides(color = "none",
+#          shape = "none") +   #remove color legend
+#   geom_text(aes(label=group),
+#             position = position_dodge(width=0.9),
+#             vjust = -0.5,
+#             hjust = -0.15,
+#             size = 8 / (14/5)) +  # https://stackoverflow.com/questions/25061822/ggplot-geom-text-font-size-control
+#   theme_classic() +
+#   # ylim(ymin, 
+#   #      ymax) +
+#   labs(title = "Species Observations at TRNP vs. Cagayancillo",
+#        subtitle = "Distribution Family = Poisson",
+#        x = "Study Locations",
+#        y = "Estimated Marginal Means of Species Richness") +
+#   theme(legend.position=c(0.6,0.8),  
+#         legend.title=element_blank()) +
+#   scale_fill_manual(values = habitatcolors)
+# 
+# p_sr
+# save_plot("EMMeansofSpeciesRichnessPoisson.png")
+
+
+#### Observed Species Richness: Serranidae ####
 ## Make New Data Vegan for Serranidae
 data_vegan_Serranidae <-
   data_removed_sp %>% 
@@ -938,7 +939,7 @@ p_sr_Serranidae <-
 p_sr_Serranidae
   
 
-#### mean_chao_s of Lutjanidae ####
+#### Observed Species Richness: Lutjanidae ####
 ## Make New Data Vegan for Lutjanidae
 data_vegan_Lutjanidae <-
   data_removed_sp %>%
@@ -1203,7 +1204,7 @@ p_sr_Lutjanidae <-
                                "Mesophotic"))
 
 p_sr_Lutjanidae
-#### mean_chao_s of Lethrinidae ####
+#### Observed Species Richness: Lethrinidae ####
 ## Make New Data Vegan for Lethrinidae
 data_vegan_Lethrinidae <-
   data_removed_sp %>%
@@ -1468,7 +1469,7 @@ geom_point(data = data_chao_s_Lethrinidae,
                                "Mesophotic"))
 
 p_sr_Lethrinidae
-#### mean_chao_s of Carangidae ####
+#### Observed Species Richness: Carangidae ####
 ## Make New Data Vegan for Carangidae
 data_vegan_Carangidae <-
   data_removed_sp %>%
@@ -1734,7 +1735,7 @@ geom_point(data = data_chao_s_Carangidae,
 
 p_sr_Carangidae
 
-#### mean_chao_s of Galeomorphii ####
+#### Observed Species Richness: Galeomorphii ####
 ## Make New Data Vegan for Galeomorphii
 data_vegan_Galeomorphii <-
   data_removed_sp %>%
@@ -1984,8 +1985,8 @@ p_sr_Galeomorphii <-
 
 p_sr_Galeomorphii
 
-#### mean_chao_s of Cheilinus undulatus ####
-## Make New Data Vegan for Cheilinus_undulatus
+#### Observed Species Richness: Cheilinus undulatus ####
+## Make new data_vegan for Cheilinus_undulatus
 data_vegan_Cheilinus_undulatus <-
   data_removed_sp %>%
   dplyr::select(op_code,
@@ -2363,7 +2364,7 @@ ggsave("FacetedHistogram_SR.png",
        units = "in")
 
 
-#### Save Overall Species Richness Plot ####
+#### Save Faceted Species Richness Plot ####
 emmeans_sr <- ggarrange(p_sr,
                         p_sr_Serranidae,
                         p_sr_Lutjanidae,
