@@ -40,7 +40,7 @@ Input Files:
 - `./WorkingData_CLEANED_TUB,CAG.xlsx`
 - `./PHIRES_MetaData.xlsx`
 
-R script used to apply the two-way PERMANOVAs were used to test differences in fish assemblages with the vegan::adonis2 package. The first tested the effects of depth category and study locations. The second tested the effects of depth category and bait type because bait type was not consistent across study locations and depths. Pairwise post-hoc tests were conducted using pairwiseAdonis::pairwise.adonis while accounting for a false discovery rate. 
+R script used to apply the two-way PERMANOVAs to test differences in fish assemblages with the vegan::adonis2 package. The first tested the effects of depth category and study locations. The second tested the effects of depth category and bait type because bait type was not consistent across study locations and depths. Pairwise post-hoc tests were conducted using pairwiseAdonis::pairwise.adonis while accounting for a false discovery rate. 
 
 ## **`data_wrangling_vis_salvador_ordination.R`** 
 
