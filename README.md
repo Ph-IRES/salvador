@@ -13,9 +13,9 @@ Keywords: BRUVs, fish assemblages, deep reefs, mesophotic reefs, predatory fish
 ---
 # Description of Data Files and Subdirectories
 
-Overall, data files used in R scripts to create figures in the manuscript are  **WorkingData_CLEANED_TUB,CAG.xlsx** and **PHIRES_MetaData.xlsx**. We also used the file **model_fitting_functions.R** as a function path and **meso_euphotic_carniv_fish_videobaitstations_all.rds** to clean the original data by removing rows with missing data or multiple bands. 
+Overall, data files used in R scripts to create figures in the manuscript are **WorkingData_CLEANED_TUB,CAG.xlsx** and **PHIRES_MetaData.xlsx**. We also used the file **model_fitting_functions.R** as a function path and **meso_euphotic_carniv_fish_videobaitstations_all.rds** to clean the original data by removing rows with missing data or multiple bands. 
 
-Within both files hypothesistesting_MaxN.R and hypothesistesting_speciesrichness.R, the mixed command in the afex R package was used to test the effects of the study location and depth category on species richness and abundance (Singmann et al., 2017). We used the following statistical formula: y ~ depth_category * study_location + (1|study_location: bait_type). Bait type was used as random blocking factor nested within the MPA because no bait types were shared between the two study locations. After each statistical distribution was chosen to satisfy the assumptions of the model, we calculated the estimated marginal means and confidence intervals with the emmeans R package (Lenth & Love, 2017). The command emmeans::contrast was used to test for differences between treatment combinations, and the false discovery rate was controlled at .05. The multcomp:cld command was used to label and separate significantly different treatment combinations from the estimated marginal means. 
+Within both files hypothesistesting_MaxN.R and hypothesistesting_speciesrichness.R, the mixed command in the afex R package was used to test the effects of the study location and depth category on species richness and abundance. We used the following statistical formula: y ~ depth_category * study_location + (1|study_location: bait_type). Bait type was used as random blocking factor nested within the MPA because no bait types were shared between the two study locations. After each statistical distribution was chosen to satisfy the assumptions of the model, we calculated the estimated marginal means and confidence intervals with the emmeans R package. The command emmeans::contrast was used to test for differences between treatment combinations, and the false discovery rate was controlled at .05. The multcomp:cld command was used to label and separate significantly different treatment combinations from the estimated marginal means. 
 
 ## **`hypothesistesting_MaxN.R`** 
 
@@ -40,8 +40,7 @@ Input Files:
 - `./WorkingData_CLEANED_TUB,CAG.xlsx`
 - `./PHIRES_MetaData.xlsx`
 
-R script used to apply the two-way PERMANOVAs were used to test differences in fish
-assemblages with the vegan::adonis2 package. The first tested the effects of depth category and study locations. The second tested the effects of depth category and bait type because bait type was not consistent across study locations and depths. Pairwise post-hoc tests were conducted using pairwiseAdonis::pairwise.adonis  while accounting for a false discovery rate. 
+R script used to apply the two-way PERMANOVAs were used to test differences in fish assemblages with the vegan::adonis2 package. The first tested the effects of depth category and study locations. The second tested the effects of depth category and bait type because bait type was not consistent across study locations and depths. Pairwise post-hoc tests were conducted using pairwiseAdonis::pairwise.adonis while accounting for a false discovery rate. 
 
 ## **`data_wrangling_vis_salvador_ordination.R`** 
 
@@ -72,24 +71,24 @@ Since Cheilinus undulatus is only one species, there was not an individual raref
 subdirectory that contains supplementary figures and tables that were published as Supporting Information. 
 
 ## **`final_ figures`** 
-subdirectory contains the drafts of figures generated  from the R scripts that were included in the main manuscript. Also contains another subdirectory `.manuscript_figures` that has the figures with the manually updated labels and legends used in the main manuscript.  `./PHIRES_MetaData.xlsx`
+subdirectory contains the drafts of figures generated from the R scripts that were included in the main manuscript. Also contains another subdirectory `.manuscript_figures` that has the final versions of the figures with the added fish silhouettes and manually updated labels and legends used in the main manuscript. 
 
 ## **`test_outputs`** 
-contains outputs from indicspecies, unique taxa, SIMPER, analyses as well as post-hoc tests on bait type and depth category. 
+contains outputs from indicspecies, unique taxa, and SIMPER analyses as well as post-hoc tests on bait type and depth category. 
 
 ## **`sandbox`** 
 
-subdirectory contains R scripts from tutorials that were used to construct the scripts for the manuscript. It also contains first drafts of R scripts. 
+subdirectory that contains R scripts from tutorials that were used to construct the scripts for the manuscript. It also contains first drafts of R scripts. 
 
 ## **`other_R_files`** 
-subdirectory contains old drafts of R scripts that were used but eventually scrapped. Not necessary to generate final figures or do any model testing. 
+subdirectory that contains old drafts of R scripts that were used but eventually scrapped. Not necessary to generate final figures or do any model testing. 
 
-## **`misc_ igures`** 
+## **`misc_figures`** 
 
-subdirectory contains drafts of figures that were NOT included in the main manuscript. 
+subdirectory that contains drafts of figures that were NOT included in the main manuscript. 
 
 ## **`log_changes`** 
-subdirectory contains coauthor's Chris Bird's descriptions of logged changes in the Github Repository:
+subdirectory that contains coauthor's Chris Bird's descriptions of logged changes in the Github Repository:
 * [Chris's Log of Changes Made on 9/14/2022](log_ceb_2022-09-14.md)
 * [Chris's Log of Changes Made on 7/26/2022](log_ceb_2022-07-26.md)
 
