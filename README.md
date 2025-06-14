@@ -66,6 +66,9 @@ R script used to generate individual, sample size-based rarefaction and extrapol
 
 Since Cheilinus undulatus is only one species, there was not an individual rarefaction curve generated for it. 
 
+## **`supplementary_information`** 
+subdirectory that contains supplementary figures and tables that were published as Supporting Information. 
+
 ## **`final_ figures`** 
 subdirectory contains the drafts of figures generated  from the R scripts that were included in the main manuscript. Also contains another subdirectory `.manuscript_figures` that has the figures with the manually updated labels and legends used in the main manuscript.  `./PHIRES_MetaData.xlsx`
 
