@@ -66,9 +66,6 @@ R script used to generate individual, sample size-based rarefaction and extrapol
 
 Since Cheilinus undulatus is only one species, there was not an individual rarefaction curve generated for it. 
 
-Within both files hypothesistesting_MaxN.R and hypothesistesting_speciesrichness.R, the mixed command in the afex R package was used to test the effects of the study location and depth category on species richness and abundance (Singmann et al., 2017). We used the following statistical formula: y ~ depth_category * study_location + (1|study_location: bait_type). Bait type was used as random blocking factor nested within the MPA because no bait types were shared between the two study locations. After each statistical distribution was chosen to satisfy the assumptions of the model, we calculated the estimated marginal means and confidence intervals with the emmeans R package (Lenth & Love, 2017). The command emmeans::contrast was used to test for differences between treatment combinations, and the false discovery rate was controlled at .05. The multcomp:cld command was used to label and separate significantly different treatment combinations from the estimated marginal means. 
-
-
 ## **`final_ figures`** 
 subdirectory contains the drafts of figures generated  from the R scripts that were included in the main manuscript. Also contains another subdirectory `.manuscript_figures` that has the figures with the manually updated labels and legends used in the main manuscript.  `./PHIRES_MetaData.xlsx`
 
