@@ -20,8 +20,8 @@ Within both files hypothesistesting_MaxN.R and hypothesistesting_speciesrichness
 Inputs:
 
 R Files:
-   *`./meso_euphotic_carniv_fish_videobaitstations_all.rds`
-   *`./model_fitting_functions.R`
+   * `./meso_euphotic_carniv_fish_videobaitstations_all.rds`
+   * `./model_fitting_functions.R`
 
 Data Files:
    * `./WorkingData_CLEANED_TUB,CAG.xlsx`
@@ -34,18 +34,18 @@ R script used to make the barplot of the overall estimated marginal Means of Max
 R script used to make the barplot of the overall estimated marginal means of species richness between TRNP and Cagayancillo and the facted version of that barplot among four taxonomic groupings: Serranidae, Lutjanidae, Lethrinidae, and Carangidae. We used non-parametric Chao1 estimator for overall species richness. However, when dividing the species richness data per taxonomic grouping, there did not seem to be enough data to use the Chao1 estimator. Therefore, instead of using the Chao1 estimator, we used the observed number of species. We fit the overall Chao1 estimate of species richness to the Gamma distribution and the number of species observations for each taxonomic grouping to the Poisson distribution.
 
 ## **`data_wrangling_vis_salvador_permanova.R`** 
-Input Files 
-	* data: `./WorkingData_CLEANED_TUB,CAG.xlsx`
-	* `./PHIRES_MetaData.xlsx`
+Input Files:
+- `./WorkingData_CLEANED_TUB,CAG.xlsx`
+- `./PHIRES_MetaData.xlsx`
 
 R script used to apply the two-way PERMANOVAs were used to test differences in fish
 assemblages with the vegan::adonis2 package. The first tested the effects of depth category and study locations. The second tested the effects of depth category and bait type because bait type was not consistent across study locations and depths. Pairwise post-hoc tests were conducted using pairwiseAdonis::pairwise.adonis  while accounting for a false discovery rate. 
 
 ## **`data_wrangling_vis_salvador_ordination.R`** 
 
-Input Files 
-	* data: `./WorkingData_CLEANED_TUB,CAG.xlsx`
-	* `./PHIRES_MetaData.xlsx`
+Input Files:
+- `./WorkingData_CLEANED_TUB,CAG.xlsx`
+- `./PHIRES_MetaData.xlsx`
 
 R script used to create the nMDS and dbRDA ordinations to look at the differences in fish assemblage between shallow and mesophotic reefs and between Tubbataha Reefs National Park (TRNP) and Cagayancillo. Similarities of fish assemblage structure across the two study locations and depths was quantified using the Bray-Curtis Dissimilarity Index. From that matrix and the vegan::metaMDS command, we generated a non-metric multidimensional scaling (nMDS) to visualize the assemblage structure. We did have to remove one of the sampling sites from Cagayancillo (CAG_017 listed in the data files) as an outlier. 
 
@@ -57,10 +57,11 @@ dissimilarity) between shallow and mesophotic depths within TRNP and Cagayancill
 product of two quantities: A (a measure of specificity)—the mean abundance of a species in a group, or combinations of groups, compared to all other groups; B (a measure of fidelity)—the relative frequency of occurrence of a species in the stations within a group or combinations of groups.
 
 ## **`data_wrangling_vis_salvador_rarefaction.R`**
-Input Files 
-	* data: `./WorkingData_CLEANED_TUB,CAG.xlsx`
-	* `./PHIRES_MetaData.xlsx`
 
+Input Files:
+- `./WorkingData_CLEANED_TUB,CAG.xlsx`
+- `./PHIRES_MetaData.xlsx`
+  
 R script used to generate individual, sample size-based rarefaction and extrapolation curves from the iNEXT package. Separate rarefaction and extrapolation curves for overall species richness were created using pooled data from all stations and data from stations within each treatment combination (shallow-TRNP, mesophotic-TRNP, shallow-Cagayancillo and mesophotic=Cagayancillo). Rarefaction and extrapolation curves were also generated for the taxonomic groups Serranidae, Lutjanidae,Lethrinidae and Carangidae using pooled data from all stations. All pooled abundance data from the stations was transformed into incidence data. Incidence data was then input into iNEXT to derive estimates of species richness (q = 0). Extrapolation models were applied to examine species richness beyond the number of BRUVs that were deployed and to identify the asymptote across treatment combinations and taxonomic groups.
 
 Since Cheilinus undulatus is only one species, there was not an individual rarefaction curve generated for it. 
