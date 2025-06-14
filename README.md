@@ -70,7 +70,7 @@ Within both files hypothesistesting_MaxN.R and hypothesistesting_speciesrichness
 
 
 ## **`final_ figures`** 
-subdirectory contains the drafts of figures generated  from the R scripts that were included in the main manuscript. Also contains another subdirectory *`.manuscript_figures` that has the figures with the manually updated labels and legends used in the main manuscript.  * `./PHIRES_MetaData.xlsx`
+subdirectory contains the drafts of figures generated  from the R scripts that were included in the main manuscript. Also contains another subdirectory `.manuscript_figures` that has the figures with the manually updated labels and legends used in the main manuscript.  `./PHIRES_MetaData.xlsx`
 
 ## **`test_outputs`** 
 contains outputs from indicspecies, unique taxa, SIMPER, analyses as well as post-hoc tests on bait type and depth category. 
