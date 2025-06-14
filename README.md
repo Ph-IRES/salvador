@@ -1,5 +1,5 @@
 # General Description
-This repository contains our BRUV data, the associated metadata, and all of the R scripts used to generate the figures in our published manuscript at the peer-reviewed journal: Aquatic Conservation: Marine and Freshwater Ecosystems. Here is the citation for our manuscript: 
+This repository contains our BRUV data `WorkingData_CLEANED_TUB,CAG.xlsx`, the associated metadata `PHIRES_MetaData.xlsx`, and all of the R scripts used to generate the figures in our published manuscript at the peer-reviewed journal: Aquatic Conservation: Marine and Freshwater Ecosystems. Here is the citation for our manuscript: 
 
 Salvador, M. , Utzurrum, J., Murray, R., Delijero, K., Conales, S., Bird, C., Gauthier,,D., Abesamis, R (2024). Intact shallow and mesophotic assemblages of large carnivorous reef fishes underscore the importance of large and remote protected areas in the Coral Triangle. *Aquatic Conservation: Marine and Freshwater Ecosystems*, *34*(2), e4108. https://doi.org/10.1002/aqc.4108
 
@@ -13,7 +13,7 @@ Keywords: BRUVs, fish assemblages, deep reefs, mesophotic reefs, predatory fish
 ---
 # Description of Data Files and Subdirectories
 
-Overall, data files used in R scripts to create figures in the manuscript are **WorkingData_CLEANED_TUB,CAG.xlsx** and **PHIRES_MetaData.xlsx**. We also used the file **model_fitting_functions.R** as a function path and **meso_euphotic_carniv_fish_videobaitstations_all.rds** to clean the original data by removing rows with missing data or multiple bands. 
+Overall, data files used in R scripts to create figures in the manuscript are `WorkingData_CLEANED_TUB,CAG.xlsx` and `PHIRES_MetaData.xlsx`. We also used the file `model_fitting_functions.R` as a function path and `meso_euphotic_carniv_fish_videobaitstations_all.rds` to clean the original data by removing rows with missing data or multiple bands. 
 
 Within both files hypothesistesting_MaxN.R and hypothesistesting_speciesrichness.R, the mixed command in the afex R package was used to test the effects of the study location and depth category on species richness and abundance. We used the following statistical formula: y ~ depth_category * study_location + (1|study_location: bait_type). Bait type was used as random blocking factor nested within the MPA because no bait types were shared between the two study locations. After each statistical distribution was chosen to satisfy the assumptions of the model, we calculated the estimated marginal means and confidence intervals with the emmeans R package. The command emmeans::contrast was used to test for differences between treatment combinations, and the false discovery rate was controlled at .05. The multcomp:cld command was used to label and separate significantly different treatment combinations from the estimated marginal means. 
 
