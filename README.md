@@ -82,7 +82,7 @@ Since Cheilinus undulatus is only one species, there was not an individual raref
 subdirectory that contains supplementary figures and tables that were published as Supporting Information. 
 
 ## **`final_ figures`** 
-subdirectory contains the drafts of figures generated from the R scripts that were included in the main manuscript. Also contains another subdirectory `.manuscript_figures` that has the final versions of the figures with the added fish silhouettes and manually updated labels and legends used in the main manuscript. 
+subdirectory contains the drafts of figures generated from the R scripts that were included in the main manuscript. Also contains another subdirectory `manuscript_figures` that has the final versions of the figures with the manually added fish silhouettes and updated labels and legends used in the main manuscript. 
 
 ## **`test_outputs`** 
 contains outputs from indicspecies, unique taxa, and SIMPER analyses as well as post-hoc tests on bait type and depth category. 
