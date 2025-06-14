@@ -33,7 +33,7 @@ R script used to make the barplot of the overall estimated marginal Means of Max
 
 ## **`hypothesistesting_speciesrichness.R`** 
 
-R script used to make the barplot of the overall estimated marginal means of species richness between TRNP and Cagayancillo and the facted version of that barplot among four taxonomic groupings: Serranidae, Lutjanidae, Lethrinidae, and Carangidae. We used non-parametric Chao1 estimator for overall species richness. However, when dividing the species richness data per taxonomic grouping, there did not seem to be enough data to use the Chao1 estimator. Therefore, instead of using the Chao1 estimator, we used the observed number of species. We fit the overall Chao1 estimate of species richness to the Gamma distribution and the number of species observations for each taxonomic grouping to the Poisson distribution.
+R script used to make the barplot of the overall estimated marginal means of species richness between TRNP and Cagayancillo and the faceted version of that barplot among four taxonomic groupings: Serranidae, Lutjanidae, Lethrinidae, and Carangidae. We used non-parametric Chao1 estimator for overall species richness. However, when dividing the species richness data per taxonomic grouping, there did not seem to be enough data to use the Chao1 estimator. Therefore, instead of using the Chao1 estimator, we used the observed number of species. We fit the overall Chao1 estimate of species richness to the Gamma distribution and the number of species observations for each taxonomic grouping to the Poisson distribution.
 
 ## **`data_wrangling_vis_salvador_permanova.R`** 
 Input Files:
